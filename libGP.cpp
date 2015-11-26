@@ -10,6 +10,7 @@
 #include "direct.h"
 #include "kernel.h"
 #include "hypsearch.h"
+#include "misctools.h"
 #ifdef __cplusplus
 extern "C"
 {

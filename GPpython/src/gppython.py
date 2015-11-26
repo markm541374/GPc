@@ -6,6 +6,7 @@ __author__ = "mark"
 __date__ = "$22-Nov-2015 21:25:42$"
 
 import os
+import ctypes as ct
 import scipy as sp
 from scipy import stats as sps
 from scipy import linalg as spl
@@ -63,3 +64,13 @@ a0.fill_between(sup, sp.array(m-2.*sq).flatten(), sp.array(m+2.*sq).flatten(), f
 
 
 plt.show()
+
+m = sp.array([0.,1.,0.,0.1])
+s = sp.array([1.,3.,0.3,0.1])
+r = sp.zeros(4)
+
+GPdc.libGP.EI(m.ctypes.data_as(ct.POINTER(ct.c_double)),s.ctypes.data_as(ct.POINTER(ct.c_double)),ct.c_double(0.9),ct.c_int(4),r.ctypes.data_as(ct.POINTER(ct.c_double)))
+print r
+from tools import EI 
+for i in xrange(4):
+    print EI(0.9,m[i],s[i])[0,0],

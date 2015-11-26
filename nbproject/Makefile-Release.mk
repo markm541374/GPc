@@ -38,7 +38,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/direct.o \
 	${OBJECTDIR}/hypsearch.o \
 	${OBJECTDIR}/kernel.o \
-	${OBJECTDIR}/libGP.o
+	${OBJECTDIR}/libGP.o \
+	${OBJECTDIR}/misctools.o
 
 
 # C Compiler Flags
@@ -84,6 +85,11 @@ ${OBJECTDIR}/libGP.o: libGP.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/libGP.o libGP.cpp
+
+${OBJECTDIR}/misctools.o: misctools.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/misctools.o misctools.cpp
 
 # Subprojects
 .build-subprojects:

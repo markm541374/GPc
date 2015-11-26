@@ -20,6 +20,7 @@ class MJMError(Exception):
 
 def EI(ER,mu,sigma):
         alpha=(-ER+mu)/sigma
+        
         Z = norms.cdf(-alpha)
         if Z==0.0:
             return sp.matrix(0.0)
