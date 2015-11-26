@@ -4,6 +4,7 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <itemPath>GPsimple.h</itemPath>
       <itemPath>direct.h</itemPath>
       <itemPath>hypsearch.h</itemPath>
       <itemPath>kernel.h</itemPath>
@@ -17,6 +18,7 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <itemPath>GPsimple.cpp</itemPath>
       <itemPath>direct.cpp</itemPath>
       <itemPath>hypsearch.cpp</itemPath>
       <itemPath>kernel.cpp</itemPath>
@@ -53,6 +55,10 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="GPsimple.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="GPsimple.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="README.md" ex="false" tool="3" flavor2="0">
       </item>
       <item path="direct.cpp" ex="false" tool="1" flavor2="0">
@@ -104,6 +110,10 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="GPsimple.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="GPsimple.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="README.md" ex="false" tool="3" flavor2="0">
       </item>
       <item path="direct.cpp" ex="false" tool="1" flavor2="0">
