@@ -193,6 +193,7 @@ int GP::infer_full(int Ns, double* Xs, int* Ds, double* R){
 int GP::infer_diag(int Ns, double* Xs, int* Ds, double* R){
 	//populate Kxs
     //printf("x%d",maxinfer);
+    
     if (Ns>=maxinfer){
         
         maxinfer = 2*Ns;
@@ -201,8 +202,10 @@ int GP::infer_diag(int Ns, double* Xs, int* Ds, double* R){
         Ksx_T.resize(N*maxinfer);
     }
 	for (int i=0; i<Ns; i++){
+            //printf("[%f %f]\n",Xs[i*D],Xs[i*D+1]);
 		for (int j=0; j<N; j++){
 			Ksx_T[i+j*Ns] = Ksx[i*N+j] = kern[K](&X[j*D],&Xs[i*D],Dx[j],Ds[i],D,&ih[0]);
+                        //printf("[%f]\n",Ksx[i*N+j]);
 		}
 	}
 
@@ -210,7 +213,7 @@ int GP::infer_diag(int Ns, double* Xs, int* Ds, double* R){
 
 	for (int i=0; i<Ns; i++){
 		R[i] = cblas_ddot(N,&Y[0],1,&Ksx[i*N],1);
-		R[Ns+i] = kern[K](&Xs[i],&Xs[i],Ds[i],Ds[i],D,&ih[0]) - cblas_ddot(N,&Ksx_T[i],Ns,&Ksx[i*N],1);
+		R[Ns+i] = kern[K](&Xs[i*D],&Xs[i*D],Ds[i],Ds[i],D,&ih[0]) - cblas_ddot(N,&Ksx_T[i],Ns,&Ksx[i*N],1);
 	}
 
 	return c;
