@@ -101,7 +101,7 @@ void direct(int n, double *lb, double *ub, int maxint, double fglob, double *xbe
 	halt        = 0;
 	trovato     = 0;
 
-	printf("fbest = %f, nf = %d\n\n",*fbest,nf);
+	//printf("fbest = %f, nf = %d\n\n",*fbest,nf);
 
 	while(!halt){
 		curr     = start;
@@ -182,11 +182,11 @@ void direct(int n, double *lb, double *ub, int maxint, double fglob, double *xbe
 			convexhull = currch;
 		}
 		
-		printf("fbest=%f nf=%d nconv=%d nelim=%d diam=%f DIAM=%f\n",fdir,nf,nconv,nelim,mindiam,maxdiam);
+		//printf("fbest=%f nf=%d nconv=%d nelim=%d diam=%f DIAM=%f\n",fdir,nf,nconv,nelim,mindiam,maxdiam);
 		//scanf("%c",&ch);
 	}
 
-	printf("\nDIRECT has satisfied the stopping condition.\n\n");
+	printf("\nDIRECT has satisfied the stopping condition.\n");
 
 	//deallocate DIRECT structures
 	deallocalistaint(start);

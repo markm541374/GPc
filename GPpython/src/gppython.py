@@ -50,7 +50,7 @@ ub = sp.matrix([2.]*2).T
 MLEH =  GPdc.searchMLEhyp(X,Y,S,D,lb,ub,0,mx=2000)
 print MLEH
 G = GPdc.GPcore(X,Y,S,D,GPdc.gen_sqexp_k_d(MLEH))
-
+MLEH = sp.array([1.,0.1])
 np=180
 sup = sp.linspace(-1,1,np)
 Dp = [[sp.NaN]]*np
@@ -63,7 +63,7 @@ sq = sp.sqrt(v)
 a0.fill_between(sup, sp.array(m-2.*sq).flatten(), sp.array(m+2.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
 
 
-plt.show()
+
 
 m = sp.array([0.,1.,0.,0.1])
 s = sp.array([1.,3.,0.3,0.1])
@@ -74,3 +74,26 @@ print r
 from tools import EI 
 for i in xrange(4):
     print EI(0.9,m[i],s[i])[0,0],
+    
+G = GPdc.GP_EI_direct(X,Y,S,D,GPdc.gen_sqexp_k_d(MLEH))
+lb = sp.array([-1.])
+ub = sp.array([1.])
+xmin = sp.array([42.])
+ymin = sp.array([42.])
+print "xxxx"
+GPdc.libGP.getnext(ct.c_int(G.s),lb.ctypes.data_as(ct.POINTER(ct.c_double)),ub.ctypes.data_as(ct.POINTER(ct.c_double)),xmin.ctypes.data_as(ct.POINTER(ct.c_double)),ymin.ctypes.data_as(ct.POINTER(ct.c_double)))
+
+print xmin
+print ymin
+
+G = GPdc.GP_EI_random(X,Y,S,D,GPdc.gen_sqexp_k_d(MLEH))
+lb = sp.array([-1.])
+ub = sp.array([1.])
+xmin = sp.array([42.])
+ymin = sp.array([42.])
+print "xxxx"
+GPdc.libGP.getnext(ct.c_int(G.s),lb.ctypes.data_as(ct.POINTER(ct.c_double)),ub.ctypes.data_as(ct.POINTER(ct.c_double)),xmin.ctypes.data_as(ct.POINTER(ct.c_double)),ymin.ctypes.data_as(ct.POINTER(ct.c_double)))
+
+print xmin
+print ymin
+plt.show()

@@ -74,6 +74,7 @@ public:
     int D;
     int N;
     int K;
+    int maxinfer;
     std::vector<double> ih;
     std::vector<double>  Kxx;
     std::vector<double> X;
@@ -85,6 +86,7 @@ public:
     std::vector<double> Ksx_T;
     GP(int d, int n, int kindex);
     int build_K();
+    
     int set_Y(double* Yin);
     int set_S(double* Sin);
     int set_X(double* Xin);
@@ -97,6 +99,9 @@ public:
     int infer_m(int Ns, double* Xs, int* Ds, double* R);
     int infer_full(int Ns, double* Xs, int* Ds, double* R);
     int llk(double* R);
+    virtual int getnext(double* lb, double* ub, double* argmin, double* min, int npts){}
+    virtual double acq(double* x){}
+    virtual int timing(int x, double* T){};
 };
 
 GP::GP(int d, int n, int kindex){
@@ -106,15 +111,27 @@ GP::GP(int d, int n, int kindex){
 		}
 		N = n;
 		K = kindex;
+                maxinfer = 400;
+                printf("%d",maxinfer);
 		Y = std::vector<double>(N);
 		Yd = std::vector<double>(N);
 		X = std::vector<double>(D*N);
 		S = std::vector<double>(N);
 		Dx = std::vector<int>(N);
 		Kxx = std::vector<double>(N*N);
-		Ksx = std::vector<double>(N*450);
-		Ksx_T = std::vector<double>(N*450);
-		ih = std::vector<double>(D+1);
+		Ksx = std::vector<double>(N*maxinfer);
+		Ksx_T = std::vector<double>(N*maxinfer);
+                if (K==0){
+                    ih = std::vector<double>(D+1);
+                }
+                else if (K==1){
+                    ih = std::vector<double>(3);
+                }
+                else{
+                    printf("XXXX Bad kernel index %d XXX",K);
+                }
+		
+                
 	}
 
 int GP::llk(double* R){
@@ -127,9 +144,12 @@ int GP::llk(double* R){
 }
 int GP::infer_m(int Ns, double* Xs, int* Ds, double* R){
 	//populate Kxs
-    if (Ns>=450){
-    	printf("TODO I haven't fixed having a max of 450 simultaneous inferences yet!!!!!!");
-    	return -42;
+    if (Ns>=this->maxinfer){
+        
+        this->maxinfer = 2*Ns;
+        //printf("resize %d ",maxinfer);
+    	Ksx.resize(N*maxinfer);
+        Ksx_T.resize(N*maxinfer);
     }
 	for (int i=0; i<Ns; i++){
 		for (int j=0; j<N; j++){
@@ -145,9 +165,11 @@ int GP::infer_m(int Ns, double* Xs, int* Ds, double* R){
 
 int GP::infer_full(int Ns, double* Xs, int* Ds, double* R){
 	//populate Kxs
-    if (Ns>=450){
-    	printf("TODO I haven't fixed having a max of 450 simultaneous inferences yet!!!!!!");
-    	return -42;
+    if (Ns>=maxinfer){
+        maxinfer = 2*Ns;
+        //printf("resize %d ",maxinfer);
+    	Ksx.resize(N*maxinfer);
+        Ksx_T.resize(N*maxinfer);
     }
 	for (int i=0; i<Ns; i++){
 		for (int j=0; j<N; j++){
@@ -170,9 +192,13 @@ int GP::infer_full(int Ns, double* Xs, int* Ds, double* R){
 }
 int GP::infer_diag(int Ns, double* Xs, int* Ds, double* R){
 	//populate Kxs
-    if (Ns>=450){
-    	printf("TODO I haven't fixed having a max of 450 simultaneous inferences yet!!!!!!");
-    	return -42;
+    //printf("x%d",maxinfer);
+    if (Ns>=maxinfer){
+        
+        maxinfer = 2*Ns;
+        //printf("resize %d ",maxinfer);
+    	Ksx.resize(N*maxinfer);
+        Ksx_T.resize(N*maxinfer);
     }
 	for (int i=0; i<Ns; i++){
 		for (int j=0; j<N; j++){
@@ -201,10 +227,21 @@ int GP::build_K(){
 	return 0;
 }
 int GP::set_hyp(double* hyp){
-	ih[0] = pow(hyp[0],2);
+    if (K==0){
+        ih[0] = pow(hyp[0],2);
 	for (int i=1; i<D+1; i++){
 		ih[i] = 1./pow(hyp[i],2);
 	}
+    }
+    else if (K==1){
+        ih[0] = pow(hyp[0],2);
+        ih[1] = hyp[1];
+        ih[2] = pow(hyp[2],2);
+    }
+    else{
+        printf("XXXX Bad kernel index %d XXX",K);
+    }
+	
 	return 0;
 }
 

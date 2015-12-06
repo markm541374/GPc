@@ -35,12 +35,14 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/GPbayesopt.o \
 	${OBJECTDIR}/GPsimple.o \
 	${OBJECTDIR}/direct.o \
 	${OBJECTDIR}/hypsearch.o \
 	${OBJECTDIR}/kernel.o \
 	${OBJECTDIR}/libGP.o \
-	${OBJECTDIR}/misctools.o
+	${OBJECTDIR}/misctools.o \
+	${OBJECTDIR}/timing.o
 
 
 # C Compiler Flags
@@ -66,6 +68,11 @@ LDLIBSOPTIONS=-lblas -llapack -llapacke
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libGPshared.${CND_DLIB_EXT}: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libGPshared.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -shared -fPIC
+
+${OBJECTDIR}/GPbayesopt.o: GPbayesopt.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/GPbayesopt.o GPbayesopt.cpp
 
 ${OBJECTDIR}/GPsimple.o: GPsimple.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -96,6 +103,11 @@ ${OBJECTDIR}/misctools.o: misctools.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/misctools.o misctools.cpp
+
+${OBJECTDIR}/timing.o: timing.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/timing.o timing.cpp
 
 # Subprojects
 .build-subprojects:

@@ -24,11 +24,33 @@ extern "C"
 #include "hypsearch.h"
 #include "misctools.h"
 #include "GPsimple.h"
+#include "GPbayesopt.h"
+#include "timing.h"
     
 std::vector<GP*> SS;
 
 int newGP(int D, int N, int kindex){
 	GP *p = new GP(D,N,kindex);
+	SS.push_back(p);
+
+	return SS.size()-1;
+}
+
+int newGP_timing(int D, int N, int kindex){
+	GP *p = new GP_timing(D,N,kindex);
+	SS.push_back(p);
+
+	return SS.size()-1;
+}
+
+int newEI_direct(int D, int N, int kindex){
+	GP *p = new EI_direct(D,N,kindex);
+	SS.push_back(p);
+
+	return SS.size()-1;
+}
+int newEI_random(int D, int N, int kindex){
+	GP *p = new EI_random(D,N,kindex);
 	SS.push_back(p);
 
 	return SS.size()-1;
@@ -149,7 +171,21 @@ int infer_full(int k,int Ns,double* Xs, int* Ds, double* R){
 	return SS[k]->infer_full(Ns, Xs,Ds,R);
 }
 
+int getnext(int k,double* lb, double* ub, double* argmin, double* min, int npts){
+    if (SS[k]==0){
+		printf("trying to use deleted GP\n");
+		return -1;
+	};
+	return SS[k]->getnext(lb,ub,argmin,min, npts);
+}
 
+int timing(int k,int c, double* T){
+    if (SS[k]==0){
+		printf("trying to use deleted GP\n");
+		return -1;
+	};
+	return SS[k]->timing(c, T);
+}
 #ifdef __cplusplus
 }
 #endif

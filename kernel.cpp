@@ -2,7 +2,28 @@
 #include <cmath>
 #include <stdlib.h>
 #include <stdio.h>
-
+double lin1(double *x1, double *x2, int d1, int d2, int D, double* ih){
+    //linear kernel in the first axis. ih are v^2 c b^2. Kernel is v^2 *(x1-c)(x2-c)+b^2
+    //D is not to be used, only present for consistency in function definition
+    
+    if (d1==0 and d2 == 0){
+        //no derivatives
+        
+        return ih[0]*(x1[0]-ih[1])*(x2[0]-ih[1])+ih[2];
+    }
+    else if (d1==1 and d2==0){
+        return ih[0]*(x2[0]-ih[1]);
+    }
+    else if (d1==0 and d2==1){
+        return ih[0]*(x1[0]-ih[1]);
+    }
+    else if (d1==1 and d2 ==1){
+        return ih[0];
+    }
+    else{
+        return 0.;
+    }
+}
 double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
 	double expon = 0.;
 	for (int i=0; i<D; i++){
@@ -190,7 +211,7 @@ double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
 }
 typedef double (*FP)(double*, double*, int, int, int, double*);
 
-extern "C" const FP kern[1] = {&squexp};
+extern "C" const FP kern[2] = {&squexp,&lin1};
 
 extern "C" double k(double *x1, double *x2, int d1, int d2, int D, double* ih, int kindex){
 	return kern[kindex](&x1[0], &x2[0], d1, d2, D, &ih[0]);
