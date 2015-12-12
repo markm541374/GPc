@@ -33,10 +33,7 @@ GP_LKonly::GP_LKonly(int d, int n, double* Xin, double* Yin, double* Sin, int* D
 		//lk = 0.;
 		//hyp process
 		std::vector<double> ih = std::vector<double>(D+1);
-		ih[0] = pow(hyp[0],2);
-		for (int i=1; i<D+1; i++){
-			ih[i] = 1./pow(hyp[i],2);
-		}
+		hypconvert(&hyp[0], K, D, &ih[0]);
 		//buildK
 		std::vector<double>Kxx = std::vector<double>(N*N);
 		for (int i=0; i<N; i++){
@@ -75,6 +72,7 @@ public:
     int N;
     int K;
     int maxinfer;
+    int nhyp;
     std::vector<double> ih;
     std::vector<double>  Kxx;
     std::vector<double> X;
@@ -112,7 +110,7 @@ GP::GP(int d, int n, int kindex){
 		N = n;
 		K = kindex;
                 maxinfer = 400;
-                printf("%d",maxinfer);
+                
 		Y = std::vector<double>(N);
 		Yd = std::vector<double>(N);
 		X = std::vector<double>(D*N);
@@ -121,16 +119,10 @@ GP::GP(int d, int n, int kindex){
 		Kxx = std::vector<double>(N*N);
 		Ksx = std::vector<double>(N*maxinfer);
 		Ksx_T = std::vector<double>(N*maxinfer);
-                if (K==0){
-                    ih = std::vector<double>(D+1);
-                }
-                else if (K==1){
-                    ih = std::vector<double>(3);
-                }
-                else{
-                    printf("XXXX Bad kernel index %d XXX",K);
-                }
-		
+                nhyp = numhyp(K,D);
+                ih = std::vector<double>(nhyp);
+                
+                
                 
 	}
 
@@ -214,8 +206,10 @@ int GP::infer_diag(int Ns, double* Xs, int* Ds, double* R){
 	for (int i=0; i<Ns; i++){
 		R[i] = cblas_ddot(N,&Y[0],1,&Ksx[i*N],1);
 		R[Ns+i] = kern[K](&Xs[i*D],&Xs[i*D],Ds[i],Ds[i],D,&ih[0]) - cblas_ddot(N,&Ksx_T[i],Ns,&Ksx[i*N],1);
+                //printf("(%f %f) ",R[i],R[i+Ns]);
+                
 	}
-
+        //printf("\n");
 	return c;
 }
 int GP::build_K(){
@@ -230,22 +224,8 @@ int GP::build_K(){
 	return 0;
 }
 int GP::set_hyp(double* hyp){
-    if (K==0){
-        ih[0] = pow(hyp[0],2);
-	for (int i=1; i<D+1; i++){
-		ih[i] = 1./pow(hyp[i],2);
-	}
-    }
-    else if (K==1){
-        ih[0] = pow(hyp[0],2);
-        ih[1] = hyp[1];
-        ih[2] = pow(hyp[2],2);
-    }
-    else{
-        printf("XXXX Bad kernel index %d XXX",K);
-    }
-	
-	return 0;
+    int c = hypconvert(hyp,K,D,&ih[0]);
+    return 0;
 }
 
 int GP::presolv(){

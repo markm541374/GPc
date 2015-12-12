@@ -10,10 +10,14 @@ from matplotlib import pyplot as plt
 import GPdc
 
 
-x = sp.linspace(-1,1,12)
+x = sp.linspace(-1,1,8)
 y = [-0.4*(i-0.2)+sps.norm.rvs(scale=0.005) for i in x]
-
+y+=[-0.6*(i+0.2)+sps.norm.rvs(scale=0.005) for i in x]
+y+=[0.1*(i+0.8)+sps.norm.rvs(scale=0.005) for i in x]
 X = sp.vstack([sp.array([i,0.]) for i in x])
+X = sp.vstack([X,[sp.array([i,0.4]) for i in x]])
+X = sp.vstack([X,[sp.array([i,-0.3]) for i in x]])
+
 Y = sp.matrix(y).T
 #X = sp.matrix([[0.,-9.],[0.2,5.],[0.4,12.],[0.6,3.],[0.8,9.]])
 
@@ -26,19 +30,21 @@ a0 = plt.subplot(111)
 a0.plot(sp.array(X[:,0]).flatten(),Y,'g.')
 
 
-lb = sp.array([-2.,-1.,-2.])
-ub = sp.array([2.,1.,2.])
-MLEH =  GPdc.searchMLEhyp(X,Y,S,D,lb,ub,GPdc.LIN1,mx=10000)
-
+lb = sp.array([-2.,-1.,-2.,-2.,-2.])
+ub = sp.array([2.,1.,2.,2.,2.])
+MLEH =  GPdc.searchMLEhyp(X,Y,S,D,lb,ub,GPdc.LINXSQUEXP,mx=10000)
+print "xxx"
+GPdc.kernel(GPdc.LINXSQUEXP,2,MLEH)
+print "yyyy"
 print MLEH
-G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.LIN1,2,MLEH))
+G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.LINXSQUEXP,2,MLEH))
 print G.llk()
 
 
 np=180
 sup = sp.linspace(-1,1,np)
 Dp = [[sp.NaN]]*np
-Xp = sp.vstack([sp.array([i,1.]) for i in sup])
+Xp = sp.vstack([sp.array([i,-0.3]) for i in sup])
 
 [m,v] = G.infer_diag(Xp,Dp)
 a0.plot(sup,m)

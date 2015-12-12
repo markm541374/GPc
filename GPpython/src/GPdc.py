@@ -36,8 +36,10 @@ class GPcore:
         libGP.set_D(self.s,(ct.c_int*len(D))(*D))
         libGP.set_hyp(self.s,kf.hyp.ctypes.data_as(ct.POINTER(ct.c_double)))
         libGP.build_K(self.s)
+        
         libGP.fac(self.s)
         libGP.presolv(self.s)
+        
         return
     
     def __del__(self):
@@ -152,6 +154,28 @@ class GP_EI_direct(GPcore):
         libGP.getnext(self.s,lb.ctypes.data_as(ct.POINTER(ct.c_double)),ub.ctypes.data_as(ct.POINTER(ct.c_double)),xmin.ctypes.data_as(ct.POINTER(ct.c_double)),ymin.ctypes.data_as(ct.POINTER(ct.c_double)),ct.c_int(npts))
         return [ymin,xmin]
 
+SQUEXP = 0
+LIN1 = 1
+LINXSQUEXP = 2
+LINSQUEXPXSQUEXP = 3
+SQUEXP1SSQUEXP = 4
+SSPS = 5
+class kernel():
+    def __init__(self,K,D,H):
+        self.dim = D
+        self.hyp = sp.array(H)
+        self.Kindex = K
+        #ihyp are derived from the hyperparameters for speed and will be 1/h^2 etc.
+        self.ihyp = sp.empty(self.hyp.shape[0])
+        libGP.hypconvert(self.hyp.ctypes.data_as(ct.POINTER(ct.c_double)),ct.c_int(self.Kindex), ct.c_int(self.dim), self.ihyp.ctypes.data_as(ct.POINTER(ct.c_double)))
+        return
+    
+    def __call__(self,x1, x2, d1=[sp.NaN], d2=[sp.NaN]):
+        D1 = 0 if sp.isnan(d1[0]) else int(sum([8**x for x in d1]))
+        D2 = 0 if sp.isnan(d2[0]) else int(sum([8**x for x in d2]))
+        r=libGP.k(x1.ctypes.data_as(ct.POINTER(ct.c_double)),x2.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_int(D1),ct.c_int(D2),ct.c_int(self.dim),self.ihyp.ctypes.data_as(ct.POINTER(ct.c_double)),ct.c_int(self.Kindex))
+        return r
+    
 
 class gen_sqexp_k_d():
     def __init__(self,theta):
@@ -188,7 +212,36 @@ def searchMLEhyp(X,Y,S,D,lb,ub, ki, mx=5000,fg=-1e9):
     ns=X.shape[0]
     dim = X.shape[1]
     Dx = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D]
-    hy = sp.empty(dim+1)
+    hy = sp.empty(libGP.numhyp(ct.c_int(ki),ct.c_int(dim)))
+    
     lk = sp.empty(1)
     r = libGP.HypSearchMLE(ct.c_int(dim),ct.c_int(len(Dx)),X.ctypes.data_as(ct.POINTER(ct.c_double)),Y.ctypes.data_as(ct.POINTER(ct.c_double)),S.ctypes.data_as(ct.POINTER(ct.c_double)),(ct.c_int*len(Dx))(*Dx),lb.ctypes.data_as(ct.POINTER(ct.c_double)),ub.ctypes.data_as(ct.POINTER(ct.c_double)),ct.c_int(ki), hy.ctypes.data_as(ct.POINTER(ct.c_double)),lk.ctypes.data_as(ct.POINTER(ct.c_double)))
+    
     return hy
+
+
+def searchMAPhyp(X,Y,S,D,m,s, ki, MAPmargin = 2.5, mx=5000,fg=-1e9):
+    libGP.SetHypSearchPara(ct.c_int(mx),ct.c_double(fg))
+    ns=X.shape[0]
+    dim = X.shape[1]
+    Dx = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D]
+    hy = sp.empty(libGP.numhyp(ct.c_int(ki),ct.c_int(dim)))
+    
+    lk = sp.empty(1)
+    r = libGP.HypSearchMAP(ct.c_int(dim),ct.c_int(len(Dx)),X.ctypes.data_as(ct.POINTER(ct.c_double)),Y.ctypes.data_as(ct.POINTER(ct.c_double)),S.ctypes.data_as(ct.POINTER(ct.c_double)),(ct.c_int*len(Dx))(*Dx),m.ctypes.data_as(ct.POINTER(ct.c_double)),s.ctypes.data_as(ct.POINTER(ct.c_double)),ct.c_double(MAPmargin),ct.c_int(ki), hy.ctypes.data_as(ct.POINTER(ct.c_double)),lk.ctypes.data_as(ct.POINTER(ct.c_double)))
+    
+    return hy
+
+#just for quickly making test draws
+def buildKsym_d(kf,x,d):
+        #x should be  column vector
+        (l,_)=x.shape
+        K=sp.matrix(sp.empty([l,l]))
+        for i in range(l):
+            K[i,i]=kf(x[i,:],x[i,:],d1=d[i],d2=d[i])+10**-10
+            for j in range(i+1,l):
+                K[i,j]=kf(x[i,:],x[j,:],d1=d[i],d2=d[j])
+                
+                K[j,i]=K[i,j]
+                
+        return K

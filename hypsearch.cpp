@@ -21,6 +21,7 @@ const double L2PI = log(PI*2);
 int D;
 int N;
 int ki;
+int nhyp;
 std::vector<double> ih;
 
 std::vector<double> X;
@@ -30,6 +31,9 @@ std::vector<double> S;
 
 std::vector<double>  Kxx;
 std::vector<double> Yd;
+
+std::vector<double> priorm;
+std::vector<double> priors;
 
 //default direct hyperparameters
 
@@ -44,11 +48,11 @@ extern "C" void SetHypSearchPara(int mx, double fg){
 }
 //llk function to call direct from
 double llk(int directsearchdim, double* hyp){
-
-	ih[0] = pow(10.,2.*hyp[0]);
-	for (int i=1; i<D+1; i++){
-		ih[i] = 1./pow(10.,2.*hyp[i]);
-	}
+        //printf("%d",directsearchdim);
+    std::vector<double> tmp = std::vector<double>(nhyp);
+	int c = hypsearchconvert(hyp,ki,D,&tmp[0]);
+        c     = hypconvert(&tmp[0],ki,D,&ih[0]);
+        
 	//buildK
 	for (int i=0; i<N; i++){
 		Kxx[i*N+i] = kern[ki](&X[i*D], &X[i*D],Dx[i],Dx[i],D,&ih[0]);
@@ -74,15 +78,25 @@ double llk(int directsearchdim, double* hyp){
 		R-=log(Kxx[i*(N+1)]);
 	}
 	R -= 0.5*cblas_ddot(N,&Y[0],1,&Yd[0],1);
-
+        //printf("[%f ]",R);
 	return -R;
 }
 
+//posterior function to call direct from
+double post(int directsearchdim, double* hyp){
+    double pst = llk(directsearchdim, hyp);
+    for (int i=0; i<directsearchdim; i++){
+        pst-=0.5*pow((hyp[i]-priorm[i])/priors[i],2);
+    }
+    return pst;
+}
 extern "C" int HypSearchMLE(int d, int n, double* Xin, double* Yin, double* Sin, int* Din, double* lb, double* ub, int kernelindex, double* Rhyp, double* lk){
 
 	ki = kernelindex;
+        if (ki==2){printf("this linXsquexp has the 4th hyperparameter set to 1 so this is searching an unused dimension");}
 	N = n;
 	D = d;
+        nhyp = numhyp(ki,D);
 	ih.resize(D+1);
 	X.resize(N*D);
 	Y.resize(N);
@@ -99,12 +113,75 @@ extern "C" int HypSearchMLE(int d, int n, double* Xin, double* Yin, double* Sin,
 		S[i] = Sin[i];
 		Dx[i] = Din[i];
 	}
-	std::vector<double> xbest = std::vector<double>(D+1,0.);
+	std::vector<double> xbest = std::vector<double>(nhyp,0.);
+        printf("DIRECT searching LLK in %d hyperparameters between (",nhyp);
+        for (int i=0; i<nhyp; i++){printf("%f ",lb[i]);}
+        printf("\b) and (");
+        for (int i=0; i<nhyp; i++){printf("%f ",ub[i]);}
+        printf("\b)\n");
+        
+        direct(nhyp,&lb[0],&ub[0],maxint,fglob,&xbest[0],lk,llk);
+        
+        
+        int c = hypsearchconvert(&xbest[0],ki,D,Rhyp);
+        
+        printf("DIRECT found (");
+        for (int i=0; i<nhyp; i++){printf("%f ",xbest[i]);}
+        printf("\b) raw with llk %f which is (",*lk);
+        for (int i=0; i<nhyp; i++){printf("%f ",Rhyp[i]);}
+        printf("\b)true\n");
+	return 0;
+}
 
-	direct(D+1,&lb[0],&ub[0],maxint,fglob,&xbest[0],lk,llk);
-
-	for (int i=0; i<D+1; i++){
-		Rhyp[i] = pow(10.,xbest[i]);
+extern "C" int HypSearchMAP(int d, int n, double* Xin, double* Yin, double* Sin, int* Din, double* m, double* s, double z, int kernelindex, double* Rhyp, double* lk){
+        //this uses log-normal priors and bounds the search at margin +-z orders of magnitude from the mean
+	ki = kernelindex;
+        if (ki==2){printf("this linXsquexp has the 4th hyperparameter set to 1 so this is searching an unused dimension");}
+	N = n;
+	D = d;
+        nhyp = numhyp(ki,D);
+	ih.resize(D+1);
+	X.resize(N*D);
+	Y.resize(N);
+	S.resize(N);
+	Dx.resize(N);
+	Kxx.resize(N*N);
+	Yd.resize(N);
+        priorm.resize(nhyp);
+        priors.resize(nhyp);
+        
+	for (int i=0; i<N*D; i++){
+		X[i] = Xin[i];
 	}
+	for (int i=0; i<N; i++){
+		Y[i] = Yd[i]= Yin[i];
+		S[i] = Sin[i];
+		Dx[i] = Din[i];
+	}
+        std::vector<double> lbd = std::vector<double>(nhyp);
+        std::vector<double> ubd = std::vector<double>(nhyp);
+        for (int i=0; i<nhyp; i++){
+            priorm[i] = m[i];
+            priors[i] = s[i];
+            lbd[i] = m[i]-z*s[i];
+            ubd[i] = m[i]+z*s[i];                 
+        }
+	std::vector<double> xbest = std::vector<double>(nhyp,0.);
+        printf("DIRECT searching MAP in %d hyperparameters between (",nhyp);
+        for (int i=0; i<nhyp; i++){printf("%f ",lbd[i]);}
+        printf("\b) and (");
+        for (int i=0; i<nhyp; i++){printf("%f ",ubd[i]);}
+        printf("\b)\n");
+        
+        direct(nhyp,&lbd[0],&ubd[0],maxint,fglob,&xbest[0],lk,post);
+        
+        
+        int c = hypsearchconvert(&xbest[0],ki,D,Rhyp);
+        
+        printf("DIRECT found (");
+        for (int i=0; i<nhyp; i++){printf("%f ",xbest[i]);}
+        printf("\b) raw with llk %f which is (",*lk);
+        for (int i=0; i<nhyp; i++){printf("%f ",Rhyp[i]);}
+        printf("\b)true\n");
 	return 0;
 }

@@ -27,12 +27,14 @@ Kxx = GPd.buildKsym_d(kf,X,D)
 Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,1e-3,nt)).T
 S = sp.matrix([1e-3]*nt).T
 
-#f0 = plt.figure()
-#a0 = plt.subplot(111)
-#a0.plot(sp.array(X[:,0]).flatten(),Y,'g.')
-#plt.show()
+f0 = plt.figure()
+a0 = plt.subplot(111)
+a0.plot(sp.array(X[:,0]).flatten(),Y,'g.')
 
 G = GPdc.GP_EI_random(X,Y,S,D,GPdc.gen_sqexp_k_d(hyp))
+
+print X
+
 
 lb = sp.array([-1.]*Dm)
 ub = sp.array([1.]*Dm)
@@ -74,6 +76,7 @@ for i in dirrange:
     
 [ymin,xmin] = G.getnext(lb,ub,50000)
 direbest = [xmin,ymin[0]]
+plt.show()
 
 print randbest
 print direbest

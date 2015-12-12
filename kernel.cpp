@@ -2,6 +2,21 @@
 #include <cmath>
 #include <stdlib.h>
 #include <stdio.h>
+
+
+int lin1conv(double *h, int D, double* ih){
+    ih[0] = pow(h[0],2);
+    ih[1] = h[1];
+    ih[2] = pow(h[2],2);
+    return 0;
+}
+//origin var and grad var are logspace, offset in unchanged
+int lin1searchconv(double *h, int D, double* ih){
+    ih[0] = pow(10.,h[0]);
+    ih[1] = h[1];
+    ih[2] = pow(10.,h[2]);
+    return 0;
+}
 double lin1(double *x1, double *x2, int d1, int d2, int D, double* ih){
     //linear kernel in the first axis. ih are v^2 c b^2. Kernel is v^2 *(x1-c)(x2-c)+b^2
     //D is not to be used, only present for consistency in function definition
@@ -24,6 +39,26 @@ double lin1(double *x1, double *x2, int d1, int d2, int D, double* ih){
         return 0.;
     }
 }
+
+//output scale is squared, lengths are 1/square
+int squexpconv(double *h, int D, double* ih){
+    ih[0] = pow(h[0],2);
+    for (int i=1; i<D+1; i++){
+	ih[i] = 1./pow(h[i],2);
+    }
+    return 0;
+}
+
+//all are searched in log space
+int squexpsearchconv(double *h, int D, double* ih){
+    
+    for (int i=0; i<D+1; i++){
+        //printf("_%f",h[i]);
+	ih[i] = pow(10.,h[i]);
+    }
+    return 0;
+}
+
 double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
 	double expon = 0.;
 	for (int i=0; i<D; i++){
@@ -34,6 +69,7 @@ double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
 		//no derivatives
 		return core;
 	}
+        else{printf("%d %d",d1,d2);}
 	std::vector<int> V = std::vector<int>(D,0);
 	div_t v1;
 	div_t v2;
@@ -79,7 +115,7 @@ double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
 			return ih[j+1]*(x1[j]-x2[j])*ih[i+1]*(x1[i]-x2[i])*double(sign)*core;
 		}
 		else{
-			printf("invalid derivatives");
+			printf("invalid derivatives %d %d",d1,d2);
 			return 0.;
 		}
 	}
@@ -123,7 +159,7 @@ double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
 			return 0.;
 		}
 		else{
-			printf("invalid derivatives");
+			printf("invalid derivatives %d %d",d1,d2);
 			return 0.;
 		}
 	}
@@ -199,21 +235,151 @@ double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
 			return (pow(li*xi,4) - 6*pow(li,3)*pow(xi,2) + 3*pow(li,2))*double(sign)*core;
 		}
 		else{
-			printf("invalid derivatives");
+			printf("invalid derivatives %d %d",d1,d2);
 			return 0.;
 		}
 	}
 	else{
-		printf("invalid derivatives");
+		printf("invalid derivativesx %d %d %d",d1,d2,S);
 		return 0.;
 	}
 
 }
-typedef double (*FP)(double*, double*, int, int, int, double*);
 
-extern "C" const FP kern[2] = {&squexp,&lin1};
+int linXPsquexpsearchconv(double *h, int D, double* ih){
+    lin1searchconv(h,D,ih);
+    squexpsearchconv(&h[3],D-1,&ih[3]);
+    ih[3]=1.;
+    return 0;
+}
+
+int linXPsquexpconv(double *h, int D, double* ih){
+    lin1conv(h,D,ih);
+    squexpconv(&h[3],D-1,&ih[3]);
+    ih[3]=1.;
+    return 0;
+}
+double linXPsquexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
+    //linear kernel multiplied by squared exp in perpendicular directions
+    //linear in the first axis, but with varying m and c in the other dimensions
+    //linear hyps are first 3 hyperparameters
+    //I can only not do product rule because these are entirely in different axes
+    return lin1(x1,x2,d1,d2,D,ih) * squexp(&x1[1],&x2[1],d1/8,d2/8,D-1,&ih[3]);
+    
+}
+int linsquexpXPsquexpsearchconv(double *h, int D, double* ih){
+    lin1searchconv(h,D,ih);
+    squexpsearchconv(&h[3],1,&ih[3]);
+    ih[3]=1.;
+    squexpsearchconv(&h[3],D-1,&ih[5]);
+    ih[5]=1.;
+    return 0;
+}
+int linsquexpXPsquexpconv(double *h, int D, double* ih){
+    lin1conv(h,D,ih);
+    squexpconv(&h[3],1,&ih[3]);
+    ih[3]=1.;
+    squexpconv(&h[5],D-1,&ih[5]);
+    ih[5]=1.;
+    return 0;
+}
+
+double linsquexpXPsquexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
+    //if (d1!=0 or d2!=0){printf("xxx%d %dxxx",d1,d2);}
+    return (lin1(x1,x2,d1,d2,D,ih) + squexp(x1,x2,d1%8,d2%8,1,&ih[3]))* squexp(&x1[1],&x2[1],d1/8,d2/8,D-1,&ih[5]);
+    
+ 
+}
+
+int squexp1Ssquexpconv(double *h, int D, double* ih){
+    squexpconv(h, D, ih);
+    squexpconv(&h[D+1], 1, &ih[D+1]);
+    return 0;
+}
+
+//all are searched in log space
+int squexp1Ssquexpsearchconv(double *h, int D, double* ih){
+    squexpsearchconv(h, D, ih);
+    squexpsearchconv(&h[D+1], 1, &ih[D+1]);
+    return 0;
+}
+//squexp in D dimensions plus an additional
+double squexp1Ssquexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
+    return squexp(x1, x2, d1, d2, D, ih)+ squexp(x1,  x2, d1%8, d2%8, 1, &ih[D+1]);
+}
+
+int squexpsquexpPsquexpconv(double *h, int D, double* ih){
+    squexpconv(h, 1, ih);
+    squexpconv(&h[2], D, &ih[2]);
+    
+    return 0;
+}
+
+//all are searched in log space
+int squexpsquexpPsquexpsearchconv(double *h, int D, double* ih){
+    squexpsearchconv(h, 1, ih);
+    squexpsearchconv(&h[2], D, &ih[2]);
+    
+    
+    return 0;
+}
+//squexp +squexp in 1st dimension * squexp in teh others
+double squexpsquexpPsquexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
+    std::vector<double> tmp = std::vector<double>(D);
+    tmp[0]=1.;
+    for (int i=0; i<D-1;i++){tmp[i+1]=ih[4+i];}
+    
+    return (squexp(x1, x2, d1%8, d2%8, 1, ih)+squexp(x1, x2, d1%8, d2%8, 1, &ih[2]))*squexp(&x1[1], &x2[1], d1/8, d2/8, D-1, &tmp[0]) ;
+}
+
+
+typedef double (*KP)(double*, double*, int, int, int, double*);
+
+extern "C" const KP kern[6] = {&squexp,&lin1,&linXPsquexp,&linsquexpXPsquexp,squexp1Ssquexp,&squexpsquexpPsquexp};
 
 extern "C" double k(double *x1, double *x2, int d1, int d2, int D, double* ih, int kindex){
 	return kern[kindex](&x1[0], &x2[0], d1, d2, D, &ih[0]);
 }
 //double (*kern)(double *x1, double *x2, int d1, int d2, int D, double* ih) = &k;
+
+
+
+typedef int (*HP)(double *h, int D, double* ih);
+
+extern "C" const HP hypcons[6] = {&squexpconv,&lin1conv,&linXPsquexpconv,&linsquexpXPsquexpconv,&squexp1Ssquexpconv,&squexpsquexpPsquexpconv};
+
+extern "C" int hypconvert(double *h, int kindex, int D, double* ih){
+    return hypcons[kindex](h,D,ih);
+}
+
+typedef int (*SP)(double *h, int D, double* ih);
+
+extern "C" const SP hypsearchcons[6] = {&squexpsearchconv,&lin1searchconv,&linXPsquexpsearchconv,&linsquexpXPsquexpsearchconv,&squexp1Ssquexpsearchconv,&squexpsquexpPsquexpsearchconv};
+
+extern "C" int hypsearchconvert(double *h, int kindex, int D, double* ih){
+    return hypsearchcons[kindex](h,D,ih);
+}
+extern "C" int numhyp(int kindex, int D){
+    if (kindex==0){
+        return D+1;
+    }
+    else if (kindex==1){
+        return 3;
+    }
+    else if (kindex==2){
+        return D+3;
+    }
+    else if (kindex==3){
+        return D+5;
+    }
+    else if (kindex==4){
+        return D+3;
+    }
+    else if (kindex==5){
+        return D+3;
+    }
+    else{
+        printf("a bad thing happened :(");
+        return -1;
+    }
+}

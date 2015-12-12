@@ -31,6 +31,7 @@ public:
     int N;
     int K;
     int maxinfer;
+    int nhyp;
     std::vector<double> ih;
     std::vector<double>  Kxx;
     std::vector<double> X;

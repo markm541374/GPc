@@ -8,37 +8,35 @@ import scipy as sp
 from matplotlib import pyplot as plt
 
 import GPdc
+import GPd
+nt=12
+X = sp.matrix(sp.linspace(-1,1,nt)).T
+D = [[sp.NaN]]*(nt)
 
+hyp = sp.array([1.5,0.15])
+kf = GPdc.gen_sqexp_k_d(hyp)
 
-x = sp.linspace(-1,1,12)
-y = [-0.4*(i-0.2)+sps.norm.rvs(scale=0.005) for i in x]
+Kxx = GPd.buildKsym_d(kf,X,D)
 
-X = sp.vstack([sp.array([i,0.]) for i in x])
-Y = sp.matrix(y).T
-#X = sp.matrix([[0.,-9.],[0.2,5.],[0.4,12.],[0.6,3.],[0.8,9.]])
-
-#Y = sp.matrix([0.2,0.1,0.,-0.15,-0.3]).T
-
-D = [[sp.NaN]]*(X.shape[0])
-S = sp.matrix([0.005**2]*X.shape[0]).T
+Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,1e-3,nt)).T
+S = sp.matrix([1e-6]*nt).T
 f0 = plt.figure()
 a0 = plt.subplot(111)
 a0.plot(sp.array(X[:,0]).flatten(),Y,'g.')
 
 
-lb = sp.array([-2.,-1.,-2.])
-ub = sp.array([2.,1.,2.])
-MLEH =  GPdc.searchMLEhyp(X,Y,S,D,lb,ub,GPdc.LIN1,mx=10000)
+lb = sp.array([-2.,-2.])
+ub = sp.array([2.,2.])
+MLEH =  GPdc.searchMLEhyp(X,Y,S,D,lb,ub,GPdc.SQUEXP,mx=10000)
 
 print MLEH
-G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.LIN1,2,MLEH))
+G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,1,MLEH))
 print G.llk()
-
 
 np=180
 sup = sp.linspace(-1,1,np)
 Dp = [[sp.NaN]]*np
-Xp = sp.vstack([sp.array([i,1.]) for i in sup])
+Xp = sp.vstack([sp.array([i]) for i in sup])
 
 [m,v] = G.infer_diag(Xp,Dp)
 a0.plot(sup,m)

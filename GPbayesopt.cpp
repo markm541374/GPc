@@ -25,11 +25,14 @@ class EI_random : public GP{
 int EI_random::getnext(double* lb, double* ub, double* argmin, double* min, int npts){
     auto tstart=Clock::now();
     ymin=10e10;
-    for (int i; i<this->N; i++){
+    
+    for (int i=0; i< N; i++){
+        
         if (this->Y[i]<ymin){
             ymin = this->Y[i];
         }
     }
+    
     int block = 8000;
     min[0]=-1.;
     double maxEI=0.;
@@ -64,13 +67,14 @@ int EI_random::getnext(double* lb, double* ub, double* argmin, double* min, int 
         
         infer_diag(nthis,&x[0],&Ds[0],&R[0]);
         for (int j=0; j<nthis; j++){
+            //printf("(%f %f)",R[j],R[nthis+j]);
             R[nthis+j]=sqrt(R[nthis+j]);
         }
-        
+        //printf("\n");
         EI(&R[0], &R[nthis], ymin, nthis, &ei[0]);
-        //printf("%f ",min[0]);
+        //printf("[%f %f %f %d %f %f]",R[0],R[nthis], ymin, nthis, ei[0], min[0]);
         for (int j=0; j<nthis; j++){
-            //printf("%f_",ei[j]);
+            //printf("%f %f %f %f_",ymin,R[j], R[nthis+j],ei[j]);
             if (ei[j]>min[0]){
                 //printf("%f ",ei[j]);
                 min[0]=ei[j];
@@ -137,7 +141,7 @@ int EI_direct::getnext(double* lb, double* ub, double* argmin, double* min, int 
     auto tstart=Clock::now();
     currentGP = this;
     ymin=10e10;
-    for (int i; i<this->N; i++){
+    for (int i=0; i<this->N; i++){
         if (this->Y[i]<ymin){
             ymin = this->Y[i];
         }

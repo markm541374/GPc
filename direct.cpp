@@ -187,20 +187,23 @@ void direct(int n, double *lb, double *ub, int maxint, double fglob, double *xbe
 	}
 
 	printf("\nDIRECT has satisfied the stopping condition.\n");
-
+        //printf("a");
 	//deallocate DIRECT structures
 	deallocalistaint(start);
-
+        //printf("b");
 	free(xdir);
 	free(mod_box.lb);
 	free(mod_box.ub);
+        //printf("c");
 	free(mod_box.xtemp);
 	free(mod_box.xbar);
 	free(mod_suddividi.vetf1);
 	free(mod_suddividi.vetf2);
+        //printf("d");
 	free(mod_suddividi.xsud);
 	free(mod_suddividi.ysud);
 	free(mod_suddividi.mask);
+        //printf("e");
 }
 
 void suddividi(intervallo *curr, int n, int *nf, int *nint, double *xdir, double *fdir,	double funct(int, double*)){

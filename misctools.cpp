@@ -5,7 +5,8 @@
  */
 #include <stdio.h>
 #include <cmath>
-
+#include <cblas.h>
+#include <random>
 const double PI = 3.141592653589793238463;
 const double SQRT_1_2PI = 1/sqrt(2*PI);
 const double SQRT_1_2 =  1/sqrt(2);
@@ -31,4 +32,27 @@ extern "C" int EI(double* m, double* s, double y, int N, double* R){
         //if (R[i]==0.){printf("ei=0 %e %e %e_",S,pdf(S),cdf(S));}
     }
     return 0;
+}
+
+//make m draws from a multivariate Gaussian of size n where the cholesky deom of the covariance is the lower triangular matrix K
+extern "C" int drawcov(double* K, int n, double* R, int m){
+    std::random_device rand_dev;          // Use random_device to get a random seed.
+    std::mt19937 rand_engine(rand_dev()); //seed merseene twister with random number
+    std::normal_distribution<double> nmdist(0., 1.); //normal unit dist
+    for (int i=0;i<n*m;i++){
+        R[i] = nmdist(rand_engine);
+        //R[i] = i;
+    }
+    
+    /*
+    for (int i=0;i<n;i++){
+        for (int j=0;j<n;j++){
+            printf("%f ",K[j+n*i]);
+        }
+        printf("]\n[");
+    }
+     */
+    cblas_dtrmm(CblasRowMajor,CblasLeft,CblasLower,CblasNoTrans,CblasNonUnit,n,m,1.,K,n,R,m);
+    return 0;
+    
 }
