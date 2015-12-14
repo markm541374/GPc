@@ -74,7 +74,14 @@ class GPcore:
         m = R[0,:].T
         V = R[1,:].T
         return [m,V]
-
+    def draw(self,X_i,D_i,m):
+        #make m draws at X_i Nd, X, D, R, m
+        ns=X_i.shape[0]
+        D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]
+        R=sp.matrix(sp.empty([ns,m]))
+        libGP.draw(self.s, ct.c_int(ns), X_i.ctypes.data_as(ct.POINTER(ct.c_double)), (ct.c_int*len(D))(*D),R.ctypes.data_as(ct.POINTER(ct.c_double)),ct.c_int(m))
+        return R
+    
     def llk(self):
         R = ct.c_double()
         libGP.llk(self.s,ct.byref(R))

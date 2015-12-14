@@ -170,7 +170,13 @@ int infer_full(int k,int Ns,double* Xs, int* Ds, double* R){
 	};
 	return SS[k]->infer_full(Ns, Xs,Ds,R);
 }
-
+int draw(int k, int Nd, double* X, int* D, double* R, int m){
+    if (SS[k]==0){
+	printf("trying to use deleted GP\n");
+	return -1;
+    };
+    return SS[k]->draw(Nd, X, D, R, m);
+}
 int getnext(int k,double* lb, double* ub, double* argmin, double* min, int npts){
     if (SS[k]==0){
 		printf("trying to use deleted GP\n");

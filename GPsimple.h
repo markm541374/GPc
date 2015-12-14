@@ -55,6 +55,7 @@ public:
     int infer_diag(int Ns, double* Xs, int* Ds, double* R);
     int infer_m(int Ns, double* Xs, int* Ds, double* R);
     int infer_full(int Ns, double* Xs, int* Ds, double* R);
+    int draw(int N, double* X, int* D, double*R, int m);
     int llk(double* R);
     virtual int getnext(double* lb, double* ub, double* argmin, double* min, int npts);
     virtual double acq(double* x);

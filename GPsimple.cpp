@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 #include "kernel.h"
-
+#include "misctools.h"
 static const double PI = 3.141592653589793238463;
 static const double L2PI = log(PI*2);
 
@@ -96,6 +96,7 @@ public:
     int infer_diag(int Ns, double* Xs, int* Ds, double* R);
     int infer_m(int Ns, double* Xs, int* Ds, double* R);
     int infer_full(int Ns, double* Xs, int* Ds, double* R);
+    int draw(int N, double* X, int* D, double*R, int m);
     int llk(double* R);
     virtual int getnext(double* lb, double* ub, double* argmin, double* min, int npts){}
     virtual double acq(double* x){}
@@ -181,6 +182,26 @@ int GP::infer_full(int Ns, double* Xs, int* Ds, double* R){
 	}
 
 	return c;
+}
+int GP::draw(int Nd, double* X, int* D, double* R, int m){
+    std::vector<double> s = std::vector<double>((Nd+1)*Nd);
+    int c = this->infer_full(Nd,X,D,&s[0]);
+    int j= -9;
+    printf("adding 10e%d diagonal to covariance in draw\n",j);
+    for (int i=0; i<Nd; i++){
+        s[Nd+i*Nd+i]+=pow(10,j);
+    }
+    LAPACKE_dpotrf(LAPACK_ROW_MAJOR,'L',Nd,&s[Nd],Nd);
+    
+    
+    drawcov(&s[Nd],Nd, R, m);
+    for (int i=0; i<Nd; i++){
+        for (int j=0; j<m; j++){
+            R[m*i+j] += s[i];
+        }
+    }
+    return 0;
+    
 }
 int GP::infer_diag(int Ns, double* Xs, int* Ds, double* R){
 	//populate Kxs

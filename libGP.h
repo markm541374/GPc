@@ -15,6 +15,7 @@ int infer_full(int k,int Ns,double* Xs, int* Ds, double* R);
 int llk(int k, double* R);
 int infer_m(int k,int Ns,double* Xs, int* Ds, double* R);
 int infer_diag(int k,int Ns,double* Xs, int* Ds, double* R);
+int draw(int k, int Nd, double* X, int* D, double* R, int m);
 int presolv(int k);
 int build_K(int k);
 int fac(int k);
