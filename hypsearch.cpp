@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include "kernel.h"
 #include "direct.h"
+#include "GPsimple.h"
 #include <cblas.h>
 #include <lapacke.h>
 
@@ -48,37 +49,10 @@ extern "C" void SetHypSearchPara(int mx, double fg){
 }
 //llk function to call direct from
 double llk(int directsearchdim, double* hyp){
-        //printf("%d",directsearchdim);
-    std::vector<double> tmp = std::vector<double>(nhyp);
+        std::vector<double> tmp = std::vector<double>(nhyp);
 	int c = hypsearchconvert(hyp,ki,D,&tmp[0]);
-        c     = hypconvert(&tmp[0],ki,D,&ih[0]);
-        
-	//buildK
-	for (int i=0; i<N; i++){
-		Kxx[i*N+i] = kern[ki](&X[i*D], &X[i*D],Dx[i],Dx[i],D,&ih[0]);
-		for (int j=0; j<i; j++){
-			Kxx[i*N+j] = Kxx[i+N*j] = kern[ki](&X[i*D], &X[j*D],Dx[i],Dx[j],D,&ih[0]);
-		}
-		Kxx[i*N+i]+=S[i];
-
-	}
-
-	//cho factor
-	LAPACKE_dpotrf(LAPACK_ROW_MAJOR,'L',N,&Kxx[0],N);
-	for (int i=0; i<N; i++){
-		Yd[i]= Y[i];
-	}
-
-	//solve against Y
-	LAPACKE_dpotrs(LAPACK_ROW_MAJOR,'L',N,1,&Kxx[0],N,&Yd[0],1);
-	//calc the llk
-	double R;
-	R = - 0.5*N*L2PI;
-	for (int i=0; i<N; i++){
-		R-=log(Kxx[i*(N+1)]);
-	}
-	R -= 0.5*cblas_ddot(N,&Y[0],1,&Yd[0],1);
-        //printf("[%f ]",R);
+        double R;
+        GP_LKonly G = GP_LKonly(D, N, &X[0], &Y[0], &S[0], &Dx[0], ki, &tmp[0], &R);
 	return -R;
 }
 
