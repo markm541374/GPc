@@ -41,7 +41,7 @@ plt.show()
 #copy of test squexp from here
 import GPdc
 
-nt=5
+nt=8
 X = sp.matrix(sp.linspace(-1,1,nt)).T
 D = [[sp.NaN]]*(nt)
 
