@@ -120,6 +120,7 @@ int set_hyp(int k, double* h){
 	SS[k]->set_hyp(h);
 	return 0;
 }
+/*
 int fac(int k){
 	if (SS[k]==0){
 		printf("trying to use deleted GP\n");
@@ -134,6 +135,7 @@ int build_K(int k){
 	};
 	return SS[k]->build_K();
 }
+ */
 int presolv(int k){
 	if (SS[k]==0){
 		printf("trying to use deleted GP\n");

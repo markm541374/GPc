@@ -40,7 +40,7 @@ a0 = plt.subplot(111)
 a0.plot(sp.array(X[:,0]).flatten(),Y,'g.')
 
 
-lb = sp.array([-2.,-1.,-2.,-2.,-2.,-2.,2.])
+lb = sp.array([-2.,-1.,-2.,-2.,-2.,-2.,-2.])
 ub = sp.array([2.,1.,2.,2.,2.,2.,2.])
 MLEH =  GPdc.searchMLEhyp(X,Y,S,D,lb,ub,GPdc.LINSQUEXPXSQUEXP,mx=10000)
 print "xxx"

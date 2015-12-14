@@ -35,9 +35,9 @@ class GPcore:
         
         libGP.set_D(self.s,(ct.c_int*len(D))(*D))
         libGP.set_hyp(self.s,kf.hyp.ctypes.data_as(ct.POINTER(ct.c_double)))
-        libGP.build_K(self.s)
+        #libGP.build_K(self.s)
         
-        libGP.fac(self.s)
+        #libGP.fac(self.s)
         libGP.presolv(self.s)
         
         return
@@ -101,8 +101,8 @@ class GP_timing(GPcore):
         
         libGP.set_D(self.s,(ct.c_int*len(D))(*D))
         libGP.set_hyp(self.s,kf.hyp.ctypes.data_as(ct.POINTER(ct.c_double)))
-        libGP.build_K(self.s)
-        libGP.fac(self.s)
+        #libGP.build_K(self.s)
+        #libGP.fac(self.s)
         libGP.presolv(self.s)
         return
     
@@ -125,8 +125,8 @@ class GP_EI_random(GPcore):
         
         libGP.set_D(self.s,(ct.c_int*len(D))(*D))
         libGP.set_hyp(self.s,kf.hyp.ctypes.data_as(ct.POINTER(ct.c_double)))
-        libGP.build_K(self.s)
-        libGP.fac(self.s)
+        #libGP.build_K(self.s)
+        #libGP.fac(self.s)
         libGP.presolv(self.s)
         return
     
@@ -150,8 +150,8 @@ class GP_EI_direct(GPcore):
         
         libGP.set_D(self.s,(ct.c_int*len(D))(*D))
         libGP.set_hyp(self.s,kf.hyp.ctypes.data_as(ct.POINTER(ct.c_double)))
-        libGP.build_K(self.s)
-        libGP.fac(self.s)
+        #libGP.build_K(self.s)
+        #libGP.fac(self.s)
         libGP.presolv(self.s)
         return
     
