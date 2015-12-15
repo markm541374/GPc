@@ -41,17 +41,8 @@ extern "C" int drawcov(double* K, int n, double* R, int m){
     std::normal_distribution<double> nmdist(0., 1.); //normal unit dist
     for (int i=0;i<n*m;i++){
         R[i] = nmdist(rand_engine);
-        //R[i] = i;
+        
     }
-    
-    /*
-    for (int i=0;i<n;i++){
-        for (int j=0;j<n;j++){
-            printf("%f ",K[j+n*i]);
-        }
-        printf("]\n[");
-    }
-     */
     cblas_dtrmm(CblasRowMajor,CblasLeft,CblasLower,CblasNoTrans,CblasNonUnit,n,m,1.,K,n,R,m);
     return 0;
     
