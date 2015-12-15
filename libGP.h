@@ -28,5 +28,5 @@ int ping(int k);
 void killGP(int k);
 int newGP_LKonly(int D, int N, double* Xin, double* Yin, double* Sin, int* Din, double* hyp, double* R);
 int newGP(int D, int N);
-
+int infer_LCB(int k, int n, double* X, int* D, int p, double* R);
 #endif /* LIBGPD_H_ */

@@ -26,6 +26,7 @@ extern "C"
 #include "GPsimple.h"
 #include "GPbayesopt.h"
 #include "timing.h"
+#include "bayesutils.h"
     
 std::vector<GP*> SS;
 
@@ -168,6 +169,14 @@ int timing(int k,int c, double* T){
 		return -1;
 	};
 	return SS[k]->timing(c, T);
+}
+
+int infer_LCB(int k, int n, double* X, int* D, double p, double* R){
+    if (SS[k]==0){
+	printf("trying to use deleted GP\n");
+	return -1;
+    };
+    return LCB(SS[k], n, X, D, p, R);
 }
 #ifdef __cplusplus
 }

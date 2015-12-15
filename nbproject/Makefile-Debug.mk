@@ -37,6 +37,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/GPbayesopt.o \
 	${OBJECTDIR}/GPsimple.o \
+	${OBJECTDIR}/bayesutils.o \
 	${OBJECTDIR}/direct.o \
 	${OBJECTDIR}/hypsearch.o \
 	${OBJECTDIR}/kernel.o \
@@ -78,6 +79,11 @@ ${OBJECTDIR}/GPsimple.o: GPsimple.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/GPsimple.o GPsimple.cpp
+
+${OBJECTDIR}/bayesutils.o: bayesutils.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/bayesutils.o bayesutils.cpp
 
 ${OBJECTDIR}/direct.o: direct.cpp 
 	${MKDIR} -p ${OBJECTDIR}

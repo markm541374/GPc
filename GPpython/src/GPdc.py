@@ -83,6 +83,13 @@ class GPcore:
         R = ct.c_double()
         libGP.llk(self.s,ct.byref(R))
         return R.value
+    
+    def infer_LCB(self,X_i,D_i, p):
+        ns=X_i.shape[0]
+        D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]
+        R=sp.matrix(sp.empty(ns)).T
+        libGP.infer_LCB(self.s,ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D), ct.c_double(p), R.ctypes.data_as(ctpd))
+        return R
 #kf = gen_sqexp_k_d([1.,0.3])
 
 class GP_timing(GPcore):
