@@ -41,7 +41,7 @@ plt.show()
 #copy of test squexp from here
 import GPdc
 
-nt=8
+nt=12
 X = sp.matrix(sp.linspace(-1,1,nt)).T
 D = [[sp.NaN]]*(nt)
 
@@ -74,7 +74,7 @@ Xp = sp.vstack([sp.array([i]) for i in sup])
 a0.plot(sup,m)
 sq = sp.sqrt(v)
 
-a0.fill_between(sup, sp.array(m-1.*sq).flatten(), sp.array(m+1.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
+a0.fill_between(sup, sp.array(m-2.*sq).flatten(), sp.array(m+2.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
 #to here
 
 

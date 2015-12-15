@@ -74,51 +74,26 @@ int ping(int k){
 	return 0;
 }
 
-int set_Y(int k, double* Y){
-	if (SS[k]==0){
-		printf("trying to use deleted GP\n");
-		return -1;
-	};
-
-	SS[k]->set_Y(Y);
-	return 0;
-}
-int set_S(int k, double* Sin){
-	if (SS[k]==0){
-		printf("trying to use deleted GP\n");
-		return -1;
-	};
-
-	SS[k]->set_S(Sin);
-	return 0;
-}
-int set_D(int k, int* D){
-	if (SS[k]==0){
-		printf("trying to use deleted GP\n");
-		return -1;
-	};
-
-	SS[k]->set_D(D);
-	return 0;
-}
-int set_X(int k, double* X){
-	if (SS[k]==0){
-		printf("trying to use deleted GP\n");
-		return -1;
-	};
-
-	SS[k]->set_X(X);
-	return 0;
+int set_Data(int k, double* X, double* Y, double* Sx, int* D){
+    if (SS[k]==0){
+	printf("trying to use deleted GP\n");
+	return -1;
+    };
+    SS[k]->set_X(X);
+    SS[k]->set_Y(Y);
+    SS[k]->set_S(Sx);
+    SS[k]->set_D(D);
+    return 0;
 }
 
 int set_hyp(int k, double* h){
-	if (SS[k]==0){
-		printf("trying to use deleted GP\n");
-		return -1;
-	};
+    if (SS[k]==0){
+	printf("trying to use deleted GP\n");
+    return -1;
+    };
 
-	SS[k]->set_hyp(h);
-	return 0;
+    SS[k]->set_hyp(h);
+    return 0;
 }
 /*
 int fac(int k){

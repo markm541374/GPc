@@ -30,16 +30,11 @@ class GPcore:
         [self.n ,self.D] = X_s.shape
         self.s = libGP.newGP(cint(self.D),cint(self.n),cint(kf.Kindex))
         self.Y_s=Y_s
-        libGP.set_X(self.s,X_s.ctypes.data_as(ctpd))
-        libGP.set_Y(self.s,Y_s.ctypes.data_as(ctpd))
-        libGP.set_S(self.s,S_s.ctypes.data_as(ctpd))
+        
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_s]
         
-        libGP.set_D(self.s,(cint*len(D))(*D))
+        libGP.set_Data(self.s,X_s.ctypes.data_as(ctpd),Y_s.ctypes.data_as(ctpd),S_s.ctypes.data_as(ctpd),(cint*len(D))(*D))
         libGP.set_hyp(self.s,kf.hyp.ctypes.data_as(ctpd))
-        #libGP.build_K(self.s)
-        
-        #libGP.fac(self.s)
         libGP.presolv(self.s)
         
         return
@@ -96,15 +91,12 @@ class GP_timing(GPcore):
         [self.n ,self.D] = X_s.shape
         self.s = libGP.newGP_timing(cint(self.D),cint(self.n),cint(kf.Kindex))
         self.Y_s=Y_s
-        libGP.set_X(self.s,X_s.ctypes.data_as(ctpd))
-        libGP.set_Y(self.s,Y_s.ctypes.data_as(ctpd))
-        libGP.set_S(self.s,S_s.ctypes.data_as(ctpd))
+        
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_s]
         
-        libGP.set_D(self.s,(cint*len(D))(*D))
+        libGP.set_Data(self.s,X_s.ctypes.data_as(ctpd),Y_s.ctypes.data_as(ctpd),S_s.ctypes.data_as(ctpd),(cint*len(D))(*D))
         libGP.set_hyp(self.s,kf.hyp.ctypes.data_as(ctpd))
-        #libGP.build_K(self.s)
-        #libGP.fac(self.s)
+        
         libGP.presolv(self.s)
         return
     
@@ -120,15 +112,12 @@ class GP_EI_random(GPcore):
         [self.n ,self.D] = X_s.shape
         self.s = libGP.newEI_random(cint(self.D),cint(self.n),cint(kf.Kindex))
         self.Y_s=Y_s
-        libGP.set_X(self.s,X_s.ctypes.data_as(ctpd))
-        libGP.set_Y(self.s,Y_s.ctypes.data_as(ctpd))
-        libGP.set_S(self.s,S_s.ctypes.data_as(ctpd))
+        
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_s]
         
-        libGP.set_D(self.s,(cint*len(D))(*D))
+        libGP.set_Data(self.s,X_s.ctypes.data_as(ctpd),Y_s.ctypes.data_as(ctpd),S_s.ctypes.data_as(ctpd),(cint*len(D))(*D))
         libGP.set_hyp(self.s,kf.hyp.ctypes.data_as(ctpd))
-        #libGP.build_K(self.s)
-        #libGP.fac(self.s)
+        
         libGP.presolv(self.s)
         return
     
@@ -145,15 +134,12 @@ class GP_EI_direct(GPcore):
         [self.n ,self.D] = X_s.shape
         self.s = libGP.newEI_direct(cint(self.D),cint(self.n),cint(kf.Kindex))
         self.Y_s=Y_s
-        libGP.set_X(self.s,X_s.ctypes.data_as(ctpd))
-        libGP.set_Y(self.s,Y_s.ctypes.data_as(ctpd))
-        libGP.set_S(self.s,S_s.ctypes.data_as(ctpd))
+        
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_s]
         
-        libGP.set_D(self.s,(cint*len(D))(*D))
+        libGP.set_Data(self.s,X_s.ctypes.data_as(ctpd),Y_s.ctypes.data_as(ctpd),S_s.ctypes.data_as(ctpd),(cint*len(D))(*D))
         libGP.set_hyp(self.s,kf.hyp.ctypes.data_as(ctpd))
-        #libGP.build_K(self.s)
-        #libGP.fac(self.s)
+        
         libGP.presolv(self.s)
         return
     
