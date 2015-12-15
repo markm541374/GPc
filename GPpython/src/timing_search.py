@@ -9,7 +9,7 @@ from scipy import stats as sps
 from scipy import linalg as spl
 import scipy as sp
 from matplotlib import pyplot as plt
-import GPd
+
 import GPdc
 import time
 
@@ -22,7 +22,7 @@ D = [[sp.NaN]]*(nt)
 hyp = sp.array([1.]+[0.15]*Dm)
 kf = GPdc.gen_sqexp_k_d(hyp)
 
-Kxx = GPd.buildKsym_d(kf,X,D)
+Kxx = GPdc.buildKsym_d(kf,X,D)
 
 Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,1e-3,nt)).T
 S = sp.matrix([1e-3]*nt).T

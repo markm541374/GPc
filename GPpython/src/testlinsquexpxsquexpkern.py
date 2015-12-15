@@ -8,13 +8,13 @@ import scipy as sp
 from matplotlib import pyplot as plt
 
 import GPdc
-import GPd
+
 hyp = sp.array([1.5,0.25])
 kf = GPdc.gen_sqexp_k_d(hyp)
 nt=18
 x = sp.linspace(-1,1,nt)
 Dtmp = [[sp.NaN]]*nt
-Kxx = GPd.buildKsym_d(kf,sp.matrix(x).T,Dtmp)
+Kxx = GPdc.buildKsym_d(kf,sp.matrix(x).T,Dtmp)
 
 Z = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T
 Z = sp.vstack([Z,spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T])

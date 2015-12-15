@@ -8,7 +8,7 @@ import scipy as sp
 from matplotlib import pyplot as plt
 
 import GPdc
-import GPd
+
 nt=12
 X = sp.matrix(sp.linspace(-1,1,nt)).T
 D = [[sp.NaN]]*(nt)
@@ -16,7 +16,7 @@ D = [[sp.NaN]]*(nt)
 hyp = sp.array([1.5,0.15])
 kf = GPdc.gen_sqexp_k_d(hyp)
 
-Kxx = GPd.buildKsym_d(kf,X,D)
+Kxx = GPdc.buildKsym_d(kf,X,D)
 
 Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,1e-3,nt)).T
 S = sp.matrix([1e-6]*nt).T
