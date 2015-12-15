@@ -178,6 +178,14 @@ int infer_LCB(int k, int n, double* X, int* D, double p, double* R){
     };
     return LCB(SS[k], n, X, D, p, R);
 }
+
+int infer_EI(int k, int n, double* X, int* D, double* R){
+    if (SS[k]==0){
+	printf("trying to use deleted GP\n");
+	return -1;
+    };
+    return EI_gp(SS[k], n, X, D, R);
+}
 #ifdef __cplusplus
 }
 #endif

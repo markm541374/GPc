@@ -42,8 +42,12 @@ Xp = sp.vstack([sp.array([i]) for i in sup])
 a0.plot(sup,m)
 sq = sp.sqrt(v)
 
-a0.fill_between(sup, sp.array(m-1.*sq).flatten(), sp.array(m+1.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
+a0.fill_between(sup, sp.array(m-2.*sq).flatten(), sp.array(m+2.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
 
 lcb = G.infer_LCB(Xp,Dp,2.)
 plt.plot(sup,sp.array(lcb).flatten(),'g')
+
+ei = G.infer_EI(Xp,Dp)
+plt.plot(sup,sp.array(ei).flatten(),'r')
+
 plt.show()
