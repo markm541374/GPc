@@ -67,6 +67,7 @@ def slice_sample(loglike, init, iters, sigma, step_out=True,burn=20,subsam=4):
                 else:
                     raise RuntimeError('Slice sampler shrank too far.')
         if i%subsam==0:
+            
             samples[pt, :] = xx.copy().ravel()
             pt+=1
    
