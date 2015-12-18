@@ -20,7 +20,7 @@ for i in xrange(len(m)):
     plt.plot([m[i]-sp.sqrt(v[i,i]),m[i]+sp.sqrt(v[i,i])],[i+1,i+1],'b')
 plt.axis([-5,5,0,len(m)+1])
 
-mu,vu = eprop.expectation_prop(m,v,sp.array([-1.,-2.,-1.]),-sp.ones(3),sp.zeros(3),5)
+mu,vu = eprop.expectation_prop(m,v,-sp.array([1.,2.,2.]),-sp.ones(3),sp.zeros(3),35)
 
 for i in xrange(len(m)):
     plt.plot(mu[i],i+1.1,'ro')

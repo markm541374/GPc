@@ -16,29 +16,38 @@ def expectation_prop(m0,V0,Y,Z,F,z):
     #z is number of ep rounds to run
     #returns mt, Vt the value and variance for observations created by ep
     n = V0.shape[0]
+    print "expectation prpagation running on "+str(n)+" dimensions for "+str(z)+" loops:"
     mt =sp.zeros(n)
-    Vt= sp.eye(n)*1e-2
+    Vt= sp.eye(n)*float(1e10)
     m = sp.empty(n)
     V = sp.empty([n,n])
+    conv = sp.empty(z)
     for i in xrange(z):
         #compute the m V give ep obs
         V = V0.dot(spl.solve(V0+Vt,Vt))
         m = V.dot((spl.solve(V0,m0)+spl.solve(Vt,mt)).T)
+        mtprev=mt.copy()
+        Vtprev=Vt.copy()
         for j in xrange(n):
             #the cavity dist at index j
             tmp = 1./(Vt[j,j]-V[j,j])
             v_ = (V[j,j]*Vt[j,j])*tmp
             m_ = tmp*(m[j]*Vt[j, j]-mt[j]*V[j, j])
             
-            alpha = (m_-Y[j]) / (sp.sqrt(v_+F[j]**2))
+            alpha = sp.sign(Z[j])*(m_-Y[j]) / (sp.sqrt(v_+F[j]**2))
             pr = PhiR(alpha)
             if sp.isnan(pr):
                 pr = -alpha
             beta = pr*(pr+alpha)/(v_+F[j]**2)
-            kappa = (pr+alpha) / (sp.sqrt(v_+F[j]**2))
+            kappa = sp.sign(Z[j])*(pr+alpha) / (sp.sqrt(v_+F[j]**2))
             #print [alpha,beta,kappa,pr]
             mt[j] = m_+1./kappa
             Vt[j,j] = 1./beta - v_
+        #print sp.amax(mtprev-mt)
+        #print sp.amax(sp.diagonal(Vtprev)-sp.diagonal(Vt))
+        delta = max(sp.amax(mtprev-mt),sp.amax(sp.diagonal(Vtprev)-sp.diagonal(Vt)))
+        conv[i]=delta
+    print conv
     V = V0.dot(spl.solve(V0+Vt,Vt))
     m = V.dot((spl.solve(V0,m0)+spl.solve(Vt,mt)).T)
     return m, V
