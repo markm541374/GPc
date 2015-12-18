@@ -101,5 +101,5 @@ a1.hist(X,bins=80)
 R = ESutils.draw_min(G,X,2000)
 j = a2.hist(R,bins=80)
 plt.axis([-1,1,0,1.2*max(j[0])])
-print R
+
 plt.show()

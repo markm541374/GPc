@@ -22,6 +22,7 @@ Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sp
 S = sp.matrix([1e-6]*nt).T
 f0 = plt.figure()
 a0 = plt.subplot(111)
+a1=a0.twinx()
 a0.plot(sp.array(X[:,0]).flatten(),Y,'g.')
 
 
@@ -45,9 +46,9 @@ sq = sp.sqrt(v)
 a0.fill_between(sup, sp.array(m-2.*sq).flatten(), sp.array(m+2.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
 
 lcb = G.infer_LCB(Xp,Dp,2.)
-plt.plot(sup,sp.array(lcb).flatten(),'g')
+a0.plot(sup,sp.array(lcb).flatten(),'g')
 
 ei = G.infer_EI(Xp,Dp)
-plt.plot(sup,sp.array(ei).flatten(),'r')
+a1.plot(sup,sp.array(ei).flatten(),'r')
 
 plt.show()
