@@ -7,28 +7,56 @@
 
 import eprop
 import scipy as sp
+from scipy import linalg as spl
+from scipy import stats as sps
 from matplotlib import pyplot as plt
 
 #basic ep test on three values
 m = sp.array([1.,2.,0.5])
 v = sp.array([[1.,0.5,0.2],[0.5,2.,0.5],[0.2,0.5,1.]])
+n=len(m)
 
-f = plt.figure()
-a0 = plt.subplot(111)
-for i in xrange(len(m)):
-    plt.plot(m[i],i+1,'bo')
-    plt.plot([m[i]-sp.sqrt(v[i,i]),m[i]+sp.sqrt(v[i,i])],[i+1,i+1],'b')
-plt.axis([-5,5,0,len(m)+1])
 
-mu,vu = eprop.expectation_prop(m,v,-sp.array([1.,2.,2.]),-sp.ones(3),sp.zeros(3),35)
+Y = sp.array([1.,0.,1.])
+Z = sp.array([-1,1,-1])
+F = sp.array([0.25,0.,0.])
+mt,vt = eprop.expectation_prop(m,v,Y,Z,F,35)
 
-for i in xrange(len(m)):
-    plt.plot(mu[i],i+1.1,'ro')
-    plt.plot([mu[i]-sp.sqrt(vu[i,i]),mu[i]+sp.sqrt(vu[i,i])],[i+1.1,i+1.1],'r')
-    
-print "----------------"
-print m
-print mu
-print v
-print vu
+mu,vu = eprop.gaussian_fusion(m,mt,v,vt)
+
+f,ax = plt.subplots(n,sharex=True)
+ns=200
+sup = sp.linspace(-6,6,ns)
+for i in xrange(n):
+    ax[i].plot(sup,sps.norm.pdf(sup,loc=m[i],scale=sp.sqrt(v[i,i])),'b')
+    ax[i].plot(sup,sps.norm.pdf(sup,loc=mu[i],scale=sp.sqrt(vu[i,i])),'r')
+    ax[i].twinx().plot(sup,sps.norm.cdf(Z[i]*(sup-Y[i])/max(F[i],1e-20))*sps.norm.pdf(sup,loc=m[i],scale=sp.sqrt(v[i,i])),'g')
+#est on a gp
+
+import ESutils
+import GPdc
+nt=5
+X = sp.matrix(sp.linspace(-1,1,nt)).T
+D = [[sp.NaN]]*(nt)
+hyp = sp.array([1.5,0.15])
+kf = GPdc.gen_sqexp_k_d(hyp)
+Kxx = GPdc.buildKsym_d(kf,X,D)
+Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,1e-3,nt)).T
+S = sp.matrix([1e-2]*nt).T
+g = GPdc.GPcore(X,Y,S,D,kf)
+f,a = plt.subplots(2)
+
+Xe = sp.array([-0.25,0.25])
+De = [[sp.NaN]]*2
+[m0,V0] = g.infer_full(Xe,De)
+Ye = sp.array([2.,-2.])
+Ze = sp.array([1.,-1.])
+Fe = sp.array([1e-6,1e-6])
+
+mt,vt = eprop.expectation_prop(m0,V0,Ye,Ze,Fe,20)
+print D+De
+g2 = GPdc.GPcore(sp.vstack([X,sp.array([Xe]).T]),sp.vstack([Y,sp.array([Ye]).T]),sp.vstack([S,sp.array([Fe]).T]),D+De,kf)
+
+ESutils.plot_gp(g,a[0],sp.linspace(-1,1,100),[[sp.NaN]]*100)
+ESutils.plot_gp(g2,a[1],sp.linspace(-1,1,100),[[sp.NaN]]*100)
 plt.show()

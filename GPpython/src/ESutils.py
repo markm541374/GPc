@@ -12,7 +12,8 @@ SUPPORT_SLICELCB = 1
 #drawing points between lb and ub using specified method
 def draw_support(g, lb, ub, n, method, para=1.):
     #para is the std confidence bound
-    d = g.D
+    if (type(g) is int):
+        d=g
     if method==SUPPORT_UNIFORM:
         print "Drawing support using uniform:"
         X=sp.random.uniform(size=[n,g.D])
@@ -71,3 +72,11 @@ def draw_support_inplane(g,lb,ub,n,method,axis,value,para=1.):
     else:
         raise RuntimeError("draw_support method invalid")
     return -1
+
+def plot_gp(g,axis,x,d):
+    [m,v] = g.infer_diag(x,d)
+    s = sp.sqrt(v)
+    axis.fill_between(x,sp.array(m-2.*s).flatten(),sp.array(m+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
+    axis.plot(x,m,'b')
+    return 0
+    
