@@ -47,6 +47,13 @@ int newGP_LKonly(int D, int N, double* Xin, double* Yin, double* Sin, int* Din, 
 	return 0;
 }
 
+int newGP_hypset(int D, int N, int kindex, double* X, double* Y, double* Sx, int* Dx, double* h, int s){
+    int base = SS.size();
+    for (int i=0; i<s; i++){
+        newGP(D,N,kindex,X,Y,Sx,Dx,&h[i*numhyp(kindex,D)]);
+    }
+    return base;
+}
 
 void killGP(int k){
 	SS[k]->~GP();
@@ -83,12 +90,15 @@ int set_hyp(int k, double* h){
     return 0;
 }
 
-int presolv(int k){
+int presolv(int k, int s){
 	if (SS[k]==0){
 		printf("trying to use deleted GP\n");
 		return -1;
 	};
-	return SS[k]->presolv();
+        for (int i=0; i<s; i++){
+            SS[k+i]->presolv();
+        }
+	return 0;
 }
 int infer_diag(int k,int Ns,double* Xs, int* Ds, double* R){
 	if (SS[k]==0){
