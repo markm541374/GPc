@@ -17,7 +17,7 @@ plt.hist(sp.array(S).flatten(),bins=30)
 def llk2(x):
     return sp.log( sp.exp(-0.5*((x[0]+1.5)**2+(x[1]-1.5)**2)/0.5**2)+sp.exp(-0.5*(((x[0]-1.5)**2)/0.75**2+((x[1]+1.5)**2)/0.25**2)))
 
-S = slice.slice_sample(llk2,sp.array([0.,0.]),30000,sp.array([0.15,0.15]))
+S = slice.slice_sample(llk2,sp.array([0.,0.]),10000,sp.array([0.15,0.15]))
 A = sp.zeros([20,20])
 for i in xrange(S.shape[0]):
     a1 = int((S[i,0]+3)*20/6)

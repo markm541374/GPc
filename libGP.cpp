@@ -24,43 +24,29 @@ extern "C"
 #include "hypsearch.h"
 #include "misctools.h"
 #include "GPsimple.h"
-#include "GPbayesopt.h"
-#include "timing.h"
+
 #include "bayesutils.h"
     
 std::vector<GP*> SS;
 
-int newGP(int D, int N, int kindex){
+int newGP(int D, int N, int kindex, double* X, double* Y, double* Sx, int* Dx, double* h){
 	GP *p = new GP(D,N,kindex);
 	SS.push_back(p);
-
+        int k = SS.size()-1;
+        SS[k]->set_X(X);
+        SS[k]->set_Y(Y);
+        SS[k]->set_S(Sx);
+        SS[k]->set_D(Dx);
+        SS[k]->set_hyp(h);
 	return SS.size()-1;
 }
 
-int newGP_timing(int D, int N, int kindex){
-	GP *p = new GP_timing(D,N,kindex);
-	SS.push_back(p);
-
-	return SS.size()-1;
-}
-
-int newEI_direct(int D, int N, int kindex){
-	GP *p = new EI_direct(D,N,kindex);
-	SS.push_back(p);
-
-	return SS.size()-1;
-}
-int newEI_random(int D, int N, int kindex){
-	GP *p = new EI_random(D,N,kindex);
-	SS.push_back(p);
-
-	return SS.size()-1;
-}
 int newGP_LKonly(int D, int N, double* Xin, double* Yin, double* Sin, int* Din, int kindex, double* hyp, double* R){
 	GP_LKonly *p =  new GP_LKonly(D,N, Xin, Yin, Sin, Din, kindex, hyp, R);
 	p->~GP_LKonly();
 	return 0;
 }
+
 
 void killGP(int k){
 	SS[k]->~GP();
@@ -96,22 +82,7 @@ int set_hyp(int k, double* h){
     SS[k]->set_hyp(h);
     return 0;
 }
-/*
-int fac(int k){
-	if (SS[k]==0){
-		printf("trying to use deleted GP\n");
-		return -1;
-	};
-	return SS[k]->fac();
-}
-int build_K(int k){
-	if (SS[k]==0){
-		printf("trying to use deleted GP\n");
-		return -1;
-	};
-	return SS[k]->build_K();
-}
- */
+
 int presolv(int k){
 	if (SS[k]==0){
 		printf("trying to use deleted GP\n");
@@ -154,21 +125,6 @@ int draw(int k, int Nd, double* X, int* D, double* R, int m){
 	return -1;
     };
     return SS[k]->draw(Nd, X, D, R, m);
-}
-int getnext(int k,double* lb, double* ub, double* argmin, double* min, int npts){
-    if (SS[k]==0){
-		printf("trying to use deleted GP\n");
-		return -1;
-	};
-	return SS[k]->getnext(lb,ub,argmin,min, npts);
-}
-
-int timing(int k,int c, double* T){
-    if (SS[k]==0){
-		printf("trying to use deleted GP\n");
-		return -1;
-	};
-	return SS[k]->timing(c, T);
 }
 
 int infer_LCB(int k, int n, double* X, int* D, double p, double* R){

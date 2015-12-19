@@ -28,13 +28,12 @@ class GPcore:
     def __init__(self, X_s, Y_s, S_s, D_s, kf):
         
         [self.n ,self.D] = X_s.shape
-        self.s = libGP.newGP(cint(self.D),cint(self.n),cint(kf.Kindex))
+        Dx = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_s]
+        self.s = libGP.newGP(cint(self.D),cint(self.n),cint(kf.Kindex),X_s.ctypes.data_as(ctpd),Y_s.ctypes.data_as(ctpd),S_s.ctypes.data_as(ctpd),(cint*len(Dx))(*Dx),kf.hyp.ctypes.data_as(ctpd))
         self.Y_s=Y_s
         
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_s]
         
-        libGP.set_Data(self.s,X_s.ctypes.data_as(ctpd),Y_s.ctypes.data_as(ctpd),S_s.ctypes.data_as(ctpd),(cint*len(D))(*D))
-        libGP.set_hyp(self.s,kf.hyp.ctypes.data_as(ctpd))
         libGP.presolv(self.s)
         
         return
