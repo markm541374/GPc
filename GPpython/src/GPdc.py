@@ -26,14 +26,15 @@ class GP_LKonly:
 
 class GPcore:
     def __init__(self, X_s, Y_s, S_s, D_s, kf):
+        print kf
         if type(kf) is kernel:
             self.size = 1
             kf = [kf]
         else:
-            print type(kf)
+            #print type(kf)
             self.size = len(kf)
         allhyp = sp.hstack([k.hyp for k in kf])
-        print len(kf[0].hyp)
+        
         [self.n ,self.D] = X_s.shape
         Dx = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_s]
         self.s = libGP.newGP_hypset(cint(self.D),cint(self.n),cint(kf[0].Kindex),X_s.ctypes.data_as(ctpd),Y_s.ctypes.data_as(ctpd),S_s.ctypes.data_as(ctpd),(cint*len(Dx))(*Dx),allhyp.ctypes.data_as(ctpd),cint(self.size))
@@ -50,32 +51,33 @@ class GPcore:
         return
     
     def printc(self):
-        libGP.ping(self.s)
+        print self.size
+        libGP.ping(self.s, cint(self.size))
         return
     
     def infer_m(self,X_i,D_i):
         ns=X_i.shape[0]
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]
-        R=sp.matrix(sp.empty(ns)).T
-        libGP.infer_m(self.s,ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D),R.ctypes.data_as(ctpd))
+        R=sp.vstack([sp.empty(ns)]*self.size)
+        libGP.infer_m(self.s, cint(self.size), ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D),R.ctypes.data_as(ctpd))
         return R
     
     def infer_full(self,X_i,D_i):
         ns=X_i.shape[0]
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]
-        R=sp.matrix(sp.empty([ns+1,ns]))
-        libGP.infer_full(self.s,ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D),R.ctypes.data_as(ctpd))
-        m = R[0,:].T
-        V = R[1:,:]
+        R=sp.vstack([sp.empty([ns+1,ns])]*self.size)
+        libGP.infer_full(self.s, cint(self.size), ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D),R.ctypes.data_as(ctpd))
+        m = sp.vstack([R[i*(ns+1),:] for i in xrange(self.size)])
+        V = sp.vstack([R[(ns+1)*i+1:(ns+1)*(i+1),:] for i in xrange(self.size)])
         return [m,V]
     
     def infer_diag(self,X_i,D_i):
         ns=X_i.shape[0]
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]
-        R=sp.matrix(sp.empty([2,ns]))
-        libGP.infer_diag(self.s,ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D),R.ctypes.data_as(ctpd))
-        m = R[0,:].T
-        V = R[1,:].T
+        R=sp.vstack([sp.empty([2,ns])]*self.size)
+        libGP.infer_diag(self.s,cint(self.size), ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D),R.ctypes.data_as(ctpd))
+        m = sp.vstack([R[i*2,:] for i in xrange(self.size)])
+        V = sp.vstack([R[i*2+1,:] for i in xrange(self.size)])
         return [m,V]
     def draw(self,X_i,D_i,m):
         #make m draws at X_i Nd, X, D, R, m

@@ -59,12 +59,15 @@ void killGP(int k){
 	SS[k]->~GP();
 	SS[k] = 0;
 }
-int ping(int k){
+int ping(int k, int s){
 	if (SS[k]==0){
 		printf("trying to use deleted GP\n");
 		return -1;
 	};
-	SS[k]->ping();
+        for (int i=0; i<s; i++){
+            SS[k+i]->ping();
+        }
+	
 	return 0;
 }
 
@@ -100,19 +103,25 @@ int presolv(int k, int s){
         }
 	return 0;
 }
-int infer_diag(int k,int Ns,double* Xs, int* Ds, double* R){
+int infer_diag(int k, int s, int Ns,double* Xs, int* Ds, double* R){
 	if (SS[k]==0){
 		printf("trying to use deleted GP\n");
 		return -1;
 	};
-	return SS[k]->infer_diag(Ns, Xs,Ds,R);
+        for (int i=0; i<s; i++){
+            SS[k+i]->infer_diag(Ns, Xs,Ds,&R[2*i*Ns]);
+        }
+	return 0;
 }
-int infer_m(int k,int Ns,double* Xs, int* Ds, double* R){
+int infer_m(int k, int s, int Ns,double* Xs, int* Ds, double* R){
 	if (SS[k]==0){
 		printf("trying to use deleted GP\n");
 		return -1;
 	};
-	return SS[k]->infer_m(Ns, Xs,Ds,R);
+        for (int i=0; i<s; i++){
+            SS[k+i]->infer_m(Ns, Xs,Ds,&R[Ns*i]);
+        }
+	return 0;
 }
 int llk(int k, double* R){
 	if (SS[k]==0){
@@ -121,13 +130,16 @@ int llk(int k, double* R){
 	};
 	return SS[k]->llk(R);
 }
-int infer_full(int k,int Ns,double* Xs, int* Ds, double* R){
+int infer_full(int k, int s, int Ns,double* Xs, int* Ds, double* R){
 
 	if (SS[k]==0){
 		printf("trying to use deleted GP\n");
 		return -1;
 	};
-	return SS[k]->infer_full(Ns, Xs,Ds,R);
+        for (int i=0; i<s; i++){
+            SS[k+i]->infer_full(Ns, Xs,Ds,&R[Ns*(Ns+1)*i]);
+        }
+	return 0;
 }
 int draw(int k, int Nd, double* X, int* D, double* R, int m){
     if (SS[k]==0){

@@ -11,10 +11,10 @@
 
 extern "C" int HypSearchMLE(int d, int n, double* Xin, double* Yin, double* Sin, int* Din, double* lb, double* ub, double* Rhyp, double lk);
 extern "C" void SetHypSearchPara(int mx, double fg);
-int infer_full(int k,int Ns,double* Xs, int* Ds, double* R);
+int infer_full(int k,int s,int Ns,double* Xs, int* Ds, double* R);
 int llk(int k, double* R);
-int infer_m(int k,int Ns,double* Xs, int* Ds, double* R);
-int infer_diag(int k,int Ns,double* Xs, int* Ds, double* R);
+int infer_m(int k, int s, int Ns,double* Xs, int* Ds, double* R);
+int infer_diag(int k, int s, int Ns,double* Xs, int* Ds, double* R);
 int draw(int k, int Nd, double* X, int* D, double* R, int m);
 int presolv(int k, int s);
 int build_K(int k);
@@ -24,7 +24,7 @@ int set_X(int k, double* X);
 int set_D(int k, int* D);
 int set_S(int k, double* Sin);
 int set_Y(int k, double* Y);
-int ping(int k);
+int ping(int k, int s);
 void killGP(int k);
 int newGP_LKonly(int D, int N, double* Xin, double* Yin, double* Sin, int* Din, double* hyp, double* R);
 int newGP(int D, int N, int kindex, double* X, double* Y, double* Sx, int* D, double* h);
