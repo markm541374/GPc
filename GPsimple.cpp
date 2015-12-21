@@ -191,11 +191,11 @@ int GP::draw(int Nd, double* X, int* D, double* R, int m){
     }
     LAPACKE_dpotrf(LAPACK_ROW_MAJOR,'L',Nd,&s[Nd],Nd);
     
-    
-    drawcov(&s[Nd],Nd, R, m);
+    std::vector<double> T = std::vector<double>(m*Nd);
+    drawcov(&s[Nd],Nd, &T[0], m);
     for (int i=0; i<Nd; i++){
         for (int j=0; j<m; j++){
-            R[m*i+j] += s[i];
+            R[i+j*Nd] = T[m*i+j]+s[i];
         }
     }
     return 0;

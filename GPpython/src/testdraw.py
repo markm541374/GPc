@@ -35,7 +35,7 @@ libGP.drawcov(Ch.ctypes.data_as(ctpd),ct.c_int(ni),b.ctypes.data_as(ctpd),ct.c_i
 for i in xrange(z):
     plt.plot(X[:,0],b[:,i])
 
-plt.show()
+
 
 
 #copy of test squexp from here
@@ -71,27 +71,17 @@ Dp = [[sp.NaN]]*np
 Xp = sp.vstack([sp.array([i]) for i in sup])
 
 [m,v] = G.infer_diag(Xp,Dp)
-a0.plot(sup,m)
+
+a0.plot(sup,m.flatten())
 sq = sp.sqrt(v)
 
 a0.fill_between(sup, sp.array(m-2.*sq).flatten(), sp.array(m+2.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
 #to here
 
-
-
-
-
-
-
-z=3
+z=5
 R = G.draw(Xp,Dp,z)
-
+print R
 for i in xrange(z):
-    plt.plot(sup,sp.array(R[:,i]).flatten(),'r')
-
-
-
-
-
+    plt.plot(sup,sp.array(R[i,:]).flatten(),'r')
 
 plt.show()

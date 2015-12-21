@@ -83,10 +83,9 @@ class GPcore:
         #make m draws at X_i Nd, X, D, R, m
         ns=X_i.shape[0]
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]
-        R=sp.matrix(sp.empty([ns,m]))
-        libGP.draw(self.s, cint(ns), X_i.ctypes.data_as(ctpd), (cint*len(D))(*D),R.ctypes.data_as(ctpd),cint(m))
+        R=sp.empty([m*self.size,ns])
+        libGP.draw(self.s, cint(self.size), cint(ns), X_i.ctypes.data_as(ctpd), (cint*len(D))(*D),R.ctypes.data_as(ctpd),cint(m))
         return R
-    
     def llk(self):
         R = ct.c_double()
         libGP.llk(self.s,ct.byref(R))

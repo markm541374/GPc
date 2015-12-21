@@ -141,12 +141,15 @@ int infer_full(int k, int s, int Ns,double* Xs, int* Ds, double* R){
         }
 	return 0;
 }
-int draw(int k, int Nd, double* X, int* D, double* R, int m){
+int draw(int k, int s, int Nd, double* X, int* D, double* R, int m){
     if (SS[k]==0){
 	printf("trying to use deleted GP\n");
 	return -1;
     };
-    return SS[k]->draw(Nd, X, D, R, m);
+    for (int i=0; i<s; i++){
+        SS[k+i]->draw(Nd, X, D, &R[Nd*m*i], m);
+    }
+    return 0;
 }
 
 int infer_LCB(int k, int n, double* X, int* D, double p, double* R){

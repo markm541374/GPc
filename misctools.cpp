@@ -35,6 +35,7 @@ extern "C" int EI(double* m, double* s, double y, int N, double* R){
 }
 
 //make m draws from a multivariate Gaussian of size n where the cholesky deom of the covariance is the lower triangular matrix K
+//matrix mult means the draws are down the columns of R
 extern "C" int drawcov(double* K, int n, double* R, int m){
     std::random_device rand_dev;          // Use random_device to get a random seed.
     std::mt19937 rand_engine(rand_dev()); //seed merseene twister with random number

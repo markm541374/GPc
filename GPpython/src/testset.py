@@ -50,18 +50,22 @@ print m0
 print m
 print V
 #--------------------------------------------
-np=100
+np=180
 sup = sp.linspace(-1,1,np)
 Dp = [[sp.NaN]]*np
 Xp = sp.vstack([sp.array([i]) for i in sup])
 
 [m,V] = G.infer_diag(Xp,Dp)
+z=2
+R = G.draw(Xp,Dp,z)
 f,a = plt.subplots(m.shape[0])
 for i in xrange(m.shape[0]):
     s = sp.sqrt(V[i,:])
     a[i].fill_between(sup,sp.array(m[i,:]-2.*s).flatten(),sp.array(m[i,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
     a[i].plot(sup,m[i,:],'b')
     a[i].plot(sp.array(X[:,0]).flatten(),Y,'g.')
+    for j in xrange(z):
+        a[i].plot(sup,R[z*i+j,:].flatten(),'r')
 print V
 plt.show()
 """
