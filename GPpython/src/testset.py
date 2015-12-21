@@ -23,7 +23,7 @@ Kxx = GPdc.buildKsym_d(kf,X,D)
 Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,1e-3,nt)).T
 S = sp.matrix([1e-6]*nt).T
 
-G = GPdc.GPcore(X,Y,S,D,[GPdc.kernel(GPdc.SQUEXP,1,hyp0),GPdc.kernel(GPdc.SQUEXP,1,hyp1),GPdc.kernel(GPdc.SQUEXP,1,hyp2)])
+G = GPdc.GPcore(X,Y,S,D,[GPdc.kernel(GPdc.SQUEXP,1,hyp0),GPdc.kernel(GPdc.SQUEXP,1,hyp1),GPdc.kernel(GPdc.SQUEXP,1,hyp2),GPdc.kernel(GPdc.SQUEXP,1,hyp0)])
 #G.printc()
 
 np=100
@@ -58,15 +58,20 @@ Xp = sp.vstack([sp.array([i]) for i in sup])
 [m,V] = G.infer_diag(Xp,Dp)
 z=2
 R = G.draw(Xp,Dp,z)
+L = G.infer_LCB(Xp,Dp,2.)
+E = G.infer_EI(Xp,Dp)
 f,a = plt.subplots(m.shape[0])
 for i in xrange(m.shape[0]):
     s = sp.sqrt(V[i,:])
     a[i].fill_between(sup,sp.array(m[i,:]-2.*s).flatten(),sp.array(m[i,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
     a[i].plot(sup,m[i,:],'b')
     a[i].plot(sp.array(X[:,0]).flatten(),Y,'g.')
+    a[i].plot(sup,L[i,:].flatten(),'g')
+    a[i].twinx().plot(sup,E[i,:].flatten(),'r')
     for j in xrange(z):
-        a[i].plot(sup,R[z*i+j,:].flatten(),'r')
-print V
+        a[i].plot(sup,R[z*i+j,:].flatten(),'c')
+#print V
+print G.llk()
 plt.show()
 """
 np=180

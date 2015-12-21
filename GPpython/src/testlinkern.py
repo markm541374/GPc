@@ -41,7 +41,7 @@ Dp = [[sp.NaN]]*np
 Xp = sp.vstack([sp.array([i,1.]) for i in sup])
 
 [m,v] = G.infer_diag(Xp,Dp)
-a0.plot(sup,m)
+a0.plot(sup,m.flatten())
 sq = sp.sqrt(v)
 
 a0.fill_between(sup, sp.array(m-1.*sq).flatten(), sp.array(m+1.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')

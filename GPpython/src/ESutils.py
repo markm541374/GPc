@@ -77,6 +77,6 @@ def plot_gp(g,axis,x,d):
     [m,v] = g.infer_diag(x,d)
     s = sp.sqrt(v)
     axis.fill_between(x,sp.array(m-2.*s).flatten(),sp.array(m+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
-    axis.plot(x,m,'b')
+    axis.plot(x,m.flatten(),'b')
     return 0
     

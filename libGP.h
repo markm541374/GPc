@@ -12,7 +12,7 @@
 extern "C" int HypSearchMLE(int d, int n, double* Xin, double* Yin, double* Sin, int* Din, double* lb, double* ub, double* Rhyp, double lk);
 extern "C" void SetHypSearchPara(int mx, double fg);
 int infer_full(int k,int s,int Ns,double* Xs, int* Ds, double* R);
-int llk(int k, double* R);
+int llk(int k, int s, double* R);
 int infer_m(int k, int s, int Ns,double* Xs, int* Ds, double* R);
 int infer_diag(int k, int s, int Ns,double* Xs, int* Ds, double* R);
 int draw(int k, int s, int Nd, double* X, int* D, double* R, int m);
@@ -28,6 +28,6 @@ int ping(int k, int s);
 void killGP(int k);
 int newGP_LKonly(int D, int N, double* Xin, double* Yin, double* Sin, int* Din, double* hyp, double* R);
 int newGP(int D, int N, int kindex, double* X, double* Y, double* Sx, int* D, double* h);
-int infer_LCB(int k, int n, double* X, int* D, double p, double* R);
-int infer_EI(int k, int n, double* X, int* D, double* R);
+int infer_LCB(int k, int s, int n, double* X, int* D, double p, double* R);
+int infer_EI(int k, int s, int n, double* X, int* D, double* R);
 #endif /* LIBGPD_H_ */

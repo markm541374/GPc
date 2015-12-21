@@ -26,12 +26,10 @@ class GP_LKonly:
 
 class GPcore:
     def __init__(self, X_s, Y_s, S_s, D_s, kf):
-        print kf
         if type(kf) is kernel:
             self.size = 1
             kf = [kf]
         else:
-            #print type(kf)
             self.size = len(kf)
         allhyp = sp.hstack([k.hyp for k in kf])
         
@@ -87,22 +85,23 @@ class GPcore:
         libGP.draw(self.s, cint(self.size), cint(ns), X_i.ctypes.data_as(ctpd), (cint*len(D))(*D),R.ctypes.data_as(ctpd),cint(m))
         return R
     def llk(self):
-        R = ct.c_double()
-        libGP.llk(self.s,ct.byref(R))
-        return R.value
+        R = sp.empty(self.size)
+        libGP.llk(self.s, cint(self.size), R.ctypes.data_as(ctpd))
+        return R
     
     def infer_LCB(self,X_i,D_i, p):
         ns=X_i.shape[0]
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]
-        R=sp.matrix(sp.empty(ns)).T
-        libGP.infer_LCB(self.s,ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D), ct.c_double(p), R.ctypes.data_as(ctpd))
+        R=sp.empty([self.size,ns])
+        libGP.infer_LCB(self.s, cint(self.size), ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D), ct.c_double(p), R.ctypes.data_as(ctpd))
+        
         return R
     
     def infer_EI(self,X_i,D_i):
         ns=X_i.shape[0]
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]
-        R=sp.matrix(sp.empty(ns)).T
-        libGP.infer_EI(self.s,ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D), R.ctypes.data_as(ctpd))
+        R=sp.empty([self.size,ns])
+        libGP.infer_EI(self.s, cint(self.size),ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D), R.ctypes.data_as(ctpd))
         return R
 #kf = gen_sqexp_k_d([1.,0.3])
 

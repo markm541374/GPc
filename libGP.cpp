@@ -123,12 +123,15 @@ int infer_m(int k, int s, int Ns,double* Xs, int* Ds, double* R){
         }
 	return 0;
 }
-int llk(int k, double* R){
+int llk(int k, int s, double* R){
 	if (SS[k]==0){
 		printf("trying to use deleted GP\n");
 		return -1;
 	};
-	return SS[k]->llk(R);
+        for (int i=0; i<s; i++){
+            SS[k+i]->llk(&R[i]);
+        }
+	return 0;
 }
 int infer_full(int k, int s, int Ns,double* Xs, int* Ds, double* R){
 
@@ -152,20 +155,26 @@ int draw(int k, int s, int Nd, double* X, int* D, double* R, int m){
     return 0;
 }
 
-int infer_LCB(int k, int n, double* X, int* D, double p, double* R){
+int infer_LCB(int k, int s, int n, double* X, int* D, double p, double* R){
     if (SS[k]==0){
 	printf("trying to use deleted GP\n");
 	return -1;
     };
-    return LCB(SS[k], n, X, D, p, R);
+    for (int i=0; i<s; i++){
+        LCB(SS[k+i], n, X, D, p, &R[n*i]);
+    }
+    return 0;
 }
 
-int infer_EI(int k, int n, double* X, int* D, double* R){
+int infer_EI(int k, int s, int n, double* X, int* D, double* R){
     if (SS[k]==0){
 	printf("trying to use deleted GP\n");
 	return -1;
     };
-    return EI_gp(SS[k], n, X, D, R);
+    for (int i=0; i<s; i++){
+        EI_gp(SS[k+i], n, X, D, &R[n*i]);
+    }
+    return 0;
 }
 #ifdef __cplusplus
 }
