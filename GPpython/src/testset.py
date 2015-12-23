@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 import ESutils
 import GPdc
 
-nt=12
+nt=82
 X = sp.matrix(sp.linspace(-1,1,nt)).T
 D = [[sp.NaN]]*(nt)
 
@@ -39,7 +39,7 @@ for i in xrange(m.shape[0]):
 
 
 #----------------------------------------------------
-np=4
+np=32
 sup = sp.linspace(-1,1,np)
 Dp = [[sp.NaN]]*np
 Xp = sp.vstack([sp.array([i]) for i in sup])
@@ -50,7 +50,7 @@ print m0
 print m
 print V
 #--------------------------------------------
-np=180
+np=480
 sup = sp.linspace(-1,1,np)
 Dp = [[sp.NaN]]*np
 Xp = sp.vstack([sp.array([i]) for i in sup])
@@ -73,23 +73,3 @@ for i in xrange(m.shape[0]):
 #print V
 print G.llk()
 plt.show()
-"""
-np=180
-sup = sp.linspace(-1,1,np)
-Dp = [[sp.NaN]]*np
-Xp = sp.vstack([sp.array([i]) for i in sup])
-
-[m,v] = G.infer_diag(Xp,Dp)
-a0.plot(sup,m)
-sq = sp.sqrt(v)
-
-a0.fill_between(sup, sp.array(m-2.*sq).flatten(), sp.array(m+2.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
-
-lcb = G.infer_LCB(Xp,Dp,2.)
-a0.plot(sup,sp.array(lcb).flatten(),'g')
-
-ei = G.infer_EI(Xp,Dp)
-a1.plot(sup,sp.array(ei).flatten(),'r')
-
-plt.show()
-"""

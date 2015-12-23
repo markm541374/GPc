@@ -14,10 +14,12 @@ def draw_support(g, lb, ub, n, method, para=1.):
     #para is the std confidence bound
     if (type(g) is int):
         d=g
+    else:
+        d=g.D
     if method==SUPPORT_UNIFORM:
         print "Drawing support using uniform:"
-        X=sp.random.uniform(size=[n,g.D])
-        for i in xrange(g.D):
+        X=sp.random.uniform(size=[n,d])
+        for i in xrange(d):
             X[:,i] *= ub[i]-lb[i]
             X[:,i] += lb[i]
     elif method==SUPPORT_SLICELCB:

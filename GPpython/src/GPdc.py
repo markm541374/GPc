@@ -15,14 +15,23 @@ cint = ct.c_int
 class GP_LKonly:
     def __init__(self, X_s, Y_s, S_s, D_s, kf):
         [n ,D] = X_s.shape
+        self.hyp = kf.hyp
         R = ct.c_double()
         Dc = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_s]
-        libGP.newGP_LKonly(cint(D),ct.cint(n),X_s.ctypes.data_as(ctpd),Y_s.ctypes.data_as(ctpd),S_s.ctypes.data_as(ctpd),(cint*len(Dc))(*Dc), cint(kf.Kindex), kf.hyp.ctypes.data_as(ctpd),ct.byref(R))
+        libGP.newGP_LKonly(cint(D),cint(n),X_s.ctypes.data_as(ctpd),Y_s.ctypes.data_as(ctpd),S_s.ctypes.data_as(ctpd),(cint*len(Dc))(*Dc), cint(kf.Kindex), kf.hyp.ctypes.data_as(ctpd),ct.byref(R))
         self.l = R.value
         return
     
     def llk(self):
+        #log likelihood of data given hyperparametrs
         return self.l
+    
+    def plk(self,lm,ls):
+        #log likelihood given lognormal prior over hyperparameters
+        tmp = 0.
+        for i,h in enumerate(self.hyp):
+            tmp -= 0.5*((sp.log10(h)-lm[i])**2)/ls[i]**2
+        return self.l+tmp
 
 class GPcore:
     def __init__(self, X_s, Y_s, S_s, D_s, kf):

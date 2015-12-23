@@ -104,7 +104,7 @@
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
-          <commandLine>-std=c++11</commandLine>
+          <commandLine>-std=c++11 -fopenmp</commandLine>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
