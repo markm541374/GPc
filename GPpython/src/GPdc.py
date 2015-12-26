@@ -86,12 +86,14 @@ class GPcore:
         m = sp.vstack([R[i*(ns+1),:] for i in xrange(self.size)])
         V = sp.vstack([R[(ns+1)*i+1:(ns+1)*(i+1),:] for i in xrange(self.size)])
         return [m,V]
+    
     def infer_full_post(self,X_i,D_i):
         class MJMError(Exception):
             pass
         raise MJMError("Not implemented yet")
         ##what should the covariance elements be?
         return -42
+    
     def infer_diag(self,X_i,D_i):
         ns=X_i.shape[0]
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]

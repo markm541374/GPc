@@ -41,7 +41,7 @@ def draw_min(g,support,n):
     
     R = sp.empty([n,support.shape[1]])
     for i in xrange(n):
-        R[i,:] = support[sp.argmin(Z[:,i]),:]
+        R[i,:] = support[sp.argmin(Z[i,:]),:]
     return R
 
 #ub and lb are still for the full space but the values in the chosen axis do not determine the outcome

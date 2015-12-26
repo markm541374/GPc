@@ -9,13 +9,9 @@ from scipy import stats as sps
 from matplotlib import pyplot as plt
 
 #uniform test
-class bob:
-    def __init__(self,D):
-        self.D=D
-        return
-
-
-X = ESutils.draw_support(bob(2), sp.array([-2,-1]),sp.array([0,3]),500,ESutils.SUPPORT_UNIFORM)
+import GPdc
+"""
+X = ESutils.draw_support(2, sp.array([-2,-1]),sp.array([0,3]),500,ESutils.SUPPORT_UNIFORM)
 for i in xrange(X.shape[0]):
     plt.plot(X[i,0],X[i,1],'r.')
 plt.axis([-5,5,-5,5])
@@ -23,7 +19,7 @@ plt.axis([-5,5,-5,5])
 
 #2d gp test
 
-import GPdc
+
 
 nt=34
 X = ESutils.draw_support(bob(2), sp.array([-1.,-1.]),sp.array([1.,1.]),nt,ESutils.SUPPORT_UNIFORM)
@@ -64,7 +60,7 @@ for i in xrange(ng):
 plt.figure()
 plt.imshow(A)
 
-
+"""
 
 
 #1d gp test
@@ -95,11 +91,12 @@ sq = sp.sqrt(v)
 a0.fill_between(sup, sp.array(m-2.*sq).flatten(), sp.array(m+2.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
 
 
-X = ESutils.draw_support(G, sp.array([-1]),sp.array([1.]),5000,ESutils.SUPPORT_SLICELCB)
+X = ESutils.draw_support(G, sp.array([-1]),sp.array([1.]),300,ESutils.SUPPORT_SLICELCB)
 a1.hist(X,bins=80)
 
-R = ESutils.draw_min(G,X,500)
-j = a2.hist(R,bins=80)
-plt.axis([-1,1,0,1.2*max(j[0])])
+R = ESutils.draw_min(G,X,300)
+
+j = a2.hist(R,bins=60)
+a2.axis([-1,1,0,1.2*max(j[0])])
 
 plt.show()
