@@ -4,6 +4,7 @@
 
 
 #slice sampling
+#TODO need to check initial steps
 import scipy as sp
 
 def slice_sample(loglike, init, iters, sigma, step_out=True,burn=20,subsam=4):
@@ -15,7 +16,7 @@ def slice_sample(loglike, init, iters, sigma, step_out=True,burn=20,subsam=4):
     """
 
     # dist = joint_dist()
-
+    
     # set up empty sample holder
     D = len(init)
     samples = sp.empty([iters+burn,D])

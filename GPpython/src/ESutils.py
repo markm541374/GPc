@@ -81,4 +81,11 @@ def plot_gp(g,axis,x,d):
     axis.fill_between(x,sp.array(m-2.*s).flatten(),sp.array(m+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
     axis.plot(x,m.flatten(),'b')
     return 0
-    
+
+def drawhyp_plk(X,Y,S,D,ki,hm,hs,n,burn=80,subsam=5):
+    def f(loghyp):
+        r=GPdc.GP_LKonly(X,Y,S,D,GPdc.kernel(ki,X.shape[1],[10**i for i in loghyp])).plk(hm,hs)
+        
+        return r
+    X = slice.slice_sample(f,hm,n,0.05*hs,burn=burn,subsam=subsam)
+    return 10**X

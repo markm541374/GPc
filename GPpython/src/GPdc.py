@@ -20,6 +20,7 @@ class GP_LKonly:
         Dc = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_s]
         libGP.newGP_LKonly(cint(D),cint(n),X_s.ctypes.data_as(ctpd),Y_s.ctypes.data_as(ctpd),S_s.ctypes.data_as(ctpd),(cint*len(Dc))(*Dc), cint(kf.Kindex), kf.hyp.ctypes.data_as(ctpd),ct.byref(R))
         self.l = R.value
+        
         return
     
     def llk(self):
@@ -31,6 +32,7 @@ class GP_LKonly:
         tmp = 0.
         for i,h in enumerate(self.hyp):
             tmp -= 0.5*((sp.log10(h)-lm[i])**2)/ls[i]**2
+        
         return self.l+tmp
 
 class GPcore:
@@ -69,6 +71,13 @@ class GPcore:
         libGP.infer_m(self.s, cint(self.size), ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D),R.ctypes.data_as(ctpd))
         return R
     
+    def infer_m_post(self,X_i,D_i):
+        ns=X_i.shape[0]
+        R = self.infer_m(X_i,D_i)
+        #m = sp.sum(R,axis=0).reshape([1,ns])
+        #return m/float(self.size)
+        print sp.mean(R,axis=0).shape
+        return sp.mean(R,axis=0).reshape([1,ns])
     def infer_full(self,X_i,D_i):
         ns=X_i.shape[0]
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]
@@ -77,7 +86,12 @@ class GPcore:
         m = sp.vstack([R[i*(ns+1),:] for i in xrange(self.size)])
         V = sp.vstack([R[(ns+1)*i+1:(ns+1)*(i+1),:] for i in xrange(self.size)])
         return [m,V]
-    
+    def infer_full_post(self,X_i,D_i):
+        class MJMError(Exception):
+            pass
+        raise MJMError("Not implemented yet")
+        ##what should the covariance elements be?
+        return -42
     def infer_diag(self,X_i,D_i):
         ns=X_i.shape[0]
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]
@@ -86,6 +100,13 @@ class GPcore:
         m = sp.vstack([R[i*2,:] for i in xrange(self.size)])
         V = sp.vstack([R[i*2+1,:] for i in xrange(self.size)])
         return [m,V]
+    
+    def infer_diag_post(self,X_i,D_i):
+        ns = X_i.shape[0]
+        [m,V] = self.infer_diag(X_i,D_i)
+        return [sp.mean(m,axis=0).reshape([1,ns]),(sp.mean(V,axis=0)+sp.var(m,axis=0)).reshape([1,ns])]
+        
+    
     def draw(self,X_i,D_i,m):
         #make m draws at X_i Nd, X, D, R, m
         ns=X_i.shape[0]

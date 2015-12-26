@@ -72,4 +72,39 @@ for i in xrange(m.shape[0]):
         a[i].plot(sup,R[z*i+j,:].flatten(),'c')
 #print V
 print G.llk()
+
+nt=6
+X = sp.matrix(sp.linspace(-1,1,nt)).T
+D = [[sp.NaN]]*(nt)
+
+hyp0 = sp.array([1.5,0.35])
+hyp1 = sp.array([1.5,0.05])
+
+kf = GPdc.kernel(GPdc.SQUEXP,1,sp.array([1.5,0.15]))
+Kxx = GPdc.buildKsym_d(kf,X,D)
+Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,1e-3,nt)).T
+S = sp.matrix([1e-6]*nt).T
+G = GPdc.GPcore(X,Y,S,D,[GPdc.kernel(GPdc.SQUEXP,1,hyp0),GPdc.kernel(GPdc.SQUEXP,1,hyp1)])
+m = G.infer_m(Xp,Dp)
+mp = G.infer_m_post(Xp,Dp)
+f,a = plt.subplots(m.shape[0]+1)
+for i in xrange(m.shape[0]):
+    a[i+1].plot(sup,m[i,:].flatten())
+    a[i+1].plot(sp.array(X[:,0]).flatten(),Y,'g.')
+a[0].plot(sp.array(X[:,0]).flatten(),Y,'g.')
+a[0].plot(sup,mp[0,:].flatten())
+
+[m,V] = G.infer_diag(Xp,Dp)
+[mp,Vp] = G.infer_diag_post(Xp,Dp)
+f,a = plt.subplots(m.shape[0]+1)
+for i in xrange(m.shape[0]):
+    s = sp.sqrt(V[i,:])
+    a[i+1].fill_between(sup,sp.array(m[i,:]-2.*s).flatten(),sp.array(m[i,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
+    a[i+1].plot(sup,m[i,:],'b')
+    a[i+1].plot(sp.array(X[:,0]).flatten(),Y,'g.')
+a[0].plot(sp.array(X[:,0]).flatten(),Y,'g.')
+a[0].plot(sup,mp[0,:].flatten())
+s = sp.sqrt(Vp[0,:])
+a[0].fill_between(sup,sp.array(mp[0,:]-2.*s).flatten(),sp.array(mp[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
+    
 plt.show()
