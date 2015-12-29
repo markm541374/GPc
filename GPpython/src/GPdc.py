@@ -129,6 +129,10 @@ class GPcore:
         
         return R
     
+    def infer_LCB_post(self,X_i,D_i,p):
+        [m,v] = self.infer_diag_post(X_i,D_i)
+        return m-p*sp.sqrt(v)
+    
     def infer_EI(self,X_i,D_i):
         ns=X_i.shape[0]
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]

@@ -96,6 +96,7 @@ a[0].plot(sup,mp[0,:].flatten())
 
 [m,V] = G.infer_diag(Xp,Dp)
 [mp,Vp] = G.infer_diag_post(Xp,Dp)
+L = G.infer_LCB_post(Xp,Dp,2.)
 f,a = plt.subplots(m.shape[0]+1)
 for i in xrange(m.shape[0]):
     s = sp.sqrt(V[i,:])
@@ -104,6 +105,7 @@ for i in xrange(m.shape[0]):
     a[i+1].plot(sp.array(X[:,0]).flatten(),Y,'g.')
 a[0].plot(sp.array(X[:,0]).flatten(),Y,'g.')
 a[0].plot(sup,mp[0,:].flatten())
+a[0].plot(sup,L.flatten())
 s = sp.sqrt(Vp[0,:])
 a[0].fill_between(sup,sp.array(mp[0,:]-2.*s).flatten(),sp.array(mp[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
     

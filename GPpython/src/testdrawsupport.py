@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 
 #uniform test
 import GPdc
-"""
+
 X = ESutils.draw_support(2, sp.array([-2,-1]),sp.array([0,3]),500,ESutils.SUPPORT_UNIFORM)
 for i in xrange(X.shape[0]):
     plt.plot(X[i,0],X[i,1],'r.')
@@ -22,7 +22,7 @@ plt.axis([-5,5,-5,5])
 
 
 nt=34
-X = ESutils.draw_support(bob(2), sp.array([-1.,-1.]),sp.array([1.,1.]),nt,ESutils.SUPPORT_UNIFORM)
+X = ESutils.draw_support(2, sp.array([-1.,-1.]),sp.array([1.,1.]),nt,ESutils.SUPPORT_UNIFORM)
 D = [[sp.NaN]]*(nt)
 hyp = sp.array([1.5,0.15,0.15])
 kf = GPdc.gen_sqexp_k_d(hyp)
@@ -59,8 +59,6 @@ for i in xrange(ng):
         A[i,j] = G.infer_LCB(sp.array([2*j/float(ng)-1.,-2*i/float(ng)+1.]),[[sp.NaN]],1.)[0,0]
 plt.figure()
 plt.imshow(A)
-
-"""
 
 
 #1d gp test

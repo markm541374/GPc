@@ -25,7 +25,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
     elif method==SUPPORT_SLICELCB:
         def f(x):
             if all(x>lb) and all(x<ub):
-                return -g.infer_LCB(sp.array(x),[[sp.NaN]],para)[0,0]
+                return -g.infer_LCB_post(sp.array(x),[[sp.NaN]],para)[0,0]
             else:
                 return -1e99
         print "Drawing support using slice sample over LCB:"
@@ -39,8 +39,8 @@ def draw_support(g, lb, ub, n, method, para=1.):
 def draw_min(g,support,n):
     Z = g.draw(support, [[sp.NaN]]*support.shape[0],n)
     
-    R = sp.empty([n,support.shape[1]])
-    for i in xrange(n):
+    R = sp.empty([Z.shape[0],support.shape[1]])
+    for i in xrange(Z.shape[0]):
         R[i,:] = support[sp.argmin(Z[i,:]),:]
     return R
 
@@ -63,7 +63,7 @@ def draw_support_inplane(g,lb,ub,n,method,axis,value,para=1.):
         def f(x):
             y = sp.hstack([x[:axis],value,x[axis:]])
             if all(y>lb) and all(y<ub):
-                return -g.infer_LCB(sp.array(y),[[sp.NaN]],para)[0,0]
+                return -g.infer_LCB_post(sp.array(y),[[sp.NaN]],para)[0,0]
             else:
                 return -1e99
         print "Drawing support using slice sample over LCB:"
