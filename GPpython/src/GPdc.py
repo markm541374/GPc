@@ -90,9 +90,13 @@ class GPcore:
     def infer_full_post(self,X_i,D_i):
         class MJMError(Exception):
             pass
-        raise MJMError("Not implemented yet")
-        ##what should the covariance elements be?
-        return -42
+        [m,V] = self.infer_full(X_i,D_i)
+        ns=X_i.shape[0]
+        cv = sp.zeros([ns,ns])
+        for i in xrange(self.size):
+            cv+=V[ns*i:ns*(i+1),:]
+        cv= cv/self.size + sp.cov(m,rowvar=0,bias=1)
+        return [sp.mean(m,axis=0).reshape([1,ns]),cv]
     
     def infer_diag(self,X_i,D_i):
         ns=X_i.shape[0]
@@ -116,6 +120,15 @@ class GPcore:
         R=sp.empty([m*self.size,ns])
         libGP.draw(self.s, cint(self.size), cint(ns), X_i.ctypes.data_as(ctpd), (cint*len(D))(*D),R.ctypes.data_as(ctpd),cint(m))
         return R
+    
+    def draw_post(self,X_i,D_i,z):
+        ns = X_i.shape[0]
+        [m,V] = self.infer_full_post(X_i,D_i)
+        R = sp.empty([ns,z])
+        libGP.drawk(V.ctypes.data_as(ctpd),cint(ns),R.ctypes.data_as(ctpd),cint(z))
+        R+=sp.hstack([m.T]*z)
+        return R.T
+    
     def llk(self):
         R = sp.empty(self.size)
         libGP.llk(self.s, cint(self.size), R.ctypes.data_as(ctpd))

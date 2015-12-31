@@ -18,5 +18,6 @@ extern "C" int EI(double*, double*, double, int, double*);
 double pdf(double);
 double cdf(double);
 extern "C" int drawcov(double* K, int n, double* R, int m);
+extern "C" int drawk(double* K, int n, double* R, int m);
 #endif /* MISCTOOLS_H */
 

@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cblas.h>
 #include <random>
+#include <lapacke.h>
 const double PI = 3.141592653589793238463;
 const double SQRT_1_2PI = 1/sqrt(2*PI);
 const double SQRT_1_2 =  1/sqrt(2);
@@ -47,4 +48,16 @@ extern "C" int drawcov(double* K, int n, double* R, int m){
     cblas_dtrmm(CblasRowMajor,CblasLeft,CblasLower,CblasNoTrans,CblasNonUnit,n,m,1.,K,n,R,m);
     return 0;
     
+}
+
+//as drawcov but for the original covariance matrix. K is overwritten.
+extern "C" int drawk(double* K, int n, double* R, int m){
+    int j = -9;
+    printf("adding 10e%d diagonal to covariance in drawk\n",j);
+    for (int i=0; i<n; i++){
+        K[i*n+i]+=pow(10,j);
+    }
+    LAPACKE_dpotrf(LAPACK_ROW_MAJOR,'L',n,&K[0],n);
+    drawcov(&K[0],n, &R[0], m);
+    return 0;
 }
