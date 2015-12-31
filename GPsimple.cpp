@@ -184,15 +184,8 @@ int GP::infer_full(int Ns, double* Xs, int* Ds, double* R){
 int GP::draw(int Nd, double* X, int* D, double* R, int m){
     std::vector<double> s = std::vector<double>((Nd+1)*Nd);
     int c = this->infer_full(Nd,X,D,&s[0]);
-    int j= -9;
-    printf("adding 10e%d diagonal to covariance in draw\n",j);
-    for (int i=0; i<Nd; i++){
-        s[Nd+i*Nd+i]+=pow(10,j);
-    }
-    LAPACKE_dpotrf(LAPACK_ROW_MAJOR,'L',Nd,&s[Nd],Nd);
-    
     std::vector<double> T = std::vector<double>(m*Nd);
-    drawcov(&s[Nd],Nd, &T[0], m);
+    drawk(&s[Nd],Nd, &T[0], m);
     for (int i=0; i<Nd; i++){
         for (int j=0; j<m; j++){
             R[i+j*Nd] = T[m*i+j]+s[i];
