@@ -17,7 +17,7 @@ def gaussian_fusion(m1,m2,V1,V2):
 def expectation_prop(m0,V0,Y,Z,F,z):
     #expectation propagation on multivariate gaussian for soft inequality constraint
     #m0,v0 are mean vector , covariance before EP
-    #Y is inequality value, Z is sign, 1 for geq, -1 for leq, F is softness ??
+    #Y is inequality value, Z is sign, 1 for geq, -1 for leq, F is softness variance
     #z is number of ep rounds to run
     #returns mt, Vt the value and variance for observations created by ep
     m0=sp.array(m0).flatten()
@@ -40,14 +40,14 @@ def expectation_prop(m0,V0,Y,Z,F,z):
             v_ = (V[j,j]*Vt[j,j])*tmp
             m_ = tmp*(m[j]*Vt[j, j]-mt[j]*V[j, j])
             
-            alpha = sp.sign(Z[j])*(m_-Y[j]) / (sp.sqrt(v_+F[j]**2))
+            alpha = sp.sign(Z[j])*(m_-Y[j]) / (sp.sqrt(v_+F[j]))
             pr = PhiR(alpha)
             
             if sp.isnan(pr):
                 
                 pr = -alpha
-            beta = pr*(pr+alpha)/(v_+F[j]**2)
-            kappa = sp.sign(Z[j])*(pr+alpha) / (sp.sqrt(v_+F[j]**2))
+            beta = pr*(pr+alpha)/(v_+F[j])
+            kappa = sp.sign(Z[j])*(pr+alpha) / (sp.sqrt(v_+F[j]))
             #print [alpha,beta,kappa,pr]
             mt[j] = m_+1./kappa
             Vt[j,j] = 1./beta - v_
