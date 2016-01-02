@@ -69,7 +69,7 @@ double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
 		//no derivatives
 		return core;
 	}
-        else{printf("%d %d",d1,d2);}
+        //else{printf("%d %d",d1,d2);}
 	std::vector<int> V = std::vector<int>(D,0);
 	div_t v1;
 	div_t v2;

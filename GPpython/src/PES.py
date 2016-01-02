@@ -5,18 +5,9 @@
 #make a single posterior gp form data and take draws on this
 import ESutils
 import GPdc
-"""
-NUMINPLANESUPPORT = 300
-SLICELCB_PARA = 1.
-def method1(G):
-    # this assumes
-    dim = X.shape[1]
-    lb=0
-    ub=0
-    Z = ESutils.draw_support_inplane(G, lb,ub,NUMINPLANESUPPORT,ESutils.SUPPORT_SLICELCB,dim-1,0., para=SLICELCB_PARA)
-    M = ESutils.draw_min(G,Z,100)
-    return
-"""
+import eprop
+import scipy as sp
+
 
 def makeG(X,Y,S,D,kindex,mprior,sprior,nh):
     #draw hyps based on plk
@@ -31,3 +22,24 @@ def drawmins(G,n,lb,ub,SUPPORT=300,SLICELCB_PARA=1.):
     #draw in samples on the support
     R = ESutils.draw_min(G,W,n)
     return R
+
+def addmins(X,Y,S,D,kfs,xmin,GRADNOISE=1e-9):
+    dim=X.shape[1]
+    #grad elements are zero
+    Xg = sp.vstack([xmin]*dim)
+    Yg = sp.zeros([dim,1])
+    Sg = sp.ones([dim,1])*GRADNOISE
+    Dg = [[i] for i in range(dim)]
+    
+    #offdiag hessian elements
+    
+    #diag hessian and min
+    
+    #concat the obs
+    Xo = sp.vstack([X,Xg])
+    Yo = sp.vstack([Y,Yg])
+    So = sp.vstack([S,Sg])
+    Do = D+Dg
+    
+    
+    return [Xo,Yo,So,Do]

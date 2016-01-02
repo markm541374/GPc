@@ -13,15 +13,16 @@ from matplotlib import pyplot as plt
 import GPdc
 import PES
 
-nt=10
+nt=20
 d=1
 lb = sp.array([-1.]*d)
 ub = sp.array([1.]*d)
 [X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([1.5,0.15]))
 
 G = PES.makeG(X,Y,S,D,GPdc.SQUEXP,sp.array([0.,-1.]),sp.array([1.,1.]),18)
+H = sp.vstack([i.hyp for i in G.kf])
 f,a = plt.subplots(1)
-a.plot(G.hyp[:,0],G.hyp[:,1],'r.')
+a.plot(H[:,0],H[:,1],'r.')
 
 np=100
 sup = sp.linspace(-1,1,np)
@@ -30,20 +31,20 @@ Xp = sp.vstack([sp.array([i]) for i in sup])
 
 [m,V] = G.infer_diag(Xp,Dp)
 z=5
-f,a = plt.subplots(z+1)
+f,a = plt.subplots(z+2)
 for e,i in enumerate(sp.random.choice(range(m.shape[0]),size=z,replace=False)):
     s = sp.sqrt(V[i,:])
-    a[e+1].fill_between(sup,sp.array(m[i,:]-2.*s).flatten(),sp.array(m[i,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
-    a[e+1].plot(sup,m[i,:].flatten())
-    a[e+1].plot(sp.array(X[:,0]).flatten(),Y,'g.')
+    a[e].fill_between(sup,sp.array(m[i,:]-2.*s).flatten(),sp.array(m[i,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
+    a[e].plot(sup,m[i,:].flatten())
+    a[e].plot(sp.array(X[:,0]).flatten(),Y,'g.')
     
 [mp,Vp] = G.infer_diag_post(Xp,Dp)
 s = sp.sqrt(Vp[0,:])
-a[0].fill_between(sup,sp.array(mp[0,:]-2.*s).flatten(),sp.array(mp[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
-a[0].plot(sup,mp[0,:].flatten())
-a[0].plot(sp.array(X[:,0]).flatten(),Y,'g.')
+a[z].fill_between(sup,sp.array(mp[0,:]-2.*s).flatten(),sp.array(mp[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
+a[z].plot(sup,mp[0,:].flatten())
+a[z].plot(sp.array(X[:,0]).flatten(),Y,'g.')
 
-Z=PES.drawmins(G,20,sp.array([-1.]),sp.array([1.]),SUPPORT=200,SLICELCB_PARA=1.)
+Z=PES.drawmins(G,200,sp.array([-1.]),sp.array([1.]),SUPPORT=600,SLICELCB_PARA=1.)
 
-a[0].plot(Z.T.flatten(),sp.zeros(20),'rx')
+a[z+1].hist(Z,bins=30)
 plt.show()
