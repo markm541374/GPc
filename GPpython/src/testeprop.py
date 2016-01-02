@@ -19,7 +19,7 @@ n=len(m)
 
 Y = sp.array([1.,0.,1.])
 Z = sp.array([-1,1,-1])
-F = sp.array([0.25,0.,0.])
+F = sp.array([0.25**2,0.,0.])
 mt,vt = eprop.expectation_prop(m,v,Y,Z,F,35)
 
 mu,vu = eprop.gaussian_fusion(m,mt,v,vt)
@@ -51,7 +51,7 @@ De = [[sp.NaN]]*2
 [m0,V0] = g.infer_full(Xe,De)
 Ye = sp.array([2.,-2.])
 Ze = sp.array([1.,-1.])
-Fe = sp.array([1e-6,1e-6])
+Fe = sp.array([(1e-6)**2,(1e-6)**2])
 
 mt,vt = eprop.expectation_prop(m0,V0,Ye,Ze,Fe,20)
 print D+De
