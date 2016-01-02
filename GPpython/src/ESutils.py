@@ -5,6 +5,8 @@
 import GPdc
 import slice
 import scipy as sp
+from scipy import linalg as spl
+from scipy import stats as sps
 
 SUPPORT_UNIFORM = 0
 SUPPORT_SLICELCB = 1
@@ -37,7 +39,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
 
 #return the min loc of draws on given support
 def draw_min(g,support,n):
-    Z = g.draw(support, [[sp.NaN]]*support.shape[0],n)
+    Z = g.draw_post(support, [[sp.NaN]]*support.shape[0],n)
     
     R = sp.empty([Z.shape[0],support.shape[1]])
     for i in xrange(Z.shape[0]):
@@ -89,3 +91,12 @@ def drawhyp_plk(X,Y,S,D,ki,hm,hs,n,burn=80,subsam=5):
         return r
     X = slice.slice_sample(f,hm,n,0.05*hs,burn=burn,subsam=subsam)
     return 10**X
+
+def gen_dataset(nt,d,lb,ub,kindex,hyp):
+    X = draw_support(d, lb,ub,nt,SUPPORT_UNIFORM)
+    D = [[sp.NaN]]*(nt)
+    kf = GPdc.kernel(kindex,d,hyp)
+    Kxx = GPdc.buildKsym_d(kf,X,D)
+    Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,1e-3,nt)).T
+    S = sp.matrix([1e-6]*nt).T
+    return [X,Y,S,D]

@@ -43,7 +43,7 @@ class GPcore:
         else:
             self.size = len(kf)
         allhyp = sp.hstack([k.hyp for k in kf])
-        
+        self.hyp = sp.vstack([k.hyp for k in kf])
         [self.n ,self.D] = X_s.shape
         Dx = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_s]
         self.s = libGP.newGP_hypset(cint(self.D),cint(self.n),cint(kf[0].Kindex),X_s.ctypes.data_as(ctpd),Y_s.ctypes.data_as(ctpd),S_s.ctypes.data_as(ctpd),(cint*len(Dx))(*Dx),allhyp.ctypes.data_as(ctpd),cint(self.size))
