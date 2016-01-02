@@ -23,7 +23,10 @@ def drawmins(G,n,lb,ub,SUPPORT=300,SLICELCB_PARA=1.):
     R = ESutils.draw_min(G,W,n)
     return R
 
-def addmins(G,X,Y,S,D,xmin,GRADNOISE=1e-9,EP_SOFTNESS=1e-9,EPROP_LOOPS=20):
+OFFHESSZERO=0
+OFFHESSINFER=1
+
+def addmins(G,X,Y,S,D,xmin,mode=OFFHESSZERO, GRADNOISE=1e-9,EP_SOFTNESS=1e-9,EPROP_LOOPS=20):
     dim=X.shape[1]
     #grad elements are zero
     Xg = sp.vstack([xmin]*dim)
@@ -32,7 +35,19 @@ def addmins(G,X,Y,S,D,xmin,GRADNOISE=1e-9,EP_SOFTNESS=1e-9,EPROP_LOOPS=20):
     Dg = [[i] for i in range(dim)]
     
     #offdiag hessian elements
-    
+    nh = ((dim-1)*dim)/2
+    Xh = sp.vstack([sp.empty([0,dim])]+[xmin]*nh)
+    Dh = [[i+1,j] for i in range(dim-1) for j in range(i+1)]
+    class MJMError(Exception):
+        pass
+    if mode==OFFHESSZERO:
+        Yh = sp.zeros([nh,1])
+        Sh = sp.ones([nh,1])*GRADNOISE
+    elif mode==OFFHESSINFER:
+        raise MJMError("addmins with mode offhessinfer not implemented yet")
+    else:
+        raise MJMError("invalid mode in addmins")
+        
     #diag hessian and min
     Xd = sp.vstack([xmin]*(dim+1))
     Dd = [[sp.NaN]]+[[i,i] for i in xrange(dim)]
@@ -46,9 +61,9 @@ def addmins(G,X,Y,S,D,xmin,GRADNOISE=1e-9,EP_SOFTNESS=1e-9,EPROP_LOOPS=20):
     Sd.resize([dim+1,1])
     Yd.resize([dim+1,1])
     #concat the obs
-    Xo = sp.vstack([X,Xg,Xd])
-    Yo = sp.vstack([Y,Yg,Yd])
-    So = sp.vstack([S,Sg,Sd])
-    Do = D+Dg+Dd
+    Xo = sp.vstack([X,Xg,Xd,Xh])
+    Yo = sp.vstack([Y,Yg,Yd,Yh])
+    So = sp.vstack([S,Sg,Sd,Sh])
+    Do = D+Dg+Dd+Dh
     
     return [Xo,Yo,So,Do]

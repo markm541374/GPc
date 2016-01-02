@@ -111,7 +111,7 @@ double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
 			while (V[i]==0){i+=1;}
 			int j = i+1;
 			while (V[j]==0){j+=1;}
-			printf("%d,%d\n",i,j);
+			//printf("%d,%d\n",i,j);
 			return ih[j+1]*(x1[j]-x2[j])*ih[i+1]*(x1[i]-x2[i])*double(sign)*core;
 		}
 		else{
@@ -137,7 +137,7 @@ double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
 			while (V[i]!=1){i+=1;}
 			int j = 0;
 			while (V[j]!=2){j+=1;}
-			printf("[%d,%d]\n",i,j);
+			//printf("[%d,%d]\n",i,j);
 			double xi = (x1[i]-x2[i]);
 			double li = ih[i+1];
 			double xj = (x1[j]-x2[j]);
@@ -152,7 +152,7 @@ double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
 			while (V[j]==0){j+=1;}
 			int k = j+1;
 			while (V[k]==0){k+=1;}
-			printf("%d,%d,%d\n",i,j,k);
+			//printf("%d,%d,%d\n",i,j,k);
 			//- xi*li*xj*lj*xk*lk
 			return -ih[k+1]*(x1[k]-x2[k])*ih[j+1]*(x1[j]-x2[j])*ih[i+1]*(x1[i]-x2[i])*double(sign)*core;
 

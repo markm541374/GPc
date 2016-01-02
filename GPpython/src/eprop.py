@@ -53,6 +53,7 @@ def expectation_prop(m0,V0,Y,Z,F,z):
             Vt[j,j] = 1./beta - v_
         #print sp.amax(mtprev-mt)
         #print sp.amax(sp.diagonal(Vtprev)-sp.diagonal(Vt))
+        #TODO make this a ratio instead of absolute
         delta = max(sp.amax(mtprev-mt),sp.amax(sp.diagonal(Vtprev)-sp.diagonal(Vt)))
         conv[i]=delta
     print "EP finished with final max deltas "+str(conv[-3:])
