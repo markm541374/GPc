@@ -23,7 +23,7 @@ def drawmins(G,n,lb,ub,SUPPORT=300,SLICELCB_PARA=1.):
     R = ESutils.draw_min(G,W,n)
     return R
 
-def addmins(X,Y,S,D,kfs,xmin,GRADNOISE=1e-9):
+def addmins(G,X,Y,S,D,xmin,GRADNOISE=1e-9,EP_SOFTNESS=1e-9,EPROP_LOOPS=20):
     dim=X.shape[1]
     #grad elements are zero
     Xg = sp.vstack([xmin]*dim)
@@ -34,12 +34,21 @@ def addmins(X,Y,S,D,kfs,xmin,GRADNOISE=1e-9):
     #offdiag hessian elements
     
     #diag hessian and min
-    
+    Xd = sp.vstack([xmin]*(dim+1))
+    Dd = [[sp.NaN]]+[[i,i] for i in xrange(dim)]
+    [m,V] = G.infer_full_post(Xd,Dd)
+    yminarg = sp.argmin(Y)
+    Y_ = sp.array([Y[yminarg,0]]+[0.]*dim)
+    Z = sp.array([-1]+[1.]*dim)
+    F = sp.array([S[yminarg,0]]+[EP_SOFTNESS]*dim)
+    [Yd,Stmp] = eprop.expectation_prop(m,V,Y_,Z,F,EPROP_LOOPS)
+    Sd = sp.diagonal(Stmp).flatten()
+    Sd.resize([dim+1,1])
+    Yd.resize([dim+1,1])
     #concat the obs
-    Xo = sp.vstack([X,Xg])
-    Yo = sp.vstack([Y,Yg])
-    So = sp.vstack([S,Sg])
-    Do = D+Dg
-    
+    Xo = sp.vstack([X,Xg,Xd])
+    Yo = sp.vstack([Y,Yg,Yd])
+    So = sp.vstack([S,Sg,Sd])
+    Do = D+Dg+Dd
     
     return [Xo,Yo,So,Do]

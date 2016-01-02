@@ -22,7 +22,7 @@ ub = sp.array([1.]*d)
 G = PES.makeG(X,Y,S,D,GPdc.SQUEXP,sp.array([0.,-1.]),sp.array([1.,1.]),12)
 Z=PES.drawmins(G,8,sp.array([-1.]),sp.array([1.]),SUPPORT=400,SLICELCB_PARA=1.)
 
-Ga = GPdc.GPcore(*PES.addmins(X,Y,S,D,G.kf,Z[0,:])+[G.kf])
+Ga = GPdc.GPcore(*PES.addmins(G,X,Y,S,D,Z[0,:])+[G.kf])
 
 np=100
 sup = sp.linspace(-1,1,np)
