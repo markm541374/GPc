@@ -83,4 +83,5 @@ a[2].fill_between(sup,sp.array(mp2[0,:]-2.*s).flatten(),sp.array(mp2[0,:]+2.*s).
 a[2].plot(sup,mp2[0,:].flatten())
 a[2].plot(Z[0,2].flatten(),[0],'r.')
 
+
 plt.show()

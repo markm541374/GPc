@@ -14,8 +14,8 @@ import GPdc
 import PES
 
 #-------------------------------------------------------------------------
-#2d
-nt=48
+#3d
+nt=88
 d=3
 lb = sp.array([-1.]*d)
 ub = sp.array([1.]*d)
@@ -52,23 +52,27 @@ a[2].fill_between(sup,sp.array(mp2[0,:]-2.*s).flatten(),sp.array(mp2[0,:]+2.*s).
 a[2].plot(sup,mp2[0,:].flatten())
 a[2].plot(Z[0,2].flatten(),[0],'r.')
 ##before
-[mp0,Vp0] = G.infer_diag_post(Xp0,Dp)
-[mp1,Vp1] = G.infer_diag_post(Xp1,Dp)
-[mp2,Vp2] = G.infer_diag_post(Xp2,Dp)
+[mp0_,Vp0_] = G.infer_diag_post(Xp0,Dp)
+[mp1_,Vp1_] = G.infer_diag_post(Xp1,Dp)
+[mp2_,Vp2_] = G.infer_diag_post(Xp2,Dp)
 f,a = plt.subplots(3)
-s = sp.sqrt(Vp0[0,:])
-a[0].fill_between(sup,sp.array(mp0[0,:]-2.*s).flatten(),sp.array(mp0[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
-a[0].plot(sup,mp0[0,:].flatten())
+s = sp.sqrt(Vp0_[0,:])
+a[0].fill_between(sup,sp.array(mp0_[0,:]-2.*s).flatten(),sp.array(mp0_[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
+a[0].plot(sup,mp0_[0,:].flatten())
 #a[0].plot(Z[0,0].flatten(),[0],'r.')
 
-s = sp.sqrt(Vp1[0,:])
-a[1].fill_between(sup,sp.array(mp1[0,:]-2.*s).flatten(),sp.array(mp1[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
-a[1].plot(sup,mp1[0,:].flatten())
+s = sp.sqrt(Vp1_[0,:])
+a[1].fill_between(sup,sp.array(mp1_[0,:]-2.*s).flatten(),sp.array(mp1_[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
+a[1].plot(sup,mp1_[0,:].flatten())
 #a[1].plot(Z[0,1].flatten(),[0],'r.')
 
-s = sp.sqrt(Vp2[0,:])
-a[2].fill_between(sup,sp.array(mp2[0,:]-2.*s).flatten(),sp.array(mp2[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
-a[2].plot(sup,mp2[0,:].flatten())
+s = sp.sqrt(Vp2_[0,:])
+a[2].fill_between(sup,sp.array(mp2_[0,:]-2.*s).flatten(),sp.array(mp2_[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
+a[2].plot(sup,mp2_[0,:].flatten())
 #a[2].plot(Z[0,2].flatten(),[0],'r.')
 
+f,a = plt.subplots(3)
+a[0].plot(sup,(Vp0_-Vp0).flatten())
+a[1].plot(sup,(Vp1_-Vp1).flatten())
+a[2].plot(sup,(Vp2_-Vp2).flatten())
 plt.show()

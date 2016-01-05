@@ -120,3 +120,12 @@ def addmins_inplane(G,X,Y,S,D,xmin,axis,value,mode=OFFHESSZERO, GRADNOISE=1e-9,E
     Do = D+Dg+Dd+Dh
     
     return [Xo,Yo,So,Do]
+
+def PESgain(g0,G1,Z,x,d,s):
+    [m0,v0] = g0.infer_diag_post(x,d)
+    for i,g1 in enumerate(G1):
+        Xi = sp.vstack([x,Z[i,:]])
+        Di = d+[[sp.NaN]]
+        [mi,Vi] = g1.infer_full_post(Xi,Di)
+        print [mi,Vi]
+    return
