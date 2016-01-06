@@ -52,10 +52,12 @@ lb = sp.array([-1.]*d)
 ub = sp.array([1.]*d)
 [X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([1.5,0.15,0.25,0.20]))
 
-G = PES.makeG(X,Y,S,D,GPdc.SQUEXP,sp.array([0.,-1.,-1.,-1.]),sp.array([1.,1.,1.,1.]),10)
-Z=PES.drawmins(G,8,sp.array([-1.]*d),sp.array([1.]*d),SUPPORT=500,SLICELCB_PARA=1.)
+G = PES.makeG(X,Y,S,D,GPdc.SQUEXP,sp.array([0.,-1.,-1.,-1.]),sp.array([1.,1.,1.,1.]),6)
+Z=PES.drawmins(G,8,sp.array([-1.]*d),sp.array([1.]*d),SUPPORT=400,SLICELCB_PARA=1.)
 print Z
 Ga = GPdc.GPcore(*PES.addmins(G,X,Y,S,D,Z[0,:])+[G.kf])
+
+
 
 np=150
 sup = sp.linspace(-1,1,np)
@@ -67,21 +69,38 @@ Xp2 = sp.vstack([sp.array([Z[0,0],Z[0,1],i]) for i in sup])
 [mp0,Vp0] = Ga.infer_diag_post(Xp0,Dp)
 [mp1,Vp1] = Ga.infer_diag_post(Xp1,Dp)
 [mp2,Vp2] = Ga.infer_diag_post(Xp2,Dp)
+
+[m0,V0] = G.infer_diag_post(Xp0,Dp)
+[m1,V1] = G.infer_diag_post(Xp1,Dp)
+[m2,V2] = G.infer_diag_post(Xp2,Dp)
+
 f,a = plt.subplots(3)
+f2,a2 = plt.subplots(3)
+
 s = sp.sqrt(Vp0[0,:])
 a[0].fill_between(sup,sp.array(mp0[0,:]-2.*s).flatten(),sp.array(mp0[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
 a[0].plot(sup,mp0[0,:].flatten())
 a[0].plot(Z[0,0].flatten(),[0],'r.')
+a2[0].plot(sup,Vp0[0,:].flatten(),'g')
+a2[0].plot(sup,V0[0,:].flatten(),'b')
 
 s = sp.sqrt(Vp1[0,:])
 a[1].fill_between(sup,sp.array(mp1[0,:]-2.*s).flatten(),sp.array(mp1[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
 a[1].plot(sup,mp1[0,:].flatten())
 a[1].plot(Z[0,1].flatten(),[0],'r.')
 
+a2[1].plot(sup,Vp1[0,:].flatten(),'g')
+a2[1].plot(sup,V1[0,:].flatten(),'b')
+
+
 s = sp.sqrt(Vp2[0,:])
 a[2].fill_between(sup,sp.array(mp2[0,:]-2.*s).flatten(),sp.array(mp2[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
 a[2].plot(sup,mp2[0,:].flatten())
 a[2].plot(Z[0,2].flatten(),[0],'r.')
+
+a2[2].plot(sup,Vp2[0,:].flatten(),'g')
+a2[2].plot(sup,V2[0,:].flatten(),'b')
+
 
 
 plt.show()

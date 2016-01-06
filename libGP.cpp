@@ -100,7 +100,7 @@ int presolv(int k, int s){
 		printf("trying to use deleted GP\n");
 		return -1;
 	};
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for (int i=0; i<s; i++){
             SS[k+i]->presolv();
         }
@@ -111,7 +111,7 @@ int infer_diag(int k, int s, int Ns,double* Xs, int* Ds, double* R){
 		printf("trying to use deleted GP\n");
 		return -1;
 	};
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for (int i=0; i<s; i++){
             SS[k+i]->infer_diag(Ns, Xs,Ds,&R[2*i*Ns]);
         }
@@ -122,7 +122,7 @@ int infer_m(int k, int s, int Ns,double* Xs, int* Ds, double* R){
 		printf("trying to use deleted GP\n");
 		return -1;
 	};
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for (int i=0; i<s; i++){
             SS[k+i]->infer_m(Ns, Xs,Ds,&R[Ns*i]);
         }
@@ -133,7 +133,7 @@ int llk(int k, int s, double* R){
 		printf("trying to use deleted GP\n");
 		return -1;
 	};
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for (int i=0; i<s; i++){
             SS[k+i]->llk(&R[i]);
         }
@@ -145,7 +145,7 @@ int infer_full(int k, int s, int Ns,double* Xs, int* Ds, double* R){
 		printf("trying to use deleted GP\n");
 		return -1;
 	};
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for (int i=0; i<s; i++){
             SS[k+i]->infer_full(Ns, Xs,Ds,&R[Ns*(Ns+1)*i]);
         }
@@ -156,7 +156,7 @@ int draw(int k, int s, int Nd, double* X, int* D, double* R, int m){
 	printf("trying to use deleted GP\n");
 	return -1;
     };
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (int i=0; i<s; i++){
         SS[k+i]->draw(Nd, X, D, &R[Nd*m*i], m);
     }
@@ -168,7 +168,7 @@ int infer_LCB(int k, int s, int n, double* X, int* D, double p, double* R){
 	printf("trying to use deleted GP\n");
 	return -1;
     };
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (int i=0; i<s; i++){
         LCB(SS[k+i], n, X, D, p, &R[n*i]);
     }
@@ -180,7 +180,7 @@ int infer_EI(int k, int s, int n, double* X, int* D, double* R){
 	printf("trying to use deleted GP\n");
 	return -1;
     };
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (int i=0; i<s; i++){
         EI_gp(SS[k+i], n, X, D, &R[n*i]);
     }

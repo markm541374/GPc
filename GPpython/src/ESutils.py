@@ -31,7 +31,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
             else:
                 return -1e99
         print "Drawing support using slice sample over LCB:"
-        X = slice.slice_sample(f,0.5*(ub+lb),n,0.05*(ub-lb))
+        X = slice.slice_sample(f,0.5*(ub+lb),n,0.015*(ub-lb))
     else:
         raise RuntimeError("draw_support method invalid")
     return X

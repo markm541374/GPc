@@ -243,6 +243,7 @@ int GP::set_hyp(double* hyp){
 int GP::presolv(){
     int c = this->build_K();
     c = this->fac();
+    if (c!=0){printf("failed to cho fac Kxx %d",c);}
     return LAPACKE_dpotrs(LAPACK_ROW_MAJOR,'L',N,1,&Kxx[0],N,&Y[0],1);
 }
 
