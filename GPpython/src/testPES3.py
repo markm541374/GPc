@@ -21,69 +21,34 @@ lb = sp.array([-1.]*d)
 ub = sp.array([1.]*d)
 [X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([1.5,0.35,0.30]))
 
-G = PES.makeG(X,Y,S,D,GPdc.SQUEXP,sp.array([0.,-1.,-1.]),sp.array([1.,1.,1.]),6)
-nz=8
-Z=PES.drawmins_inplane(G,nz,sp.array([-1.]*d),sp.array([1.]*d),axis=1,value = 0.,SUPPORT=500,SLICELCB_PARA=1.)
-#Z=PES.drawmins(G,8,sp.array([-1.]*d),sp.array([1.]*d),SUPPORT=400,SLICELCB_PARA=1.)
-print Z
-Ga = [GPdc.GPcore(*PES.addmins_inplane(G,X,Y,S,D,Z[i,:],axis=1,value=0.,MINPOLICY=PES.NOMIN)+[G.kf]) for i in xrange(nz)]
-#Ga = [GPdc.GPcore(*PES.addmins(G,X,Y,S,D,Z[i,:],)+[G.kf]) for i in xrange(8)]
+kindex = GPdc.SQUEXP
+mprior = sp.array([0.]+[-1.]*d)
+sprior = sp.array([1.]*(d+1))
 
-#-----------------------------------------------------------------------------------------
-np=180
+pesobj = PES.PES(X,Y,S,D,lb,ub,kindex,mprior,sprior,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.)
+
+np=150
 sup = sp.linspace(-1,1,np)
 Dp = [[sp.NaN]]*np
-Xp0 = sp.vstack([sp.array([i,Z[0,1]]) for i in sup])
-Xp1 = sp.vstack([sp.array([Z[0,0],i]) for i in sup])
-
-#after-----------------------------------------------------------------------
-[mp0,Vp0] = Ga[0].infer_diag_post(Xp0,Dp)
-[mp1,Vp1] = Ga[0].infer_diag_post(Xp1,Dp)
+Sp = sp.array([[1e-3]*np]).T
+Xp0 = sp.vstack([sp.array([i,pesobj.Z[0,1]]) for i in sup])
+Xp1 = sp.vstack([sp.array([pesobj.Z[0,0],i]) for i in sup])
 
 f,a = plt.subplots(d)
-s = sp.sqrt(Vp0[0,:])
-a[0].fill_between(sup,sp.array(mp0[0,:]-2.*s).flatten(),sp.array(mp0[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
-a[0].plot(sup,mp0[0,:].flatten())
-a[0].plot(Z[0,0].flatten(),[0],'r.')
+h0 = pesobj.query_pes(Xp0,Sp,Dp)
+h1 = pesobj.query_pes(Xp1,Sp,Dp)
+a[0].plot(sup,h0.flatten(),'b')
+a[1].plot(sup,h1.flatten(),'b')
 
-s = sp.sqrt(Vp1[0,:])
-a[1].fill_between(sup,sp.array(mp1[0,:]-2.*s).flatten(),sp.array(mp1[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
-a[1].plot(sup,mp1[0,:].flatten())
-a[1].plot(Z[0,1].flatten(),[0],'r.')
+def cfn(x,s):
+    return ((x[0])**2)+x[1]+1.
 
-#H-----------------------------------------------------------------------
-H0 = PES.PESgain(G,Ga,Z,Xp0,Dp,[1e-3]*len(Dp))
-a[0].twinx().plot(sup,H0.flatten(),'r')
-H1 = PES.PESgain(G,Ga,Z,Xp1,Dp,[1e-3]*len(Dp))
-a[1].twinx().plot(sup,H1.flatten(),'r')
+a0 = pesobj.query_acq(Xp0,Sp,Dp,cfn)
+a1 = pesobj.query_acq(Xp1,Sp,Dp,cfn)
+a[0].plot(sup,a0.flatten(),'r')
+a[1].plot(sup,a1.flatten(),'r')
 
-##before-----------------------------------------------------------------------
-[mp0_,Vp0_] = G.infer_diag_post(Xp0,Dp)
-[mp1_,Vp1_] = G.infer_diag_post(Xp1,Dp)
-
-
-f,a = plt.subplots(d)
-s = sp.sqrt(Vp0_[0,:])
-a[0].fill_between(sup,sp.array(mp0_[0,:]-2.*s).flatten(),sp.array(mp0_[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
-a[0].plot(sup,mp0_[0,:].flatten())
-#a[0].plot(Z[0,0].flatten(),[0],'r.')
-
-s = sp.sqrt(Vp1_[0,:])
-a[1].fill_between(sup,sp.array(mp1_[0,:]-2.*s).flatten(),sp.array(mp1_[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
-a[1].plot(sup,mp1_[0,:].flatten())
-#a[1].plot(Z[0,1].flatten(),[0],'r.')
-
-
-#comparev-----------------------------------------------------
-f,a = plt.subplots(d)
-a[0].plot(sup,Vp0_.flatten(),'b')
-a[1].plot(sup,Vp1_.flatten(),'b')
-
-a[0].plot(sup,Vp0.flatten(),'g')
-a[1].plot(sup,Vp1.flatten(),'g')
-
-a[0].twinx().plot(sup,sp.sign((Vp0_-Vp0).flatten()),'r')
-a[1].twinx().plot(sup,sp.sign((Vp1_-Vp1).flatten()),'r')
-
-
+cfn = lambda x,s:s**-0.1
+[xmin,ymin,ierror] = pesobj.search_acq(cfn,-4.,-1.)
+print [xmin,ymin,ierror]
 plt.show()

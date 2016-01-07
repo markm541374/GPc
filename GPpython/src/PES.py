@@ -8,6 +8,7 @@ import GPdc
 import eprop
 import scipy as sp
 from scipy import stats as sps
+import DIRECT
 
 def makeG(X,Y,S,D,kindex,mprior,sprior,nh):
     #draw hyps based on plk
@@ -171,3 +172,33 @@ def Vadj(m,V):
     vadj = V[0,0]-beta*(beta+alpha)*(1./s)*(V[0, 0]-V[0, 1])**2
     return vadj
 
+class PES:
+    def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.):
+        self.lb=lb
+        self.ub=ub
+        self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
+        self.Z = drawmins(self.G,DM_SAMPLES,lb,ub,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA)
+        self.Ga = [GPdc.GPcore(*addmins(self.G,X,Y,S,D,self.Z[i,:])+[self.G.kf]) for i in xrange(DM_SAMPLES)]
+        
+    def query_pes(self,Xq,Sq,Dq):
+        a = PESgain(self.G,self.Ga,self.Z,Xq,Dq,Sq)
+        return a
+    
+    def query_acq(self,Xq,Sq,Dq,costfn):
+        a = PESgain(self.G,self.Ga,self.Z,Xq,Dq,Sq)
+        for i in xrange(Xq.shape[0]):
+            a[i] = a[i]/costfn(Xq[i,:].flatten(),Sq[i,:].flatten())
+        return a
+    
+    def search_acq(self,cfn,logsl,logsu,maxf=2500,dv=[[sp.NaN]]):
+        def directwrap(Q,extra):
+            x = sp.array([Q[:-1]])
+            s = 10**Q[-1]
+            acq = PESgain(self.G,self.Ga,self.Z,x,dv,[s])
+            R = -acq/cfn(x,s)
+            return (R,0)
+        print logsl
+        print self.lb
+        print sp.hstack([self.lb,logsl])
+        [xmin, ymin, ierror] = DIRECT.solve(directwrap,sp.hstack([self.lb,logsl]),sp.hstack([self.ub,logsu]),user_data=[], algmethod=1, maxf=maxf, logfilename='/dev/null')
+        return [xmin,ymin,ierror]
