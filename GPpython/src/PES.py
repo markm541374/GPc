@@ -149,6 +149,7 @@ def PESgain(g0,G1,Z,X,D,s):
     for j in xrange(X.shape[0]):
         H[j]-= len(G1)*0.5*sp.log(2*sp.pi*sp.e*(v0[0,j]+s[j]))
         for i,g1 in enumerate(G1):
+            
             Xi = sp.vstack([X[j,:],Z[i,:]])
             Di = [D[j]]+[[sp.NaN]]
             
@@ -169,3 +170,4 @@ def Vadj(m,V):
     #print [s,mu,alpha,beta]
     vadj = V[0,0]-beta*(beta+alpha)*(1./s)*(V[0, 0]-V[0, 1])**2
     return vadj
+

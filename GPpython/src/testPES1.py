@@ -6,6 +6,7 @@
 # and open the template in the editor.
 
 import ESutils
+import DIRECT
 import scipy as sp
 from scipy import linalg as spl
 from scipy import stats as sps
@@ -45,17 +46,18 @@ a[1].plot(sp.array(X[:,0]).flatten(),Y,'g.')
 a[1].plot(Z[0,:].flatten(),[0],'r.')
 
 #-------------------------------------------------------------------------
-#2d
-nt=58
+#3d
+nt=50
 d=3
 lb = sp.array([-1.]*d)
 ub = sp.array([1.]*d)
-[X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([1.5,0.15,0.25,0.20]))
+[X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([1.5,0.35,0.25,0.30]))
 
 G = PES.makeG(X,Y,S,D,GPdc.SQUEXP,sp.array([0.,-1.,-1.,-1.]),sp.array([1.,1.,1.,1.]),6)
-Z=PES.drawmins(G,8,sp.array([-1.]*d),sp.array([1.]*d),SUPPORT=400,SLICELCB_PARA=1.)
+nz=8
+Z=PES.drawmins(G,nz,sp.array([-1.]*d),sp.array([1.]*d),SUPPORT=400,SLICELCB_PARA=1.)
 print Z
-Ga = GPdc.GPcore(*PES.addmins(G,X,Y,S,D,Z[0,:])+[G.kf])
+Ga = [GPdc.GPcore(*PES.addmins(G,X,Y,S,D,Z[i,:])+[G.kf]) for i in xrange(nz)]
 
 
 
@@ -66,9 +68,9 @@ Xp0 = sp.vstack([sp.array([i,Z[0,1],Z[0,2]]) for i in sup])
 Xp1 = sp.vstack([sp.array([Z[0,0],i,Z[0,2]]) for i in sup])
 Xp2 = sp.vstack([sp.array([Z[0,0],Z[0,1],i]) for i in sup])
 
-[mp0,Vp0] = Ga.infer_diag_post(Xp0,Dp)
-[mp1,Vp1] = Ga.infer_diag_post(Xp1,Dp)
-[mp2,Vp2] = Ga.infer_diag_post(Xp2,Dp)
+[mp0,Vp0] = Ga[0].infer_diag_post(Xp0,Dp)
+[mp1,Vp1] = Ga[0].infer_diag_post(Xp1,Dp)
+[mp2,Vp2] = Ga[0].infer_diag_post(Xp2,Dp)
 
 [m0,V0] = G.infer_diag_post(Xp0,Dp)
 [m1,V1] = G.infer_diag_post(Xp1,Dp)
@@ -101,6 +103,24 @@ a[2].plot(Z[0,2].flatten(),[0],'r.')
 a2[2].plot(sup,Vp2[0,:].flatten(),'g')
 a2[2].plot(sup,V2[0,:].flatten(),'b')
 
+#H-----------------------------------------------------------------------
+H0 = PES.PESgain(G,Ga,Z,Xp0,Dp,[1e-3]*len(Dp))
+a[0].twinx().plot(sup,H0.flatten(),'r')
+H1 = PES.PESgain(G,Ga,Z,Xp1,Dp,[1e-3]*len(Dp))
+a[1].twinx().plot(sup,H1.flatten(),'r')
+H2 = PES.PESgain(G,Ga,Z,Xp2,Dp,[1e-3]*len(Dp))
+a[2].twinx().plot(sup,H2.flatten(),'r')
 
+def cost(x,s):
+    return 1.
 
+def directwrap(Q,extra):
+    x = sp.array([Q[:-1]])
+    s = 10**Q[-1]
+    acq = PES.PESgain(G,Ga,Z,x,[[sp.NaN]],[s])
+    R = -acq/cost(x,s)
+    return (R,0)
+
+[xmin, miny, ierror] = DIRECT.solve(directwrap,sp.array([-1.,-1.,-1.,-4.]),sp.array([1.,1.,1.,0.]),user_data=[], algmethod=1, maxf=2000, logfilename='/dev/null')
+print [xmin, miny, ierror]
 plt.show()
