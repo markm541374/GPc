@@ -197,8 +197,35 @@ class PES:
             acq = PESgain(self.G,self.Ga,self.Z,x,dv,[s])
             R = -acq/cfn(x,s)
             return (R,0)
-        print logsl
-        print self.lb
-        print sp.hstack([self.lb,logsl])
+        
         [xmin, ymin, ierror] = DIRECT.solve(directwrap,sp.hstack([self.lb,logsl]),sp.hstack([self.ub,logsu]),user_data=[], algmethod=1, maxf=maxf, logfilename='/dev/null')
+        return [xmin,ymin,ierror]
+    
+class PES_inplane:
+    def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,axis,value,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,AM_POLICY=NOMIN):
+        self.lb=lb
+        self.ub=ub
+        self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
+        self.Z = drawmins_inplane(self.G,DM_SAMPLES,lb,ub,axis=axis,value=value,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA)
+        self.Ga = [GPdc.GPcore(*addmins_inplane(self.G,X,Y,S,D,self.Z[i,:],axis=axis,value=value,MINPOLICY=AM_POLICY)+[self.G.kf]) for i in xrange(DM_SAMPLES)]
+        
+    def query_pes(self,Xq,Sq,Dq):
+        a = PESgain(self.G,self.Ga,self.Z,Xq,Dq,Sq)
+        return a
+    
+    def query_acq(self,Xq,Sq,Dq,costfn):
+        a = PESgain(self.G,self.Ga,self.Z,Xq,Dq,Sq)
+        for i in xrange(Xq.shape[0]):
+            a[i] = a[i]/costfn(Xq[i,:].flatten())
+        return a
+    
+    def search_acq(self,cfn,sfn,maxf=2500,dv=[[sp.NaN]]):
+        def directwrap(Q,extra):
+            x = sp.array([Q])
+            s = sfn(x)
+            acq = PESgain(self.G,self.Ga,self.Z,x,dv,[s])
+            R = -acq/cfn(x)
+            return (R,0)
+        
+        [xmin, ymin, ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=maxf, logfilename='/dev/null')
         return [xmin,ymin,ierror]
