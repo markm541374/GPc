@@ -190,6 +190,16 @@ class PES:
             a[i] = a[i]/costfn(Xq[i,:].flatten(),Sq[i,:].flatten())
         return a
     
+    def search_pes(self,s,maxf=2500,dv=[[sp.NaN]]):
+        def directwrap(Q,extra):
+            x = sp.array([Q])
+            acq = PESgain(self.G,self.Ga,self.Z,x,dv,[s])
+            R = -acq
+            return (R,0)
+        
+        [xmin, ymin, ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=maxf, logfilename='/dev/null')
+        return [xmin,ymin,ierror]
+    
     def search_acq(self,cfn,logsl,logsu,maxf=2500,dv=[[sp.NaN]]):
         def directwrap(Q,extra):
             x = sp.array([Q[:-1]])

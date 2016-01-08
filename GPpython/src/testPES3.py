@@ -48,7 +48,10 @@ a1 = pesobj.query_acq(Xp1,Sp,Dp,cfn)
 a[0].plot(sup,a0.flatten(),'r')
 a[1].plot(sup,a1.flatten(),'r')
 
-cfn = lambda x,s:s**-0.1
+cfn = lambda x,s:1.#s**-0.1
 [xmin,ymin,ierror] = pesobj.search_acq(cfn,-4.,-1.)
+print [xmin,ymin,ierror]
+
+[xmin,ymin,ierror] = pesobj.search_pes(1e-4)
 print [xmin,ymin,ierror]
 plt.show()

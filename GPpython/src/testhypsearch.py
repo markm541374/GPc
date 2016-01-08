@@ -17,7 +17,7 @@ Kxx = GPdc.buildKsym_d(kf,X,D)
 s = 1e-2
 Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,ni)).T+sp.matrix(sps.norm.rvs(0,s,ni)).T
 S = sp.ones(ni)*s
-
+print Y
 MLEHYP = GPdc.searchMLEhyp(X,Y,S,D,sp.array([2.,2.,2.]),sp.array([-2.,-2.,-2.]), GPdc.SQUEXP)
 print MLEHYP
 

@@ -31,6 +31,8 @@ MLEH =  GPdc.searchMLEhyp(X,Y,S,D,lb,ub,GPdc.SQUEXP,mx=10000)
 
 print MLEH
 G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,1,MLEH))
+print Y.shape
+G.printc()
 print G.llk()
 
 np=180
@@ -43,4 +45,5 @@ a0.plot(sup,m.flatten())
 sq = sp.sqrt(v)
 
 a0.fill_between(sup, sp.array(m-1.*sq).flatten(), sp.array(m+1.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
+
 plt.show()

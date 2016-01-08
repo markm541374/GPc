@@ -33,6 +33,6 @@ extern "C" int EI_gp(GP* g, int n, double* X, int* D, double* R){
     }
     
     EI(&U[0], &U[n], ymin, n, &R[0]);
-    printf("{%f %f %f %f}",U[0],U[n],R[0],ymin);
+    //printf("{%f %f %f %f}",U[0],U[n],R[0],ymin);
     return 0;
 }

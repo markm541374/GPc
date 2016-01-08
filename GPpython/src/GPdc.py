@@ -37,6 +37,7 @@ class GP_LKonly:
 
 class GPcore:
     def __init__(self, X_s, Y_s, S_s, D_s, kf):
+        
         if type(kf) is kernel:
             self.size = 1
             kf = [kf]
