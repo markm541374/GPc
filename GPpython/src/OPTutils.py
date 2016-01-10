@@ -49,9 +49,9 @@ def banana(x,s,d):
 
 
 def gensquexpdraw(d,lb,ub):
-    nt=10
-    [X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([1.5]+[0.25]*d))
-    G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,d,sp.array([1.5]+[0.25]*d)))
+    nt=14
+    [X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([1.5]+[0.30]*d))
+    G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,d,sp.array([1.5]+[0.30]*d)))
     def obj(x,s,d):
         #print [x,s,d]
         if s==0.:
@@ -79,8 +79,10 @@ class opt:
         self.S = sp.empty([0,1])
         self.D = []
         
+        self.R = sp.empty([0,self.d])
         self.C = []
         self.T = []
+        self.Tr = []
         self.Ymin = []
         self.sdefault = 1e-6
         self.init_search(para)
@@ -99,6 +101,13 @@ class opt:
         dnext = [sp.NaN]
         return [xnext,snext,dnext]
     
+    def reccomend(self):
+        return self.reccomend_random()
+    
+    def reccomend_random(self):
+        i = sp.argmin(self.Y)
+        return self.X[i,:]
+    
     def step(self,random=False):
         t0=time.time()
         if random:
@@ -107,6 +116,14 @@ class opt:
             [x,s,d] = self.run_search()
             print "search found: "+str([x,s,d])
         t1=time.time()
+        if self.X.shape[0]==0:
+            xr = (self.lb+self.ub)/2.
+        elif random:
+            xr = self.reccomend_random()
+        else:
+            xr = self.reccomend()
+        print "reccomend point "+str(xr)
+        t2=time.time()
         
         [y,c] = self.ojf(x,s,d)
         self.X = sp.vstack([self.X,x])
@@ -114,6 +131,8 @@ class opt:
         self.S = sp.vstack([self.S,s])
         self.D.append(d)
         
+        self.R = sp.vstack([self.R,xr])
+        self.Tr.append(t2-t1)
         self.C.append(c)
         self.T.append(t1-t0)
         self.Ymin.append(sp.amin(self.Y))
@@ -126,7 +145,28 @@ class opt:
             R[0,i] = spl.norm(self.X[i,:]-xtrue)
             R[1,i] = sp.amin(R[0,:i+1])
         return R
-
+    def plot(self,truex,ax,c):
+        ax[0].plot(self.Ymin,c)
+        ax[0].set_ylabel('Ymin')
+        n=self.X.shape[0]
+        M = sp.empty(n)
+        V = sp.empty(n)
+        for i in xrange(n):
+            M[i] = spl.norm(self.X[i,:]-truex)
+            V[i] = spl.norm(self.R[i,:]-truex)
+        ax[1].semilogy(M,c)
+        ax[1].set_ylabel('Xeval')
+        ax[2].semilogy(V,c)
+        ax[2].set_ylabel('Xrecc')
+        
+        ax[3].plot([sum(self.C[:i]) for i in xrange(n)],c)
+        ax[3].set_ylabel('cost')
+        ax[4].plot(self.T,c)
+        ax[4].set_ylabel('Stime')
+        ax[5].plot(self.Tr,c)
+        ax[5].set_ylabel('Rtime')
+        return
+    
 class LCBMLE(opt):
     def init_search(self,para):
         self.kindex = para[0]
@@ -143,14 +183,20 @@ class LCBMLE(opt):
     def run_search(self):
         
         MAP = GPdc.searchMAPhyp(self.X,self.Y,self.S,self.D,self.mprior,self.sprior, self.kindex)
-        G = GPdc.GPcore(self.X,self.Y,self.S,self.D,GPdc.kernel(self.kindex,self.d,MAP))
+        self.G = GPdc.GPcore(self.X,self.Y,self.S,self.D,GPdc.kernel(self.kindex,self.d,MAP))
         def directwrap(x,y):
             x.resize([1,self.d])
             
-            a = G.infer_LCB(x,[[sp.NaN]],1.)[0,0]
+            a = self.G.infer_LCB(x,[[sp.NaN]],1.)[0,0]
             return (a,0)
         [xmin,ymin,ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.maxf, logfilename='/dev/null')
         return [xmin,self.s,[sp.NaN]]
+    def reccomend(self):
+        def dirwrap(x,y):
+            m  =self.G.infer_m(x,[[sp.NaN]])[0,0]
+            return (m,0)
+        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.maxf, logfilename='/dev/null')
+        return xmin
     
 class EIMLE(opt):
     def init_search(self,para):
@@ -168,27 +214,64 @@ class EIMLE(opt):
     def run_search(self):
         
         MAP = GPdc.searchMAPhyp(self.X,self.Y,self.S,self.D,self.mprior,self.sprior, self.kindex)
-        G = GPdc.GPcore(self.X,self.Y,self.S,self.D,GPdc.kernel(self.kindex,self.d,MAP))
+        self.G = GPdc.GPcore(self.X,self.Y,self.S,self.D,GPdc.kernel(self.kindex,self.d,MAP))
         def directwrap(x,y):
             x.resize([1,self.d])
             
-            a = G.infer_EI(x,[[sp.NaN]])
+            a = self.G.infer_EI(x,[[sp.NaN]])
             #print [x,a]
             #print G.infer_diag_post(x,[[sp.NaN]])
             return (-a[0,0],0)
         [xmin,ymin,ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.maxf, logfilename='/dev/null')
         return [xmin,self.s,[sp.NaN]]
     
+    def reccomend(self):
+        def dirwrap(x,y):
+            m  =self.G.infer_m(x,[[sp.NaN]])[0,0]
+            return (m,0)
+        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.maxf, logfilename='/dev/null')
+        return xmin
+    
 class PESFX(opt):
     def init_search(self,para):
         self.para=para
         self.sdefault = para['s']
+        
         for i in xrange(para['ninit']):
             self.step(random=True)
         return
     
     def run_search(self):
         print "begin PES:"
-        pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'])
-        [xmin,ymin,ierror] = pesobj.search_pes(self.sdefault,maxf=self.para['maxf'])
+        self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'])
+        [xmin,ymin,ierror] = self.pesobj.search_pes(self.sdefault,maxf=self.para['maxf'])
         return [xmin,self.para['s'],[sp.NaN]]
+    
+    def reccomend(self):
+        def dirwrap(x,y):
+            m  =self.pesobj.G.infer_m(x,[[sp.NaN]])[0,0]
+            return (m,0)
+        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.para['maxf'], logfilename='/dev/null')
+        return xmin
+    
+class PESVS(opt):
+    def init_search(self,para):
+        self.para=para
+        self.sdefault = para['s']
+        
+        for i in xrange(para['ninit']):
+            self.step(random=True)
+        return
+    
+    def run_search(self):
+        print "begin PES:"
+        self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'])
+        [Qmin,ymin,ierror] = self.pesobj.search_acq(self.para['cfn'],self.para['logsl'],self.para['logsu'],maxf=self.para['maxf'])
+        return [Qmin[:-1],Qmin[-1],[sp.NaN]]
+    
+    def reccomend(self):
+        def dirwrap(x,y):
+            m  =self.pesobj.G.infer_m(x,[[sp.NaN]])[0,0]
+            return (m,0)
+        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.para['maxf'], logfilename='/dev/null')
+        return xmin

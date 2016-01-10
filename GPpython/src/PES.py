@@ -181,10 +181,13 @@ def Vadj(m,V):
 
 class PES:
     def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.):
+        print "PES init:"
         self.lb=lb
         self.ub=ub
         self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
+        print "hyp draws: "+str([k.hyp for k in self.G.kf])
         self.Z = drawmins(self.G,DM_SAMPLES,lb,ub,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA)
+        print "mindraws: "+str(self.Z)
         self.Ga = [GPdc.GPcore(*addmins(self.G,X,Y,S,D,self.Z[i,:])+[self.G.kf]) for i in xrange(DM_SAMPLES)]
         
     def query_pes(self,Xq,Sq,Dq):
@@ -220,10 +223,13 @@ class PES:
     
 class PES_inplane:
     def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,axis,value,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,AM_POLICY=NOMIN):
+        print "PES init:"
         self.lb=lb
         self.ub=ub
         self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
+        print "hyp draws: "+str([k.hyp for k in self.G.kf])
         self.Z = drawmins_inplane(self.G,DM_SAMPLES,lb,ub,axis=axis,value=value,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA)
+        print "mindraws: "+str(Z)
         self.Ga = [GPdc.GPcore(*addmins_inplane(self.G,X,Y,S,D,self.Z[i,:],axis=axis,value=value,MINPOLICY=AM_POLICY)+[self.G.kf]) for i in xrange(DM_SAMPLES)]
         
     def query_pes(self,Xq,Sq,Dq):
