@@ -45,8 +45,8 @@ def addmins(G,X,Y,S,D,xmin,mode=OFFHESSZERO, GRADNOISE=1e-9,EP_SOFTNESS=1e-9,EPR
     nh = ((dim-1)*dim)/2
     Xh = sp.vstack([sp.empty([0,dim])]+[xmin]*nh)
     Dh=[]
-    for i in range(dim):
-        for j in range(i):
+    for i in xrange(dim):
+        for j in xrange(i):
             Dh.append([i,j])
     class MJMError(Exception):
         pass
@@ -62,6 +62,13 @@ def addmins(G,X,Y,S,D,xmin,mode=OFFHESSZERO, GRADNOISE=1e-9,EP_SOFTNESS=1e-9,EPR
     Xd = sp.vstack([xmin]*(dim+1))
     Dd = [[sp.NaN]]+[[i,i] for i in xrange(dim)]
     [m,V] = G.infer_full_post(Xd,Dd)
+    for i in xrange(dim):
+        if V[i,i]<0:
+            class MJMError(Exception):
+                pass
+            print [m,V]
+            raise MJMError('negative on diagonal')
+        
     yminarg = sp.argmin(Y)
     Y_ = sp.array([Y[yminarg,0]]+[0.]*dim)
     Z = sp.array([-1]+[1.]*dim)

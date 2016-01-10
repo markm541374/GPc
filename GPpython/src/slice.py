@@ -58,7 +58,7 @@ def slice_sample(loglike, init, iters, sigma, step_out=True,burn=20,subsam=4):
                 xd = sp.random.rand() * (x_r[d] - x_l[d]) + x_l[d]
                 x_cur[d] = xd.copy()
                 last_llh = loglike(x_cur)
-                if last_llh > llh0:
+                if last_llh >= llh0:
                     xx[d] = xd.copy()
                     break
                 elif xd > xx[d]:
@@ -66,6 +66,7 @@ def slice_sample(loglike, init, iters, sigma, step_out=True,burn=20,subsam=4):
                 elif xd < xx[d]:
                     x_l[d] = xd
                 else:
+                    print [xd,x_r[d],x_l[d],xx[d],last_llh,llh0]
                     raise RuntimeError('Slice sampler shrank too far.')
         if i%subsam==0:
             

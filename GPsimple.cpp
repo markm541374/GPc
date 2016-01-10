@@ -288,7 +288,7 @@ void GP::ping(){
 	printf("Y:\n[");
 
 		for (int i=0; i<N; i++){
-			printf("%f  ",Y[i]);
+			printf("%f  ",Yd[i]);
 		}
 	printf("]\nD:\n[");
 		for (int i=0; i<N; i++){

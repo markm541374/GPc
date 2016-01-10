@@ -1,3 +1,6 @@
+#!/usr/bin/env python2
+#encoding: UTF-8
+
 # To change this license header, choose License Headers in Project Properties.
 # To change this template file, choose Tools | Templates
 # and open the template in the editor.
@@ -14,13 +17,6 @@ def gaussian_fusion(m1,m2,V1,V2):
     m = V.dot((spl.solve(V1,m1)+spl.solve(V2,m2)).T)
     return m,V
 
-def expectation_prop(m0,V0,Y,Z,F,z):
-    try:
-        return expectation_prop_inner(m0,V0,Y,Z,F,z)
-    except:
-        import pickle
-        pickle.dump([m0,V0,Y,Z,F,z],open('epkill.p','wb'))
-        raise
 def expectation_prop_inner(m0,V0,Y,Z,F,z):
     #expectation propagation on multivariate gaussian for soft inequality constraint
     #m0,v0 are mean vector , covariance before EP
@@ -32,7 +28,7 @@ def expectation_prop_inner(m0,V0,Y,Z,F,z):
     n = V0.shape[0]
     print "expectation prpagation running on "+str(n)+" dimensions for "+str(z)+" loops:"
     mt =sp.zeros(n)
-    Vt= sp.eye(n)*float(1e10)
+    Vt= sp.eye(n)*float(max(1e10,(1e10)*sp.amax(V0)))
     m = sp.empty(n)
     V = sp.empty([n,n])
     conv = sp.empty(z)
@@ -67,3 +63,17 @@ def expectation_prop_inner(m0,V0,Y,Z,F,z):
     V = V0.dot(spl.solve(V0+Vt,Vt))
     m = V.dot((spl.solve(V0,m0)+spl.solve(Vt,mt)).T)
     return mt, Vt
+
+
+import pickle
+
+from matplotlib import pyplot as plt
+print '2'
+[m0,V0,Y,Z,F,z] = pickle.load(open('epkill.p','rb'))
+#expectation_prop_inner(m0,V0,Y,Z,F,z)
+print m0
+print V0
+print Y
+print Z
+print F
+print z

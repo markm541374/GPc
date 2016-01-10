@@ -3,10 +3,13 @@
 # and open the template in the editor.
 
 import scipy as sp
+from scipy import linalg as spl
 import time
 import GPdc
 from matplotlib import pyplot as plt
 import DIRECT
+import PES
+import ESutils
 def cosines(x,s,d):
     x.resize([1,x.size])
     assert(d==[sp.NaN])
@@ -29,8 +32,41 @@ def quad(x,s,d):
     else:
         noise = sp.random.normal(scale=sp.sqrt(s))
     return [f +noise,1.]
+bananamin = sp.array([0.2,0.2])
+def banana(x,s,d):
+    assert(d==[sp.NaN])
+    x.resize([1,x.size])
+    u = 5.*x[0,0]
+    v = 5.*x[0,1]
+    a=1.
+    b=100.
+    f = 1e-3*((a-u)**2 + b*(v-u**2)**2)
+    if s==0.:
+        noise = 0.
+    else:
+        noise = sp.random.normal(scale=sp.sqrt(s))
+    return [f+noise,1.]
 
 
+def gensquexpdraw(d,lb,ub):
+    nt=10
+    [X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([1.5]+[0.25]*d))
+    G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,d,sp.array([1.5]+[0.25]*d)))
+    def obj(x,s,d):
+        #print [x,s,d]
+        if s==0.:
+            noise = 0.
+        else:
+            noise = sp.random.normal(scale=sp.sqrt(s))
+        return [G.infer_m(x,[d])[0,0]+noise,1.]
+    def dirwrap(x,y):
+        z = obj(x,0.,[sp.NaN])
+        return (z,0)
+    [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=10000, logfilename='/dev/null')
+    
+    return [obj,xmin]
+
+    
 class opt:
     def __init__(self,objective,lb,ub,para=None):
         self.ojf = objective
@@ -83,6 +119,13 @@ class opt:
         self.Ymin.append(sp.amin(self.Y))
         return
 
+    def compX(self,xtrue):
+        n = self.X.shape[0]
+        R = sp.empty([2,n])
+        for i in xrange(n):
+            R[0,i] = spl.norm(self.X[i,:]-xtrue)
+            R[1,i] = sp.amin(R[0,:i+1])
+        return R
 
 class LCBMLE(opt):
     def init_search(self,para):
@@ -108,3 +151,44 @@ class LCBMLE(opt):
             return (a,0)
         [xmin,ymin,ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.maxf, logfilename='/dev/null')
         return [xmin,self.s,[sp.NaN]]
+    
+class EIMLE(opt):
+    def init_search(self,para):
+        self.kindex = para[0]
+        self.mprior = para[1]
+        self.sprior = para[2]
+        self.maxf = para[3]
+        self.s = para[4]
+        self.sdefault = para[4]
+        ninit=para[5]
+        for i in xrange(ninit):
+            self.step(random=True)
+        return
+    
+    def run_search(self):
+        
+        MAP = GPdc.searchMAPhyp(self.X,self.Y,self.S,self.D,self.mprior,self.sprior, self.kindex)
+        G = GPdc.GPcore(self.X,self.Y,self.S,self.D,GPdc.kernel(self.kindex,self.d,MAP))
+        def directwrap(x,y):
+            x.resize([1,self.d])
+            
+            a = G.infer_EI(x,[[sp.NaN]])
+            #print [x,a]
+            #print G.infer_diag_post(x,[[sp.NaN]])
+            return (-a[0,0],0)
+        [xmin,ymin,ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.maxf, logfilename='/dev/null')
+        return [xmin,self.s,[sp.NaN]]
+    
+class PESFX(opt):
+    def init_search(self,para):
+        self.para=para
+        self.sdefault = para['s']
+        for i in xrange(para['ninit']):
+            self.step(random=True)
+        return
+    
+    def run_search(self):
+        print "begin PES:"
+        pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'])
+        [xmin,ymin,ierror] = pesobj.search_pes(self.sdefault,maxf=self.para['maxf'])
+        return [xmin,self.para['s'],[sp.NaN]]

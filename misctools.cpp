@@ -29,6 +29,7 @@ extern "C" int EI(double* m, double* s, double y, int N, double* R){
     for (int i=0; i<N; i++){
         S = (y-m[i])/s[i];
         R[i] = (y-m[i])*cdf(S)+s[i]*pdf(S);
+        //printf("\nm: %f s: %f y: %f S: %f cdf: %f pdf: %f",m[i],s[i],y,S,cdf(S),pdf(S));
         //TODO fix EI for values that make pdf and cdf zero
         //if (R[i]==0.){printf("ei=0 %e %e %e_",S,pdf(S),cdf(S));}
     }

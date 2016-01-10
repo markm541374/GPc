@@ -29,7 +29,8 @@ extern "C" int EI_gp(GP* g, int n, double* X, int* D, double* R){
     
     double ymin = 1e99;
     for (int i=0; i<g->N; i++){
-        if(g->Y[i]<ymin){ymin = g->Y[i];}
+        //printf("%f_",g->Yd[i]);
+        if(g->Yd[i]<ymin){ymin = g->Yd[i];}
     }
     
     EI(&U[0], &U[n], ymin, n, &R[0]);
