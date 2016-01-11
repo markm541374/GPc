@@ -34,10 +34,8 @@ para = [kindex,mprior,sprior,maxf,s,ninit]
 
 
 OE = OPTutils.EIMLE(ojf,lb,ub,para)
-OL = OPTutils.LCBMLE(ojf,lb,ub,para)
 for i in xrange(20):
     OE.step()
-    OL.step()
 
 para = dict()
 para['kindex'] = GPdc.SQUEXP
@@ -50,18 +48,46 @@ para['DH_SAMPLES'] = 8
 para['DM_SAMPLES'] = 8
 para['DM_SUPPORT'] = 400
 para['DM_SLICELCBPARA'] = 1.
+para['cfn'] = lambda x,s: ((1e-6)/s)**0.2
+para['logsl'] = -8.
+para['logsu'] = -2.
+"""
+import cProfile, pstats, StringIO
+pr = cProfile.Profile()
+pr.enable()
+"""
 
-OP = OPTutils.PESFX(ojf,lb,ub,para)
-for i in xrange(5):
+OV = OPTutils.PESVS(ojf,lb,ub,para)
+for i in xrange(30):
     try:
-        OP.step()
+        OV.step()
     except RuntimeError as e:
         print e
         break
 
-f,a = plt.subplots(6)
-O.plot(truexmin,a,'b')
+"""
+pr.disable()
+s = StringIO.StringIO()
+sortby = 'cumulative'
+ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+ps.print_stats()
+print s.getvalue()
+"""
+
+OS = OPTutils.PESFX(ojf,lb,ub,para)
+for i in xrange(30):
+    try:
+        OS.step()
+    except RuntimeError as e:
+        print e
+        break
+
+
+f,a = plt.subplots(7)
+
 OE.plot(truexmin,a,'r')
-OP.plot(truexmin,a,'g')
-OL.plot(truexmin,a,'c')
+OV.plot(truexmin,a,'g')
+OS.plot(truexmin,a,'b')
+
+
 plt.show()

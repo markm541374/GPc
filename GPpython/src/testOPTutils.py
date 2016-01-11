@@ -13,6 +13,10 @@ lb = sp.array([[-1.]*d])
 ub = sp.array([[1.]*d])
 [ojf,truexmin] = OPTutils.gensquexpdraw(d,sp.array([-1.]*d),sp.array([1.]*d))
 
+O = OPTutils.opt(ojf,lb,ub)
+for i in xrange(30):
+    O.step()
+
 
 kindex = GPdc.SQUEXP
 mprior = sp.array([0.]+[-1.]*d)
@@ -21,9 +25,12 @@ maxf = 4000
 s = 1e-6
 ninit = 10
 para = [kindex,mprior,sprior,maxf,s,ninit]
+
 OE = OPTutils.EIMLE(ojf,lb,ub,para)
+OL = OPTutils.LCBMLE(ojf,lb,ub,para)
 for i in xrange(20):
     OE.step()
+    OL.step()
 
 
 para = dict()
@@ -46,8 +53,10 @@ for i in xrange(5):
         print e
         break
 
-f,a = plt.subplots(6) 
+f,a = plt.subplots(7)
+O.plot(truexmin,a,'b')
 OE.plot(truexmin,a,'r')
 OP.plot(truexmin,a,'g')
+OL.plot(truexmin,a,'c')
 
 plt.show()

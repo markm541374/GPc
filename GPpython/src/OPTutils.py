@@ -108,6 +108,9 @@ class opt:
         i = sp.argmin(self.Y)
         return self.X[i,:]
     
+    def query_ojf(self,x,s,d):
+        return self.ojf(x,s,d)
+    
     def step(self,random=False):
         t0=time.time()
         if random:
@@ -125,7 +128,7 @@ class opt:
         print "reccomend point "+str(xr)
         t2=time.time()
         
-        [y,c] = self.ojf(x,s,d)
+        [y,c] = self.query_ojf(x,s,d)
         self.X = sp.vstack([self.X,x])
         self.Y = sp.vstack([self.Y,y])
         self.S = sp.vstack([self.S,s])
@@ -161,10 +164,14 @@ class opt:
         
         ax[3].plot([sum(self.C[:i]) for i in xrange(n)],c)
         ax[3].set_ylabel('cost')
-        ax[4].plot(self.T,c)
-        ax[4].set_ylabel('Stime')
-        ax[5].plot(self.Tr,c)
-        ax[5].set_ylabel('Rtime')
+        
+        ax[4].semilogy([sum(self.C[:i]) for i in xrange(n)],V,c)
+        ax[4].set_ylabel('Xrecc/cost')
+        
+        ax[5].plot(self.T,c)
+        ax[5].set_ylabel('Stime')
+        ax[6].plot(self.Tr,c)
+        ax[6].set_ylabel('Rtime')
         return
     
 class LCBMLE(opt):
@@ -267,7 +274,7 @@ class PESVS(opt):
         print "begin PES:"
         self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'])
         [Qmin,ymin,ierror] = self.pesobj.search_acq(self.para['cfn'],self.para['logsl'],self.para['logsu'],maxf=self.para['maxf'])
-        return [Qmin[:-1],Qmin[-1],[sp.NaN]]
+        return [Qmin[:-1],10**Qmin[-1],[sp.NaN]]
     
     def reccomend(self):
         def dirwrap(x,y):
@@ -275,3 +282,8 @@ class PESVS(opt):
             return (m,0)
         [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.para['maxf'], logfilename='/dev/null')
         return xmin
+    
+    def query_ojf(self,x,s,d):
+        [y,c0] = self.ojf(x,s,d)
+        c = self.para['cfn'](x,s)
+        return [y,c]
