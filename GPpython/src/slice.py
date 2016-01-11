@@ -41,18 +41,21 @@ def slice_sample(loglike, init, iters, sigma, step_out=True,burn=20,subsam=4):
             x_l[d] = x_l[d] - rr * sigma[d]
             x_r = xx.copy()
             x_r[d] = x_r[d] + (1 - rr) * sigma[d]
-
+            #z=0
             if step_out:
+                
                 llh_l = loglike(x_l)
                 while llh_l > llh0:
                     # print x_l
                     x_l[d] = x_l[d] - sigma[d]
                     llh_l = loglike(x_l)
+                    #z+=1
                 llh_r = loglike(x_r)
                 while llh_r > llh0:
                     x_r[d] = x_r[d] + sigma[d]
                     llh_r = loglike(x_r)
-
+                    #z+=1
+            #print "XXXXXXXXXXXXXXstepout counter "+str(z)
             x_cur = xx.copy()
             while True:
                 xd = sp.random.rand() * (x_r[d] - x_l[d]) + x_l[d]

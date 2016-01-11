@@ -31,7 +31,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
             else:
                 return -1e99
         print "Drawing support using slice sample over LCB:"
-        X = slice.slice_sample(f,0.5*(ub+lb),n,0.015*(ub-lb))
+        X = slice.slice_sample(f,0.5*(ub+lb),n,0.1*(ub-lb))
     else:
         raise RuntimeError("draw_support method invalid")
     return X
@@ -71,7 +71,7 @@ def draw_support_inplane(g,lb,ub,n,method,axis,value,para=1.):
         print "Drawing support using slice sample over LCB:"
         lb_red = sp.hstack([lb[:axis],lb[axis+1:]])
         ub_red = sp.hstack([ub[:axis],ub[axis+1:]])
-        X = slice.slice_sample(f,0.5*(ub_red+lb_red),n,0.05*(ub_red-lb_red))
+        X = slice.slice_sample(f,0.5*(ub_red+lb_red),n,0.1*(ub_red-lb_red))
         return sp.hstack([X[:,:axis],sp.ones([n,1])*value,X[:,axis:]])
     else:
         raise RuntimeError("draw_support method invalid")
