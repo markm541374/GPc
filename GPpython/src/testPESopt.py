@@ -34,7 +34,7 @@ para = [kindex,mprior,sprior,maxf,s,ninit]
 
 
 OE = OPTutils.EIMLE(ojf,lb,ub,para)
-for i in xrange(20):
+for i in xrange(50):
     OE.step()
 
 para = dict()
@@ -58,7 +58,7 @@ pr.enable()
 """
 
 OV = OPTutils.PESVS(ojf,lb,ub,para)
-for i in xrange(30):
+for i in xrange(50):
     try:
         OV.step()
     except RuntimeError as e:
@@ -75,7 +75,7 @@ print s.getvalue()
 """
 
 OS = OPTutils.PESFX(ojf,lb,ub,para)
-for i in xrange(30):
+for i in xrange(50):
     try:
         OS.step()
     except RuntimeError as e:

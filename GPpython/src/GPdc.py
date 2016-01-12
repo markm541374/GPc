@@ -153,6 +153,11 @@ class GPcore:
         R=sp.empty([self.size,ns])
         libGP.infer_EI(self.s, cint(self.size),ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D), R.ctypes.data_as(ctpd))
         return R
+    
+    def infer_EI_post(self,X_i,D_i):
+        [m,v] = self.infer_diag_post(X_i,D_i)
+        ####here
+        return
 #kf = gen_sqexp_k_d([1.,0.3])
 
 

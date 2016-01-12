@@ -227,11 +227,11 @@ class PES_inplane:
         self.lb=lb
         self.ub=ub
         self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
-        print "hyp draws: "+str([k.hyp for k in self.G.kf])
+        print "hyp draws:\n"+str([k.hyp for k in self.G.kf])
         self.Z = drawmins_inplane(self.G,DM_SAMPLES,lb,ub,axis=axis,value=value,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA)
-        print "mindraws: "+str(Z)
+        print "mindraws:\n"+str(self.Z)
         self.Ga = [GPdc.GPcore(*addmins_inplane(self.G,X,Y,S,D,self.Z[i,:],axis=axis,value=value,MINPOLICY=AM_POLICY)+[self.G.kf]) for i in xrange(DM_SAMPLES)]
-        
+        return
     def query_pes(self,Xq,Sq,Dq):
         a = PESgain(self.G,self.Ga,self.Z,Xq,Dq,Sq)
         return a
@@ -247,8 +247,9 @@ class PES_inplane:
             x = sp.array([Q])
             s = sfn(x)
             acq = PESgain(self.G,self.Ga,self.Z,x,dv,[s])
-            R = -acq/cfn(x)
+            R = -acq/cfn(x,s)
             return (R,0)
-        
+        print self.lb
+        print self.ub
         [xmin, ymin, ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=maxf, logfilename='/dev/null')
         return [xmin,ymin,ierror]

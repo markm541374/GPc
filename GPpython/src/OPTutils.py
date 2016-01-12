@@ -66,6 +66,27 @@ def gensquexpdraw(d,lb,ub):
     
     return [obj,xmin]
 
+def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
+    #axis = 0 value = sl
+    #d dimensional objective +1 for s
+    nt=20
+    print sp.hstack([sp.array([[sl]]),lb])
+    print sp.hstack([sp.array([[su]]),ub])
+    [X,Y,S,D] = ESutils.gen_dataset(nt,d+1,sp.hstack([sp.array([[sl]]),lb]).flatten(),sp.hstack([sp.array([[su]]),ub]).flatten(),GPdc.SQUEXP,sp.array([1.5]+[sls]+[0.30]*d))
+    G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,d+1,sp.array([1.5]+[sls]+[0.30]*d)))
+    def obj(x,s,d):
+        x = x.flatten()
+        if sfn(x)==0.:
+            noise = 0.
+        else:
+            noise = sp.random.normal(scale=sp.sqrt(sfn(x)))
+        return [G.infer_m(sp.hstack([s,x]),[d])[0,0]+noise,1.]
+    def dirwrap(x,y):
+        z = obj(x,sl,[sp.NaN])
+        return (z,0)
+    [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=10000, logfilename='/dev/null')
+    
+    return [obj,xmin]
     
 class opt:
     def __init__(self,objective,lb,ub,para=None):
@@ -73,7 +94,10 @@ class opt:
         self.lb = lb
         self.ub = ub
         self.d = lb.shape[1]
-        
+        try:
+            self.d = para['d']
+        except:
+            pass
         self.X = sp.empty([0,self.d])
         self.Y = sp.empty([0,1])
         self.S = sp.empty([0,1])
@@ -115,6 +139,7 @@ class opt:
         t0=time.time()
         if random:
             [x,s,d] = self.run_search_random()
+            print "random selected: "+str([x,s,d])
         else:
             [x,s,d] = self.run_search()
             print "search found: "+str([x,s,d])
@@ -282,6 +307,43 @@ class PESVS(opt):
             return (m,0)
         [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.para['maxf'], logfilename='/dev/null')
         return xmin
+    
+    def query_ojf(self,x,s,d):
+        [y,c0] = self.ojf(x,s,d)
+        c = self.para['cfn'](x,s)
+        return [y,c]
+
+
+class PESIP(opt):
+    def init_search(self,para):
+        self.para=para
+        self.sdefault = para['s']
+        self.lb = sp.hstack([sp.array([[para['sl']]]),self.lb])
+        self.ub = sp.hstack([sp.array([[para['su']]]),self.ub])
+        print self.lb
+        print self.ub
+        for i in xrange(para['ninit']):
+            self.step(random=True)
+        return
+    
+    def run_search(self):
+        print "begin PES:"
+        
+        self.pesobj = PES.PES_inplane(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],self.para['axis'],self.para['value'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'])
+        
+        [Qmin,ymin,ierror] = self.pesobj.search_acq(self.para['cfn'],self.para['sfn'],maxf=self.para['maxf'])
+        return [Qmin,self.para['sfn'](Qmin),[sp.NaN]]
+    
+    def reccomend(self):
+        def dirwrap(x,y):
+            m  =self.pesobj.G.infer_m(sp.hstack([self.para['sl'],x]),[[sp.NaN]])[0,0]
+            return (m,0)
+        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb[:,1:],self.ub[:,1:],user_data=[], algmethod=1, maxf=self.para['maxf'], logfilename='/dev/null')
+        return sp.hstack([sp.array(self.para['sl']),xmin])
+    def reccomend_random(self):
+        i = sp.argmin(self.Y)
+        
+        return sp.hstack([sp.array([self.para['sl']]),self.X[i,1:]])
     
     def query_ojf(self,x,s,d):
         [y,c0] = self.ojf(x,s,d)

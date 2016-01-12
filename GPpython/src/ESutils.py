@@ -32,6 +32,14 @@ def draw_support(g, lb, ub, n, method, para=1.):
                 return -1e99
         print "Drawing support using slice sample over LCB:"
         X = slice.slice_sample(f,0.5*(ub+lb),n,0.1*(ub-lb))
+    elif method==SUPPORT_SLICEEI:
+        def f(x):
+            if all(x>lb) and all(x<ub):
+                return g.infer_EI_post(sp.array(x),[[sp.NaN]],para)[0,0]
+            else:
+                return -1e99
+        print "Drawing support using slice sample over EI:"
+        X = slice.slice_sample(f,0.5*(ub+lb),n,0.1*(ub-lb))
     else:
         raise RuntimeError("draw_support method invalid")
     return X
@@ -48,6 +56,8 @@ def draw_min(g,support,n):
 
 #ub and lb are still for the full space but the values in the chosen axis do not determine the outcome
 def draw_support_inplane(g,lb,ub,n,method,axis,value,para=1.):
+    lb = lb.copy()
+    ub = ub.copy()
     lb[axis]=value-1.
     ub[axis]=value+1.
     d = g.D
@@ -60,6 +70,7 @@ def draw_support_inplane(g,lb,ub,n,method,axis,value,para=1.):
             X[:,i] += lb[i]
         X[:,axis] *= 0.
         X[:,axis] += value
+        
         return X
     elif method==SUPPORT_SLICELCB:
         def f(x):
@@ -87,7 +98,12 @@ def plot_gp(g,axis,x,d):
 def drawhyp_plk(X,Y,S,D,ki,hm,hs,n,burn=80,subsam=5):
     def f(loghyp):
         r=GPdc.GP_LKonly(X,Y,S,D,GPdc.kernel(ki,X.shape[1],[10**i for i in loghyp])).plk(hm,hs)
-        
+        if sp.isnan(r):
+            class MJMError(Exception):
+                pass
+            print 'nan from GPLKonly with input'
+            print [X,Y,S,D,ki,hm,hs,n,burn,subsam]
+            raise MJMError('nan from GPLKonly with input')
         return r
     X = slice.slice_sample(f,hm,n,0.05*hs,burn=burn,subsam=subsam)
     return 10**X
