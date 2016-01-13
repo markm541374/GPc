@@ -12,9 +12,9 @@ const int n=6; //how many kernels there are
 
 //k is the kindex^th kernel in d dimensions between x1 and x2 and differentiated accoding to d1 and d2 with adjusted hyperparameters ih
 //d1/d2 denote derivatives of the kernel. the remainder of d/8^i is the number of derivativees in the i^th axis
-extern "C" double k(double *x1, double *x2, int d1, int d2, int D, double* ih, int kindex);
+extern "C" double k(double *x1, double *x2, int d1, int d2, int D, double* ih, int kindex, double* smodel);
 //extern "C" double (*kern)(double *x1, double *x2, int d1, int d2, int D, double* ih);
-typedef double (*KP)(double *x1, double *x2, int d1, int d2, int D, double* ih);
+typedef double (*KP)(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel);
 extern "C" const KP kern[n];
 
 

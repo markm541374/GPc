@@ -167,6 +167,7 @@ LINXSQUEXP = 2
 LINSQUEXPXSQUEXP = 3
 SQUEXP1SSQUEXP = 4
 SSPS = 5
+SQUEXPCS = 6
 class kernel(object):
     def __init__(self,K,D,H):
         self.dim = D
@@ -180,7 +181,8 @@ class kernel(object):
     def __call__(self,x1, x2, d1=[sp.NaN], d2=[sp.NaN]):
         D1 = 0 if sp.isnan(d1[0]) else int(sum([8**x for x in d1]))
         D2 = 0 if sp.isnan(d2[0]) else int(sum([8**x for x in d2]))
-        r=libGP.k(x1.ctypes.data_as(ctpd),x2.ctypes.data_as(ctpd), cint(D1),cint(D2),cint(self.dim),self.ihyp.ctypes.data_as(ctpd),cint(self.Kindex))
+        smodel=0.
+        r=libGP.k(x1.ctypes.data_as(ctpd),x2.ctypes.data_as(ctpd), cint(D1),cint(D2),cint(self.dim),self.ihyp.ctypes.data_as(ctpd),cint(self.Kindex),ct.byref(ct.c_double(smodel)))
         return r
     
 
@@ -195,7 +197,8 @@ class gen_sqexp_k_d():
     def __call__(self,x1, x2, d1=[sp.NaN], d2=[sp.NaN]):
         D1 = 0 if sp.isnan(d1[0]) else int(sum([8**x for x in d1]))
         D2 = 0 if sp.isnan(d2[0]) else int(sum([8**x for x in d2]))
-        r=libGP.k(x1.ctypes.data_as(ctpd),x2.ctypes.data_as(ctpd), cint(D1),cint(D2),cint(self.dim),self.hypinv.ctypes.data_as(ctpd),cint(0))
+        smodel=0.
+        r=libGP.k(x1.ctypes.data_as(ctpd),x2.ctypes.data_as(ctpd), cint(D1),cint(D2),cint(self.dim),self.hypinv.ctypes.data_as(ctpd),cint(0),ct.byref(ct.c_double(smodel)))
         return r
     
 class gen_lin1_k_d():
@@ -211,7 +214,8 @@ class gen_lin1_k_d():
     def __call__(self,x1, x2, d1=[sp.NaN], d2=[sp.NaN]):
         D1 = 0 if sp.isnan(d1[0]) else int(sum([8**x for x in d1]))
         D2 = 0 if sp.isnan(d2[0]) else int(sum([8**x for x in d2]))
-        r=libGP.k(x1.ctypes.data_as(ctpd),x2.ctypes.data_as(ctpd), cint(D1),cint(D2),cint(-42),self.hypinv.ctypes.data_as(ctpd),cint(1))
+        smodel = 0.
+        r=libGP.k(x1.ctypes.data_as(ctpd),x2.ctypes.data_as(ctpd), cint(D1),cint(D2),cint(-42),self.hypinv.ctypes.data_as(ctpd),cint(1),ct.byref(ct.c_double(smodel)))
         return r
 
 def searchMLEhyp(X,Y,S,D,lb,ub, ki, mx=5000,fg=-1e9):
@@ -236,7 +240,7 @@ def searchMAPhyp(X,Y,S,D,m,s, ki, MAPmargin = 2.5, mx=5000,fg=-1e9):
     
     lk = sp.empty(1)
     r = libGP.HypSearchMAP(cint(dim),cint(len(Dx)),X.ctypes.data_as(ctpd),Y.ctypes.data_as(ctpd),S.ctypes.data_as(ctpd),(cint*len(Dx))(*Dx),m.ctypes.data_as(ctpd),s.ctypes.data_as(ctpd),ct.c_double(MAPmargin),cint(ki), hy.ctypes.data_as(ctpd),lk.ctypes.data_as(ctpd))
-    
+    print "yyy"
     return hy
 
 #just for quickly making test draws

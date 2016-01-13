@@ -108,11 +108,11 @@ def drawhyp_plk(X,Y,S,D,ki,hm,hs,n,burn=80,subsam=5):
     X = slice.slice_sample(f,hm,n,0.05*hs,burn=burn,subsam=subsam)
     return 10**X
 
-def gen_dataset(nt,d,lb,ub,kindex,hyp):
+def gen_dataset(nt,d,lb,ub,kindex,hyp,s=1e-9):
     X = draw_support(d, lb,ub,nt,SUPPORT_UNIFORM)
     D = [[sp.NaN]]*(nt)
     kf = GPdc.kernel(kindex,d,hyp)
     Kxx = GPdc.buildKsym_d(kf,X,D)
-    Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,1e-3,nt)).T
-    S = sp.matrix([1e-6]*nt).T
+    Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,sp.sqrt(s),nt)).T
+    S = sp.matrix([s]*nt).T
     return [X,Y,S,D]

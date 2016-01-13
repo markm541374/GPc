@@ -59,6 +59,7 @@ double llk(int directsearchdim, double* hyp){
 //posterior function to call direct from
 double post(int directsearchdim, double* hyp){
     double pst = llk(directsearchdim, hyp);
+    
     for (int i=0; i<directsearchdim; i++){
         pst-=0.5*pow((hyp[i]-priorm[i])/priors[i],2);
     }
@@ -104,6 +105,7 @@ extern "C" int HypSearchMLE(int d, int n, double* Xin, double* Yin, double* Sin,
         printf("\b) raw with llk %f which is (",*lk);
         for (int i=0; i<nhyp; i++){printf("%f ",Rhyp[i]);}
         printf("\b)true\n");
+        
 	return 0;
 }
 
@@ -149,13 +151,14 @@ extern "C" int HypSearchMAP(int d, int n, double* Xin, double* Yin, double* Sin,
         
         direct(nhyp,&lbd[0],&ubd[0],maxint,fglob,&xbest[0],lk,post);
         
-        
+        printf("zzz");
         int c = hypsearchconvert(&xbest[0],ki,D,Rhyp);
-        
+        printf("zzz");
         printf("DIRECT found (");
         for (int i=0; i<nhyp; i++){printf("%f ",xbest[i]);}
         printf("\b) raw with llk %f which is (",*lk);
         for (int i=0; i<nhyp; i++){printf("%f ",Rhyp[i]);}
         printf("\b)true\n");
+        printf("zzz");
 	return 0;
 }

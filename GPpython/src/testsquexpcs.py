@@ -1,43 +1,40 @@
+#!/usr/bin/env python2
+#encoding: UTF-8
+
 # To change this license header, choose License Headers in Project Properties.
 # To change this template file, choose Tools | Templates
 # and open the template in the editor.
-
 from scipy import stats as sps
 from scipy import linalg as spl
 import scipy as sp
 from matplotlib import pyplot as plt
+import ESutils
 
 import GPdc
 
 nt=12
-X = sp.matrix(sp.linspace(-1,1,nt)).T
-D = [[sp.NaN]]*(nt)
-
-hyp = sp.array([1.5,0.15])
-kf = GPdc.gen_sqexp_k_d(hyp)
-print "X"
-print kf(sp.array([0.1]),sp.array([0.2]),[[sp.NaN]],[[sp.NaN]])
-Kxx = GPdc.buildKsym_d(kf,X,D)
-print "X"
-Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,1e-3,nt)).T
-S = sp.matrix([1e-6]*nt).T
+d=1
+lb = sp.array([-1.]*d)
+ub = sp.array([1.]*d)
+[X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([0.9,0.25]),s=1e-8)
+S*=0.
 f0 = plt.figure()
 a0 = plt.subplot(111)
 a0.plot(sp.array(X[:,0]).flatten(),Y,'g.')
 
+lb = sp.array([-2.,-2.,-9])
+ub = sp.array([2.,2.,-1])
+MLEH =  GPdc.searchMLEhyp(X,Y,S,D,lb,ub,GPdc.SQUEXPCS,mx=10000)
 
-lb = sp.array([-2.,-2.])
-ub = sp.array([2.,2.])
-MLEH =  GPdc.searchMLEhyp(X,Y,S,D,lb,ub,GPdc.SQUEXP,mx=10000)
-print "X"
-print MLEH
-mp = sp.array([0.,-1.])
-sb = sp.array([1.,1.])
-MAPH =  GPdc.searchMAPhyp(X,Y,S,D,mp,sb,GPdc.SQUEXP,mx=10000)
-G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,1,MLEH))
-print "X"
-print Y.shape
-G.printc()
+mprior = sp.array([0.,-1.,-5.])
+sprior = sp.array([1.,1.,4.])
+
+#MAPH = GPdc.searchMAPhyp(X,Y,S,D,mprior,sprior,GPdc.SQUEXPCS,mx=10000)
+print "MLEH: "+str(MLEH)
+#print "MAPH: "+str(MAPH)
+G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXPCS,1,sp.array(MLEH)))
+
+
 print G.llk()
 
 np=180

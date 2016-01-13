@@ -25,13 +25,13 @@ sup = sp.linspace(-1,1,100)
 spp = sp.linspace(sl,su,100)
 f,a = plt.subplots(3)
 for i in xrange(100):
-    u[i] = ojf(sp.array([sup[i],truexmin[1]]),sl,[sp.NaN])[0]
-    v[i] = ojf(sp.array([truexmin[0],sup[i]]),sl,[sp.NaN])[0]
-    w[i] = ojf(truexmin[0],spp[i],[sp.NaN])[0]
+    u[i] = ojf(sp.array([sl,sup[i],truexmin[1]]),1e-8,[sp.NaN])[0]
+    v[i] = ojf(sp.array([sl,truexmin[0],sup[i]]),1e-8,[sp.NaN])[0]
+    w[i] = ojf(sp.array([spp[i],truexmin[0],truexmin[1]]),1e-8,[sp.NaN])[0]
 a[0].plot(sup,u)
 a[1].plot(sup,v)
 a[2].plot(spp,w)
-
+plt.show()
 """
 O = OPTutils.opt(ojf,lb,ub)
 for i in xrange(30):
@@ -65,7 +65,7 @@ para['DH_SAMPLES'] = 8
 para['DM_SAMPLES'] = 8
 para['DM_SUPPORT'] = 400
 para['DM_SLICELCBPARA'] = 1.
-para['cfn'] = lambda x,s: ((1e-6)/(10**(x.flatten()[0])))**0.2
+para['cfn'] = lambda x,s: ((1e-6)/(10**(x.flatten()[0])))**0.1
 para['sl'] = -8.
 para['su'] = -2.
 para['s'] = 1e-6
@@ -73,10 +73,13 @@ para['sfn'] = sfn
 para['axis'] = 0
 para['value'] = para['sl']
 OI = OPTutils.PESIP(ojf,lb,ub,para)
-for i in xrange(5):
+for i in xrange(3):
     OI.step()
     
-
+print OI.X
+print OI.R
+print OI.Y
+print OI.S
 f,a = plt.subplots(7)
 
 OI.plot(sp.hstack([para['sl'],truexmin]),a,'r')

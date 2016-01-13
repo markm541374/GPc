@@ -17,7 +17,7 @@ int lin1searchconv(double *h, int D, double* ih){
     ih[2] = pow(10.,h[2]);
     return 0;
 }
-double lin1(double *x1, double *x2, int d1, int d2, int D, double* ih){
+double lin1(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
     //linear kernel in the first axis. ih are v^2 c b^2. Kernel is v^2 *(x1-c)(x2-c)+b^2
     //D is not to be used, only present for consistency in function definition
     
@@ -59,7 +59,7 @@ int squexpsearchconv(double *h, int D, double* ih){
     return 0;
 }
 
-double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
+double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
 	double expon = 0.;
 	for (int i=0; i<D; i++){
 		expon-=pow((x1[i]-x2[i]),2)*ih[i+1];
@@ -246,6 +246,29 @@ double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
 
 }
 
+double squexpcs(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
+    smodel[0] = ih[D+1];
+    return squexp(x1,x2,d1,d2,D,ih,smodel);
+}
+            
+int squexpcsconv(double *h, int D, double* ih){
+    ih[0] = pow(h[0],2);
+    for (int i=1; i<D+1; i++){
+	ih[i] = 1./pow(h[i],2);
+        
+    }
+    ih[D+1] = h[D+1];
+    return 0;
+}
+//all are searched in log space
+int squexpcssearchconv(double *h, int D, double* ih){
+    for (int i=0; i<D+2; i++){
+        //printf("_%f",h[i]);
+	ih[i] = pow(10.,h[i]);
+    }
+    
+    return 0;
+}
 int linXPsquexpsearchconv(double *h, int D, double* ih){
     lin1searchconv(h,D,ih);
     squexpsearchconv(&h[3],D-1,&ih[3]);
@@ -259,12 +282,12 @@ int linXPsquexpconv(double *h, int D, double* ih){
     ih[3]=1.;
     return 0;
 }
-double linXPsquexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
+double linXPsquexp(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
     //linear kernel multiplied by squared exp in perpendicular directions
     //linear in the first axis, but with varying m and c in the other dimensions
     //linear hyps are first 3 hyperparameters
     //I can only not do product rule because these are entirely in different axes
-    return lin1(x1,x2,d1,d2,D,ih) * squexp(&x1[1],&x2[1],d1/8,d2/8,D-1,&ih[3]);
+    return lin1(x1,x2,d1,d2,D,ih,smodel) * squexp(&x1[1],&x2[1],d1/8,d2/8,D-1,&ih[3],smodel);
     
 }
 int linsquexpXPsquexpsearchconv(double *h, int D, double* ih){
@@ -284,9 +307,9 @@ int linsquexpXPsquexpconv(double *h, int D, double* ih){
     return 0;
 }
 
-double linsquexpXPsquexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
+double linsquexpXPsquexp(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
     //if (d1!=0 or d2!=0){printf("xxx%d %dxxx",d1,d2);}
-    return (lin1(x1,x2,d1,d2,D,ih) + squexp(x1,x2,d1%8,d2%8,1,&ih[3]))* squexp(&x1[1],&x2[1],d1/8,d2/8,D-1,&ih[5]);
+    return (lin1(x1,x2,d1,d2,D,ih,smodel) + squexp(x1,x2,d1%8,d2%8,1,&ih[3],smodel))* squexp(&x1[1],&x2[1],d1/8,d2/8,D-1,&ih[5],smodel);
     
  
 }
@@ -304,8 +327,8 @@ int squexp1Ssquexpsearchconv(double *h, int D, double* ih){
     return 0;
 }
 //squexp in D dimensions plus an additional
-double squexp1Ssquexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
-    return squexp(x1, x2, d1, d2, D, ih)+ squexp(x1,  x2, d1%8, d2%8, 1, &ih[D+1]);
+double squexp1Ssquexp(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
+    return squexp(x1, x2, d1, d2, D, ih,smodel)+ squexp(x1,  x2, d1%8, d2%8, 1, &ih[D+1],smodel);
 }
 
 int squexpsquexpPsquexpconv(double *h, int D, double* ih){
@@ -324,21 +347,22 @@ int squexpsquexpPsquexpsearchconv(double *h, int D, double* ih){
     return 0;
 }
 //squexp +squexp in 1st dimension * squexp in teh others
-double squexpsquexpPsquexp(double *x1, double *x2, int d1, int d2, int D, double* ih){
+double squexpsquexpPsquexp(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
     std::vector<double> tmp = std::vector<double>(D);
     tmp[0]=1.;
     for (int i=0; i<D-1;i++){tmp[i+1]=ih[4+i];}
     
-    return (squexp(x1, x2, d1%8, d2%8, 1, ih)+squexp(x1, x2, d1%8, d2%8, 1, &ih[2]))*squexp(&x1[1], &x2[1], d1/8, d2/8, D-1, &tmp[0]) ;
+    return (squexp(x1, x2, d1%8, d2%8, 1, ih, smodel)+squexp(x1, x2, d1%8, d2%8, 1, &ih[2],smodel))*squexp(&x1[1], &x2[1], d1/8, d2/8, D-1, &tmp[0],smodel) ;
 }
 
 
-typedef double (*KP)(double*, double*, int, int, int, double*);
+typedef double (*KP)(double*, double*, int, int, int, double*,double*);
 
-extern "C" const KP kern[6] = {&squexp,&lin1,&linXPsquexp,&linsquexpXPsquexp,squexp1Ssquexp,&squexpsquexpPsquexp};
+extern "C" const KP kern[7] = {&squexp,&lin1,&linXPsquexp,&linsquexpXPsquexp,squexp1Ssquexp,&squexpsquexpPsquexp,&squexpcs};
 
-extern "C" double k(double *x1, double *x2, int d1, int d2, int D, double* ih, int kindex){
-	return kern[kindex](&x1[0], &x2[0], d1, d2, D, &ih[0]);
+extern "C" double k(double *x1, double *x2, int d1, int d2, int D, double* ih, int kindex, double* smodel){
+    smodel[0] = 0.;
+return kern[kindex](&x1[0], &x2[0], d1, d2, D, &ih[0],smodel);
 }
 //double (*kern)(double *x1, double *x2, int d1, int d2, int D, double* ih) = &k;
 
@@ -346,7 +370,7 @@ extern "C" double k(double *x1, double *x2, int d1, int d2, int D, double* ih, i
 
 typedef int (*HP)(double *h, int D, double* ih);
 
-extern "C" const HP hypcons[6] = {&squexpconv,&lin1conv,&linXPsquexpconv,&linsquexpXPsquexpconv,&squexp1Ssquexpconv,&squexpsquexpPsquexpconv};
+extern "C" const HP hypcons[7] = {&squexpconv,&lin1conv,&linXPsquexpconv,&linsquexpXPsquexpconv,&squexp1Ssquexpconv,&squexpsquexpPsquexpconv,&squexpcsconv};
 
 extern "C" int hypconvert(double *h, int kindex, int D, double* ih){
     return hypcons[kindex](h,D,ih);
@@ -354,7 +378,7 @@ extern "C" int hypconvert(double *h, int kindex, int D, double* ih){
 
 typedef int (*SP)(double *h, int D, double* ih);
 
-extern "C" const SP hypsearchcons[6] = {&squexpsearchconv,&lin1searchconv,&linXPsquexpsearchconv,&linsquexpXPsquexpsearchconv,&squexp1Ssquexpsearchconv,&squexpsquexpPsquexpsearchconv};
+extern "C" const SP hypsearchcons[7] = {&squexpsearchconv,&lin1searchconv,&linXPsquexpsearchconv,&linsquexpXPsquexpsearchconv,&squexp1Ssquexpsearchconv,&squexpsquexpPsquexpsearchconv,&squexpcssearchconv};
 
 extern "C" int hypsearchconvert(double *h, int kindex, int D, double* ih){
     return hypsearchcons[kindex](h,D,ih);
@@ -377,6 +401,9 @@ extern "C" int numhyp(int kindex, int D){
     }
     else if (kindex==5){
         return D+3;
+    }
+    else if (kindex==6){
+        return D+2;
     }
     else{
         printf("a bad thing happened :(");

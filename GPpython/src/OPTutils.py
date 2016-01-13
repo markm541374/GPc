@@ -69,7 +69,7 @@ def gensquexpdraw(d,lb,ub):
 def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
     #axis = 0 value = sl
     #d dimensional objective +1 for s
-    nt=20
+    nt=25
     print sp.hstack([sp.array([[sl]]),lb])
     print sp.hstack([sp.array([[su]]),ub])
     [X,Y,S,D] = ESutils.gen_dataset(nt,d+1,sp.hstack([sp.array([[sl]]),lb]).flatten(),sp.hstack([sp.array([[su]]),ub]).flatten(),GPdc.SQUEXP,sp.array([1.5]+[sls]+[0.30]*d))
@@ -80,7 +80,8 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
             noise = 0.
         else:
             noise = sp.random.normal(scale=sp.sqrt(sfn(x)))
-        return [G.infer_m(sp.hstack([s,x]),[d])[0,0]+noise,1.]
+        
+        return [G.infer_m(x,[d])[0,0]+noise,1.]
     def dirwrap(x,y):
         z = obj(x,sl,[sp.NaN])
         return (z,0)

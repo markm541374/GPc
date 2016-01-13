@@ -15,7 +15,7 @@ ub = sp.array([[1.]*d])
 [ojf,truexmin] = OPTutils.gensquexpdraw(d,sp.array([-1.]*d),sp.array([1.]*d))
 
 O = OPTutils.opt(ojf,lb,ub)
-for i in xrange(30):
+for i in xrange(20):
     O.step()
 
 
@@ -34,7 +34,7 @@ para = [kindex,mprior,sprior,maxf,s,ninit]
 
 
 OE = OPTutils.EIMLE(ojf,lb,ub,para)
-for i in xrange(50):
+for i in xrange(10):
     OE.step()
 
 para = dict()
@@ -58,7 +58,7 @@ pr.enable()
 """
 
 OV = OPTutils.PESVS(ojf,lb,ub,para)
-for i in xrange(50):
+for i in xrange(10):
     try:
         OV.step()
     except RuntimeError as e:
@@ -75,7 +75,7 @@ print s.getvalue()
 """
 
 OS = OPTutils.PESFX(ojf,lb,ub,para)
-for i in xrange(50):
+for i in xrange(10):
     try:
         OS.step()
     except RuntimeError as e:

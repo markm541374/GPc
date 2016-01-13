@@ -36,13 +36,14 @@ GP_LKonly::GP_LKonly(int d, int n, double* Xin, double* Yin, double* Sin, int* D
 		hypconvert(&hyp[0], K, D, &ih[0]);
 		//buildK
 		std::vector<double>Kxx = std::vector<double>(N*N);
+                double smodel = 0;
 		for (int i=0; i<N; i++){
-			Kxx[i*N+i] = kern[K](&Xin[i*D], &Xin[i*D],Din[i],Din[i],D,&ih[0]);
+			Kxx[i*N+i] = kern[K](&Xin[i*D], &Xin[i*D],Din[i],Din[i],D,&ih[0],&smodel);
 			for (int j=0; j<i; j++){
-				Kxx[i*N+j] = Kxx[i+N*j] = kern[K](&Xin[i*D], &Xin[j*D],Din[i],Din[j],D,&ih[0]);
+				Kxx[i*N+j] = Kxx[i+N*j] = kern[K](&Xin[i*D], &Xin[j*D],Din[i],Din[j],D,&ih[0],&smodel);
 				//if (i<10){printf("%f %f %d %d %d %f %f %f %f _ ",Xin[i*D], Xin[j*D],Din[i],Din[j],D,ih[0],ih[1],ih[2],k(&Xin[i*D], &Xin[j*D],Din[i],Din[j],D,&ih[0]));}
 			}
-			Kxx[i*N+i]+=Sin[i];
+			Kxx[i*N+i]+=Sin[i]+smodel;
 
 		}
 		//cho factor
@@ -142,9 +143,11 @@ int GP::infer_m(int Ns, double* Xs, int* Ds, double* R){
     	Ksx.resize(N*maxinfer);
         Ksx_T.resize(N*maxinfer);
     }
+    double smodel=0;
 	for (int i=0; i<Ns; i++){
+                
 		for (int j=0; j<N; j++){
-			Ksx[i*N+j] = kern[K](&X[j*D],&Xs[i*D],Dx[j],Ds[i],D,&ih[0]);
+			Ksx[i*N+j] = kern[K](&X[j*D],&Xs[i*D],Dx[j],Ds[i],D,&ih[0],&smodel);
 		}
 	}
 	for (int i=0; i<Ns; i++){
@@ -162,13 +165,14 @@ int GP::infer_full(int Ns, double* Xs, int* Ds, double* R){
     	Ksx.resize(N*maxinfer);
         Ksx_T.resize(N*maxinfer);
     }
+    double smodel=0;
 	for (int i=0; i<Ns; i++){
 		for (int j=0; j<N; j++){
-			Ksx_T[i+j*Ns] = Ksx[i*N+j] = kern[K](&X[j*D],&Xs[i*D],Dx[j],Ds[i],D,&ih[0]);
+			Ksx_T[i+j*Ns] = Ksx[i*N+j] = kern[K](&X[j*D],&Xs[i*D],Dx[j],Ds[i],D,&ih[0],&smodel);
 		}
-		R[Ns+Ns*i+i] = kern[K](&Xs[i*D],&Xs[i*D],Ds[i],Ds[i],D,&ih[0]);
+		R[Ns+Ns*i+i] = kern[K](&Xs[i*D],&Xs[i*D],Ds[i],Ds[i],D,&ih[0],&smodel);
 		for (int h=i+1; h<Ns; h++){
-			R[Ns+Ns*h+i]=R[Ns+Ns*i+h] = kern[K](&Xs[h*D],&Xs[i*D],Ds[h],Ds[i],D,&ih[0]);
+			R[Ns+Ns*h+i]=R[Ns+Ns*i+h] = kern[K](&Xs[h*D],&Xs[i*D],Ds[h],Ds[i],D,&ih[0],&smodel);
 		}
 	}
     //I'm unconvinced this is the best way of doing it
@@ -205,10 +209,11 @@ int GP::infer_diag(int Ns, double* Xs, int* Ds, double* R){
     	Ksx.resize(N*maxinfer);
         Ksx_T.resize(N*maxinfer);
     }
+        double smodel=0;
 	for (int i=0; i<Ns; i++){
             //printf("[%f %f]\n",Xs[i*D],Xs[i*D+1]);
 		for (int j=0; j<N; j++){
-			Ksx_T[i+j*Ns] = Ksx[i*N+j] = kern[K](&X[j*D],&Xs[i*D],Dx[j],Ds[i],D,&ih[0]);
+			Ksx_T[i+j*Ns] = Ksx[i*N+j] = kern[K](&X[j*D],&Xs[i*D],Dx[j],Ds[i],D,&ih[0],&smodel);
                         //printf("[%f]\n",Ksx[i*N+j]);
 		}
 	}
@@ -217,7 +222,7 @@ int GP::infer_diag(int Ns, double* Xs, int* Ds, double* R){
 
 	for (int i=0; i<Ns; i++){
 		R[i] = cblas_ddot(N,&Y[0],1,&Ksx[i*N],1);
-		R[Ns+i] = kern[K](&Xs[i*D],&Xs[i*D],Ds[i],Ds[i],D,&ih[0]) - cblas_ddot(N,&Ksx_T[i],Ns,&Ksx[i*N],1);
+		R[Ns+i] = kern[K](&Xs[i*D],&Xs[i*D],Ds[i],Ds[i],D,&ih[0],&smodel) - cblas_ddot(N,&Ksx_T[i],Ns,&Ksx[i*N],1);
                 //printf("(%f %f) ",R[i],R[i+Ns]);
                 
 	}
@@ -225,12 +230,13 @@ int GP::infer_diag(int Ns, double* Xs, int* Ds, double* R){
 	return c;
 }
 int GP::build_K(){
+    double smodel=0;
 	for (int i=0; i<N; i++){
-		Kxx[i*N+i] = kern[K](&X[i*D], &X[i*D],Dx[i],Dx[i],D,&ih[0]);
+		Kxx[i*N+i] = kern[K](&X[i*D], &X[i*D],Dx[i],Dx[i],D,&ih[0],&smodel);
 		for (int j=0; j<i; j++){
-			Kxx[i*N+j] = Kxx[i+N*j] = kern[K](&X[i*D], &X[j*D],Dx[i],Dx[j],D,&ih[0]);
+			Kxx[i*N+j] = Kxx[i+N*j] = kern[K](&X[i*D], &X[j*D],Dx[i],Dx[j],D,&ih[0],&smodel);
 		}
-		Kxx[i*N+i]+=S[i];
+		Kxx[i*N+i]+=S[i]+smodel;
 
 	}
 	return 0;
