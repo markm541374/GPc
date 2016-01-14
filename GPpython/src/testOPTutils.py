@@ -6,7 +6,7 @@ import OPTutils
 import scipy as sp
 from matplotlib import pyplot as plt
 import GPdc
-
+import ESutils
 
 d=2
 lb = sp.array([[-1.]*d])
@@ -44,7 +44,7 @@ para['DH_SAMPLES'] = 8
 para['DM_SAMPLES'] = 8
 para['DM_SUPPORT'] = 400
 para['DM_SLICELCBPARA'] = 1.
-
+para['SUPPORT_MODE'] = ESutils.SUPPORT_SLICELCB
 OP = OPTutils.PESFX(ojf,lb,ub,para)
 for i in xrange(5):
     try:

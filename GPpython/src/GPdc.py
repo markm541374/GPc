@@ -4,10 +4,11 @@
 
 __author__ = "mark"
 __date__ = "$22-Nov-2015 21:27:19$"
-
+import numpy as np
 import scipy as sp
 import ctypes as ct
-libGP = ct.cdll.LoadLibrary('../../dist/Release/GNU-Linux/libGPshared.so')
+from scipy.stats import norm as norms
+libGP = ct.cdll.LoadLibrary('../../dist/Debug/GNU-Linux/libGPshared.so')
 libGP.k.restype = ct.c_double
 
 ctpd = ct.POINTER(ct.c_double)
@@ -156,8 +157,12 @@ class GPcore:
     
     def infer_EI_post(self,X_i,D_i):
         [m,v] = self.infer_diag_post(X_i,D_i)
-        ####here
-        return
+        ns=X_i.shape[0]
+        R=sp.empty([1,ns])
+        for i in xrange(ns):
+            R[0,i] = EI(sp.amin(self.Y_s),m[0,i],v[0,i])
+        
+        return R
 #kf = gen_sqexp_k_d([1.,0.3])
 
 
@@ -256,3 +261,18 @@ def buildKsym_d(kf,x,d):
                 K[j,i]=K[i,j]
                 
         return K
+    
+def EI(ER,mu,sigma):
+        alpha=(-ER+mu)/sigma
+        Z = norms.cdf(-alpha)
+        
+        if Z==0.0:
+            return sp.matrix(0.0)
+	#print "alpha: "+str(alpha)
+	#print "Z: "+str(Z)
+        E=-mu+norms.pdf(alpha)*sigma/Z+ER
+        ei=Z*E
+        if np.isfinite(ei):
+            return sp.matrix(ei)
+        else:
+            return sp.matrix(0.0)

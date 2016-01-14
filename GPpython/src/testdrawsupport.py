@@ -43,7 +43,7 @@ G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,2,sp.array([1.5,0.15,0.15])))
 #sq = sp.sqrt(v)
 #a0.fill_between(sup, sp.array(m-2.*sq).flatten(), sp.array(m+2.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
 
-Z = ESutils.draw_support(G, sp.array([-1.,-1.]),sp.array([1.,1.]),1000,ESutils.SUPPORT_SLICELCB)
+Z = ESutils.draw_support(G, sp.array([-1.,-1.]),sp.array([1.,1.]),1000,ESutils.SUPPORT_SLICEEI)
 R = ESutils.draw_min(G,Z,500)
 
 plt.figure()
@@ -56,7 +56,7 @@ ng = 30
 A = sp.empty([ng,ng])
 for i in xrange(ng):
     for j in xrange(ng):
-        A[i,j] = G.infer_LCB(sp.array([2*j/float(ng)-1.,-2*i/float(ng)+1.]),[[sp.NaN]],1.)[0,0]
+        A[i,j] = G.infer_m_post(sp.array([2*j/float(ng)-1.,-2*i/float(ng)+1.]),[[sp.NaN]])[0,0]
 plt.figure()
 plt.imshow(A)
 
@@ -89,7 +89,7 @@ sq = sp.sqrt(v)
 a0.fill_between(sup, sp.array(m-2.*sq).flatten(), sp.array(m+2.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
 
 
-X = ESutils.draw_support(G, sp.array([-1]),sp.array([1.]),300,ESutils.SUPPORT_SLICELCB)
+X = ESutils.draw_support(G, sp.array([-1]),sp.array([1.]),300,ESutils.SUPPORT_SLICEEI)
 a1.hist(X,bins=80)
 
 R = ESutils.draw_min(G,X,300)

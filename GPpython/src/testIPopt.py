@@ -6,7 +6,7 @@ import OPTutils
 import scipy as sp
 from matplotlib import pyplot as plt
 import GPdc
-
+import ESutils
 
 d=2
 lb = sp.array([[-1.]*d])
@@ -63,8 +63,9 @@ para['ninit'] = 10
 para['maxf'] = 2500
 para['DH_SAMPLES'] = 8
 para['DM_SAMPLES'] = 8
-para['DM_SUPPORT'] = 400
+para['DM_SUPPORT'] = 800
 para['DM_SLICELCBPARA'] = 1.
+para['SUPPORT_MODE'] = ESutils.SUPPORT_SLICELCB
 para['cfn'] = lambda x,s: ((1e-6)/(10**(x.flatten()[0])))**0.1
 para['sl'] = -8.
 para['su'] = -2.

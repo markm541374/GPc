@@ -105,6 +105,8 @@ a[0].plot(sup,mp[0,:].flatten())
 [m,V] = G.infer_diag(Xp,Dp)
 [mp,Vp] = G.infer_diag_post(Xp,Dp)
 L = G.infer_LCB_post(Xp,Dp,2.)
+E = G.infer_EI(Xp,Dp)
+Ep = G.infer_EI_post(Xp,Dp)
 z=2
 W = G.draw(Xp,Dp,z)
 U = G.draw_post(Xp,Dp,z)
@@ -114,11 +116,13 @@ for i in xrange(m.shape[0]):
     a[i+1].fill_between(sup,sp.array(m[i,:]-2.*s).flatten(),sp.array(m[i,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
     a[i+1].plot(sup,m[i,:],'b')
     a[i+1].plot(sp.array(X[:,0]).flatten(),Y,'g.')
+    a[i+1].twinx().plot(sup,E[i,:],'r')
     for j in xrange(z):
         a[i+1].plot(sup,W[i*z+j,:],'r')
 a[0].plot(sp.array(X[:,0]).flatten(),Y,'g.')
 a[0].plot(sup,mp[0,:].flatten())
 a[0].plot(sup,L.flatten())
+a[0].twinx().plot(sup,Ep.flatten(),'r')
 s = sp.sqrt(Vp[0,:])
 a[0].fill_between(sup,sp.array(mp[0,:]-2.*s).flatten(),sp.array(mp[0,:]+2.*s).flatten(),facecolor='lightblue',edgecolor='lightblue')
 for j in xrange(z):

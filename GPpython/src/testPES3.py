@@ -25,7 +25,7 @@ kindex = GPdc.SQUEXP
 mprior = sp.array([0.]+[-1.]*d)
 sprior = sp.array([1.]*(d+1))
 
-pesobj = PES.PES(X,Y,S,D,lb,ub,kindex,mprior,sprior,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.)
+pesobj = PES.PES(X,Y,S,D,lb,ub,kindex,mprior,sprior,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1., mode=ESutils.SUPPORT_SLICEEI)
 
 np=150
 sup = sp.linspace(-1,1,np)

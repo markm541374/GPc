@@ -10,7 +10,7 @@ from scipy import stats as sps
 
 SUPPORT_UNIFORM = 0
 SUPPORT_SLICELCB = 1
-
+SUPPORT_SLICEEI = 2
 #drawing points between lb and ub using specified method
 def draw_support(g, lb, ub, n, method, para=1.):
     #para is the std confidence bound
@@ -35,7 +35,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
     elif method==SUPPORT_SLICEEI:
         def f(x):
             if all(x>lb) and all(x<ub):
-                return g.infer_EI_post(sp.array(x),[[sp.NaN]],para)[0,0]
+                return g.infer_EI_post(sp.array(x),[[sp.NaN]])[0,0]
             else:
                 return -1e99
         print "Drawing support using slice sample over EI:"
@@ -72,6 +72,18 @@ def draw_support_inplane(g,lb,ub,n,method,axis,value,para=1.):
         X[:,axis] += value
         
         return X
+    elif method==SUPPORT_SLICEEI:
+        def f(x):
+            y = sp.hstack([x[:axis],value,x[axis:]])
+            if all(y>lb) and all(y<ub):
+                return g.infer_EI_post(sp.array(y),[[sp.NaN]])[0,0]
+            else:
+                return -1e99
+        print "Drawing support using slice sample over LCB:"
+        lb_red = sp.hstack([lb[:axis],lb[axis+1:]])
+        ub_red = sp.hstack([ub[:axis],ub[axis+1:]])
+        X = slice.slice_sample(f,0.5*(ub_red+lb_red),n,0.1*(ub_red-lb_red))
+        return sp.hstack([X[:,:axis],sp.ones([n,1])*value,X[:,axis:]])
     elif method==SUPPORT_SLICELCB:
         def f(x):
             y = sp.hstack([x[:axis],value,x[axis:]])

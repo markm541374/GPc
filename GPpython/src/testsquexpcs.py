@@ -29,9 +29,9 @@ MLEH =  GPdc.searchMLEhyp(X,Y,S,D,lb,ub,GPdc.SQUEXPCS,mx=10000)
 mprior = sp.array([0.,-1.,-5.])
 sprior = sp.array([1.,1.,4.])
 
-#MAPH = GPdc.searchMAPhyp(X,Y,S,D,mprior,sprior,GPdc.SQUEXPCS,mx=10000)
+MAPH = GPdc.searchMAPhyp(X,Y,S,D,mprior,sprior,GPdc.SQUEXPCS,mx=10000)
 print "MLEH: "+str(MLEH)
-#print "MAPH: "+str(MAPH)
+print "MAPH: "+str(MAPH)
 G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXPCS,1,sp.array(MLEH)))
 
 

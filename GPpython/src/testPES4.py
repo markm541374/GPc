@@ -26,7 +26,7 @@ mprior = sp.array([0.]+[-1.]*d)
 sprior = sp.array([1.]*(d+1))
 axis=0
 value=0.
-pesobj = PES.PES_inplane(X,Y,S,D,lb,ub,kindex,mprior,sprior,axis,value,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,AM_POLICY=PES.NOMIN)
+pesobj = PES.PES_inplane(X,Y,S,D,lb,ub,kindex,mprior,sprior,axis,value,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,AM_POLICY=PES.NOMIN,mode=ESutils.SUPPORT_SLICEEI)
 
 
 def cfn(x):

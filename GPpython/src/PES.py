@@ -17,15 +17,15 @@ def makeG(X,Y,S,D,kindex,mprior,sprior,nh):
     G = GPdc.GPcore(X,Y,S,D,[GPdc.kernel(kindex,X.shape[1],i) for i in H])
     return G
 
-def drawmins(G,n,lb,ub,SUPPORT=300,SLICELCB_PARA=1.):
+def drawmins(G,n,lb,ub,SUPPORT=300,mode = ESutils.SUPPORT_SLICELCB,SLICELCB_PARA=1.):
     #draw support points
-    W = ESutils.draw_support(G, lb,ub,SUPPORT,SLICELCB_PARA)
+    W = ESutils.draw_support(G, lb,ub,SUPPORT,mode, para = SLICELCB_PARA)
     #draw in samples on the support
     R = ESutils.draw_min(G,W,n)
     return R
 
-def drawmins_inplane(G,n,lb,ub,axis,value, SUPPORT=300,SLICELCB_PARA=1.):
-    W = ESutils.draw_support_inplane(G, lb,ub,SUPPORT,SLICELCB_PARA,axis,value)
+def drawmins_inplane(G,n,lb,ub,axis,value, SUPPORT=300, mode=ESutils.SUPPORT_SLICELCB, SLICELCB_PARA=1.):
+    W = ESutils.draw_support_inplane(G, lb,ub,SUPPORT,mode,axis,value,para = SLICELCB_PARA)
     #draw in samples on the support
     R = ESutils.draw_min(G,W,n)
     return R
@@ -180,13 +180,13 @@ def Vadj(m,V):
     return vadj
 
 class PES:
-    def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.):
+    def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,mode=ESutils.SUPPORT_SLICELCB):
         print "PES init:"
         self.lb=lb
         self.ub=ub
         self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
         print "hyp draws: "+str([k.hyp for k in self.G.kf])
-        self.Z = drawmins(self.G,DM_SAMPLES,lb,ub,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA)
+        self.Z = drawmins(self.G,DM_SAMPLES,lb,ub,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA,mode=mode)
         print "mindraws: "+str(self.Z)
         self.Ga = [GPdc.GPcore(*addmins(self.G,X,Y,S,D,self.Z[i,:])+[self.G.kf]) for i in xrange(DM_SAMPLES)]
         
@@ -222,13 +222,13 @@ class PES:
         return [xmin,ymin,ierror]
     
 class PES_inplane:
-    def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,axis,value,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,AM_POLICY=NOMIN):
+    def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,axis,value,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,AM_POLICY=NOMIN,mode=ESutils.SUPPORT_SLICELCB):
         print "PES init:"
         self.lb=lb
         self.ub=ub
         self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
         print "hyp draws:\n"+str([k.hyp for k in self.G.kf])
-        self.Z = drawmins_inplane(self.G,DM_SAMPLES,lb,ub,axis=axis,value=value,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA)
+        self.Z = drawmins_inplane(self.G,DM_SAMPLES,lb,ub,axis=axis,value=value,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA,mode=mode)
         print "mindraws:\n"+str(self.Z)
         self.Ga = [GPdc.GPcore(*addmins_inplane(self.G,X,Y,S,D,self.Z[i,:],axis=axis,value=value,MINPOLICY=AM_POLICY)+[self.G.kf]) for i in xrange(DM_SAMPLES)]
         return
