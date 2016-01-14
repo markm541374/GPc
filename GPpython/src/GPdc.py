@@ -112,6 +112,15 @@ class GPcore:
     def infer_diag_post(self,X_i,D_i):
         ns = X_i.shape[0]
         [m,V] = self.infer_diag(X_i,D_i)
+        if sp.amin(V)<=-0.:
+            class MJMError(Exception):
+                pass
+            print "negative/eq variance"
+            print [m,V,X_i,D_i]
+            print "_______________"
+            self.printc()
+            raise(MJMError)
+        
         return [sp.mean(m,axis=0).reshape([1,ns]),(sp.mean(V,axis=0)+sp.var(m,axis=0)).reshape([1,ns])]
         
     
@@ -146,6 +155,7 @@ class GPcore:
     
     def infer_LCB_post(self,X_i,D_i,p):
         [m,v] = self.infer_diag_post(X_i,D_i)
+        
         return m-p*sp.sqrt(v)
     
     def infer_EI(self,X_i,D_i):

@@ -88,7 +88,9 @@ def draw_support_inplane(g,lb,ub,n,method,axis,value,para=1.):
         def f(x):
             y = sp.hstack([x[:axis],value,x[axis:]])
             if all(y>lb) and all(y<ub):
-                return -g.infer_LCB_post(sp.array(y),[[sp.NaN]],para)[0,0]
+                r=-g.infer_LCB_post(sp.array(y),[[sp.NaN]],para)[0,0]
+                #print r
+                return r
             else:
                 return -1e99
         print "Drawing support using slice sample over LCB:"

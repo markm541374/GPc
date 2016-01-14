@@ -18,6 +18,7 @@ sls = (su-sl)*0.75
 [ojf,truexmin] = OPTutils.gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls)
 
 print truexmin
+print ojf(sp.array([sl,truexmin[0],truexmin[1]]),1e-8,[sp.NaN])
 u = sp.empty(100)
 v = sp.empty(100)
 w = sp.empty(100)
@@ -66,7 +67,7 @@ para['DM_SAMPLES'] = 8
 para['DM_SUPPORT'] = 800
 para['DM_SLICELCBPARA'] = 1.
 para['SUPPORT_MODE'] = ESutils.SUPPORT_SLICELCB
-para['cfn'] = lambda x,s: ((1e-6)/(10**(x.flatten()[0])))**0.1
+para['cfn'] = lambda x,s: ((1e-6)/(10**(x.flatten()[0])))**0.025
 para['sl'] = -8.
 para['su'] = -2.
 para['s'] = 1e-6
@@ -74,8 +75,9 @@ para['sfn'] = sfn
 para['axis'] = 0
 para['value'] = para['sl']
 OI = OPTutils.PESIP(ojf,lb,ub,para)
-for i in xrange(3):
+for i in xrange(15):
     OI.step()
+    
     
 print OI.X
 print OI.R

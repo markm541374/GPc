@@ -83,7 +83,7 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
         
         return [G.infer_m(x,[d])[0,0]+noise,1.]
     def dirwrap(x,y):
-        z = obj(x,sl,[sp.NaN])
+        z = obj(sp.array([[sl]+[i for i in x]]),sl,[sp.NaN])
         return (z,0)
     [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=10000, logfilename='/dev/null')
     
@@ -350,3 +350,6 @@ class PESIP(opt):
         [y,c0] = self.ojf(x,s,d)
         c = self.para['cfn'](x,s)
         return [y,c]
+
+    def plotstate(self,a):
+        self.pesobj.query_acq(x,1e-8,[sp.NaN])

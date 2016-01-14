@@ -70,6 +70,8 @@ def slice_sample(loglike, init, iters, sigma, step_out=True,burn=20,subsam=4):
                     x_l[d] = xd
                 else:
                     print [xd,x_r[d],x_l[d],xx[d],last_llh,llh0]
+                    print [x_cur, xx, loglike(xx),llh0,last_llh]
+                    
                     raise RuntimeError('Slice sampler shrank too far.')
         if i%subsam==0:
             
