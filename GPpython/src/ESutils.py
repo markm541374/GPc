@@ -87,8 +87,11 @@ def draw_support_inplane(g,lb,ub,n,method,axis,value,para=1.):
     elif method==SUPPORT_SLICELCB:
         def f(x):
             y = sp.hstack([x[:axis],value,x[axis:]])
-            if all(y>lb) and all(y<ub):
-                r=-g.infer_LCB_post(sp.array(y),[[sp.NaN]],para)[0,0]
+            
+            #print y.shape
+            if all(y.flatten()>lb) and all(y.flatten()<ub):
+                y.reshape([1,d])
+                r=-g.infer_LCB_post(y,[[sp.NaN]],para)[0,0]
                 #print r
                 return r
             else:

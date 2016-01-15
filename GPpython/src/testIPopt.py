@@ -67,7 +67,7 @@ para['DM_SAMPLES'] = 8
 para['DM_SUPPORT'] = 800
 para['DM_SLICELCBPARA'] = 1.
 para['SUPPORT_MODE'] = ESutils.SUPPORT_SLICELCB
-para['cfn'] = lambda x,s: ((1e-6)/(10**(x.flatten()[0])))**0.025
+para['cfn'] = lambda x,s: ((1e-6)/(10**(x.flatten()[0])))**0.035
 para['sl'] = -8.
 para['su'] = -2.
 para['s'] = 1e-6
@@ -75,7 +75,7 @@ para['sfn'] = sfn
 para['axis'] = 0
 para['value'] = para['sl']
 OI = OPTutils.PESIP(ojf,lb,ub,para)
-for i in xrange(15):
+for i in xrange(35):
     OI.step()
     
     
@@ -87,6 +87,6 @@ f,a = plt.subplots(7)
 
 OI.plot(sp.hstack([para['sl'],truexmin]),a,'r')
 
-
+f.savefig("../figs/testIPopt.pdf")
 
 plt.show()

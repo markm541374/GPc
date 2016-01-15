@@ -21,8 +21,7 @@ Kxx = GPdc.buildKsym_d(kf,X,D)
 print "X"
 Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,1e-3,nt)).T
 S = sp.matrix([1e-6]*nt).T
-f0 = plt.figure()
-a0 = plt.subplot(111)
+f0,a0 = plt.subplots(1)
 a0.plot(sp.array(X[:,0]).flatten(),Y,'g.')
 
 
@@ -33,7 +32,7 @@ print "X"
 print MLEH
 mp = sp.array([0.,-1.])
 sb = sp.array([1.,1.])
-MAPH =  GPdc.searchMAPhyp(X,Y,S,D,mp,sb,GPdc.SQUEXP,mx=10000)
+#MAPH =  GPdc.searchMAPhyp(X,Y,S,D,mp,sb,GPdc.SQUEXP,mx=10000)
 G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,1,MLEH))
 print "X"
 print Y.shape
@@ -50,5 +49,5 @@ a0.plot(sup,m.flatten())
 sq = sp.sqrt(v)
 
 a0.fill_between(sup, sp.array(m-1.*sq).flatten(), sp.array(m+1.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
-
+f0.savefig('../figs/testsquexpkern.png')
 plt.show()
