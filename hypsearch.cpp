@@ -52,7 +52,16 @@ double llk(int directsearchdim, double* hyp){
         std::vector<double> tmp = std::vector<double>(nhyp);
 	int c = hypsearchconvert(hyp,ki,D,&tmp[0]);
         double R;
+        bool verbose = false;
+        if (verbose){
+            printf("At [ ");
+            for (int i=0; i<nhyp; i++){printf("%f ",hyp[i]);}
+            printf("]: ");
+        }
         GP_LKonly G = GP_LKonly(D, N, &X[0], &Y[0], &S[0], &Dx[0], ki, &tmp[0], &R);
+        if (verbose){
+            printf("%f\n",R);
+        }
 	return -R;
 }
 
@@ -151,14 +160,14 @@ extern "C" int HypSearchMAP(int d, int n, double* Xin, double* Yin, double* Sin,
         
         direct(nhyp,&lbd[0],&ubd[0],maxint,fglob,&xbest[0],lk,post);
         
-        printf("zzz");
+        //printf("zzz");
         int c = hypsearchconvert(&xbest[0],ki,D,Rhyp);
-        printf("zzz");
+        //printf("zzz");
         printf("DIRECT found (");
         for (int i=0; i<nhyp; i++){printf("%f ",xbest[i]);}
         printf("\b) raw with llk %f which is (",*lk);
         for (int i=0; i<nhyp; i++){printf("%f ",Rhyp[i]);}
         printf("\b)true\n");
-        printf("zzz");
+        //printf("zzz");
 	return 0;
 }

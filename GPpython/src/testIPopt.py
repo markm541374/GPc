@@ -32,7 +32,7 @@ for i in xrange(100):
 a[0].plot(sup,u)
 a[1].plot(sup,v)
 a[2].plot(spp,w)
-plt.show()
+
 """
 O = OPTutils.opt(ojf,lb,ub)
 for i in xrange(30):
@@ -75,7 +75,7 @@ para['sfn'] = sfn
 para['axis'] = 0
 para['value'] = para['sl']
 OI = OPTutils.PESIP(ojf,lb,ub,para)
-for i in xrange(35):
+for i in xrange(45):
     OI.step()
     
     

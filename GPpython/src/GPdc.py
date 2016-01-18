@@ -8,7 +8,7 @@ import numpy as np
 import scipy as sp
 import ctypes as ct
 from scipy.stats import norm as norms
-libGP = ct.cdll.LoadLibrary('../../dist/Debug/GNU-Linux/libGPshared.so')
+libGP = ct.cdll.LoadLibrary('../../dist/Release/GNU-Linux/libGPshared.so')
 libGP.k.restype = ct.c_double
 
 ctpd = ct.POINTER(ct.c_double)
@@ -201,6 +201,7 @@ LINSQUEXPXSQUEXP = 3
 SQUEXP1SSQUEXP = 4
 SSPS = 5
 SQUEXPCS = 6
+SQUEXPPS = 7
 class kernel(object):
     def __init__(self,K,D,H):
         self.dim = D
@@ -256,6 +257,8 @@ def searchMLEhyp(X,Y,S,D,lb,ub, ki, mx=5000,fg=-1e9):
     ns=X.shape[0]
     dim = X.shape[1]
     Dx = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D]
+    print ki
+    print dim
     hy = sp.empty(libGP.numhyp(cint(ki),cint(dim)))
     
     lk = sp.empty(1)
@@ -264,7 +267,7 @@ def searchMLEhyp(X,Y,S,D,lb,ub, ki, mx=5000,fg=-1e9):
     return hy
 
 
-def searchMAPhyp(X,Y,S,D,m,s, ki, MAPmargin = 2.5, mx=5000,fg=-1e9):
+def searchMAPhyp(X,Y,S,D,m,s, ki, MAPmargin = 1.8, mx=5000,fg=-1e9):
     libGP.SetHypSearchPara(cint(mx),ct.c_double(fg))
     ns=X.shape[0]
     dim = X.shape[1]
@@ -273,7 +276,7 @@ def searchMAPhyp(X,Y,S,D,m,s, ki, MAPmargin = 2.5, mx=5000,fg=-1e9):
     
     lk = sp.empty(1)
     r = libGP.HypSearchMAP(cint(dim),cint(len(Dx)),X.ctypes.data_as(ctpd),Y.ctypes.data_as(ctpd),S.ctypes.data_as(ctpd),(cint*len(Dx))(*Dx),m.ctypes.data_as(ctpd),s.ctypes.data_as(ctpd),ct.c_double(MAPmargin),cint(ki), hy.ctypes.data_as(ctpd),lk.ctypes.data_as(ctpd))
-    print "yyy"
+    #print "yyy"
     return hy
 
 #just for quickly making test draws

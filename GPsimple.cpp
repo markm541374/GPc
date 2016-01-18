@@ -32,7 +32,7 @@ GP_LKonly::GP_LKonly(int d, int n, double* Xin, double* Yin, double* Sin, int* D
 		K=kindex;
 		//lk = 0.;
 		//hyp process
-		std::vector<double> ih = std::vector<double>(D+1);
+		std::vector<double> ih = std::vector<double>(numhyp(kindex,d));
 		hypconvert(&hyp[0], K, D, &ih[0]);
 		//buildK
 		std::vector<double>Kxx = std::vector<double>(N*N);
@@ -47,7 +47,9 @@ GP_LKonly::GP_LKonly(int d, int n, double* Xin, double* Yin, double* Sin, int* D
 
 		}
 		//cho factor
-		LAPACKE_dpotrf(LAPACK_ROW_MAJOR,'L',N,&Kxx[0],N);
+		int c = LAPACKE_dpotrf(LAPACK_ROW_MAJOR,'L',N,&Kxx[0],N);
+                if (c!=0){printf("failed to cho fac Kxx %d",c); R[0]=-1e22; return;}
+                
 		std::vector<double>Yd = std::vector<double>(N);
 		for (int i=0; i<N; i++){
 				Yd[i]= Yin[i];
@@ -64,7 +66,7 @@ GP_LKonly::GP_LKonly(int d, int n, double* Xin, double* Yin, double* Sin, int* D
 		//printf("2 %f\n",R[0]);
 		R[0] -= 0.5*cblas_ddot(N,&Yin[0],1,&Yd[0],1);
 		//printf("3 %f\n",R[0]);
-
+                return;
 	}
 
 class GP{
