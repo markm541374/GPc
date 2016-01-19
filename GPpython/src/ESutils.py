@@ -112,6 +112,7 @@ def plot_gp(g,axis,x,d):
     axis.plot(x,m.flatten(),'b')
     return 0
 
+#draw hyperparameters given data from posterior likelihood
 def drawhyp_plk(X,Y,S,D,ki,hm,hs,n,burn=80,subsam=5):
     def f(loghyp):
         r=GPdc.GP_LKonly(X,Y,S,D,GPdc.kernel(ki,X.shape[1],[10**i for i in loghyp])).plk(hm,hs)
@@ -125,6 +126,7 @@ def drawhyp_plk(X,Y,S,D,ki,hm,hs,n,burn=80,subsam=5):
     X = slice.slice_sample(f,hm,n,0.05*hs,burn=burn,subsam=subsam)
     return 10**X
 
+#take a random draw of X points and draw Y from the specified kernel
 def gen_dataset(nt,d,lb,ub,kindex,hyp,s=1e-9):
     X = draw_support(d, lb,ub,nt,SUPPORT_UNIFORM)
     D = [[sp.NaN]]*(nt)

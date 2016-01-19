@@ -1,14 +1,16 @@
-# To change this license header, choose License Headers in Project Properties.
-# To change this template file, choose Tools | Templates
-# and open the template in the editor.
+# Gaussian process with derivatives in c
+#LK_only can only be used for log likelihood or posterior log likelihood
+#GPcore takes a single hyperparameter value or a set. With a set the infer_ methods produce individual inferences while infer_post methods return the posterior
 
+#
 __author__ = "mark"
 __date__ = "$22-Nov-2015 21:27:19$"
 import numpy as np
 import scipy as sp
 import ctypes as ct
 from scipy.stats import norm as norms
-libGP = ct.cdll.LoadLibrary('../../dist/Release/GNU-Linux/libGPshared.so')
+
+libGP = ct.cdll.LoadLibrary('../../dist/Release/GNU-Linux/libGPshared.so') #path to c-shared library
 libGP.k.restype = ct.c_double
 
 ctpd = ct.POINTER(ct.c_double)

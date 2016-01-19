@@ -88,7 +88,10 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
     [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=10000, logfilename='/dev/null')
     
     return [obj,xmin]
-    
+
+
+
+
 class opt:
     def __init__(self,objective,lb,ub,para=None):
         self.ojf = objective

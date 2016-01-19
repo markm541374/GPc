@@ -1,6 +1,4 @@
-# To change this license header, choose License Headers in Project Properties.
-# To change this template file, choose Tools | Templates
-# and open the template in the editor.
+# Classes to run PES. Classes for constant or variable obs noise and augmented space
 
 #make a single posterior gp form data and take draws on this
 import ESutils
@@ -179,6 +177,8 @@ def Vadj(m,V):
     vadj = V[0,0]-beta*(beta+alpha)*(1./s)*(V[0, 0]-V[0, 1])**2
     return vadj
 
+
+#basic PES class if search_pes is used. variable noise if search_acq is used
 class PES:
     def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,mode=ESutils.SUPPORT_SLICELCB):
         print "PES init:"
@@ -220,7 +220,8 @@ class PES:
         
         [xmin, ymin, ierror] = DIRECT.solve(directwrap,sp.hstack([self.lb,logsl]),sp.hstack([self.ub,logsu]),user_data=[], algmethod=1, maxf=maxf, logfilename='/dev/null')
         return [xmin,ymin,ierror]
-    
+
+#augmented space PES
 class PES_inplane:
     def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,axis,value,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,AM_POLICY=NOMIN,mode=ESutils.SUPPORT_SLICELCB):
         print "PES init:"
