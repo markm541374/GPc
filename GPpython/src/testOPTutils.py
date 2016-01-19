@@ -46,7 +46,7 @@ para['DM_SUPPORT'] = 400
 para['DM_SLICELCBPARA'] = 1.
 para['SUPPORT_MODE'] = ESutils.SUPPORT_SLICELCB
 OP = OPTutils.PESFX(ojf,lb,ub,para)
-for i in xrange(5):
+for i in xrange(20):
     try:
         OP.step()
     except RuntimeError as e:

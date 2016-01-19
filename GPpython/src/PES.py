@@ -115,9 +115,9 @@ def addmins_inplane(G,X,Y,S,D,xmin,axis,value,mode=OFFHESSZERO, GRADNOISE=1e-9,E
         [m,V] = G.infer_full_post(Xd,Dd)
         #yminarg = sp.argmin(Y)
     
-        Y_ = sp.array([0.]*dim)#!!!!!!!!!!!!!!!!
+        Y_ = sp.array([0.]*dim)
         Z = sp.array([1.]*dim)
-        F = sp.array([EP_SOFTNESS]*dim)#!!!!!!!!!!!!
+        F = sp.array([EP_SOFTNESS]*dim)
 
         [Yd,Stmp] = eprop.expectation_prop(m,V,Y_,Z,F,EPROP_LOOPS)
         Sd = sp.diagonal(Stmp).flatten()
@@ -130,9 +130,9 @@ def addmins_inplane(G,X,Y,S,D,xmin,axis,value,mode=OFFHESSZERO, GRADNOISE=1e-9,E
         [m,V] = G.infer_full_post(Xd,Dd)
         yminarg = sp.argmin(Y)
     
-        Y_ = sp.array([Y[yminarg,0]]+[0.]*dim)#!!!!!!!!!!!!!!!!
+        Y_ = sp.array([Y[yminarg,0]]+[0.]*dim)
         Z = sp.array([-1]+[1.]*dim)
-        F = sp.array([S[yminarg,0]]+[EP_SOFTNESS]*dim)#!!!!!!!!!!!!
+        F = sp.array([S[yminarg,0]]+[EP_SOFTNESS]*dim)
 
         [Yd,Stmp] = eprop.expectation_prop(m,V,Y_,Z,F,EPROP_LOOPS)
         Sd = sp.diagonal(Stmp).flatten()

@@ -29,15 +29,15 @@ def opt_ip(s):
     def dwrap(x,y):
         X = sp.hstack([[s],x])
         return (ojfaugnn(X),0)
-    [xm,ym,ierror] = DIRECT.solve(dwrap,lb[1:],ub[1:], user_data=[], algmethod=1, maxf=20000, logfilename='/dev/null')
+    [xm,ym,ierror] = DIRECT.solve(dwrap,lb[1:],ub[1:], user_data=[], algmethod=1, maxf=12000, logfilename='/dev/null')
     print "DIRECT found: " +str([xm,ym,ierror])
     return xm
 
 mintrue = opt_ip(0.)
 minaug = sp.hstack([[0.],mintrue])
 
-nm=40
-spm = sp.linspace(lb[0]+1e-3,ub[0],nm)
+nm=32
+spm = sp.logspace(-8,sp.log10(ub[0]),nm)
 M = sp.empty([nm,d])
 R = sp.empty(nm)
 for i in xrange(nm):
@@ -45,7 +45,8 @@ for i in xrange(nm):
     R[i] = spl.norm(M[i,:]-mintrue)
 
 f,a = plt.subplots(2)
-a[0].semilogy(spm,R)
+print spm
+a[0].semilogy(spm,R,'bx-')
 a[1].plot(M[:,0],M[:,1],'bx-')
 a[1].plot(mintrue[0],mintrue[1],'ro')
 
