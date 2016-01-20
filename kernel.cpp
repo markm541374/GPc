@@ -245,7 +245,10 @@ double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih, double*
 	}
 
 }
-
+/*
+ --------------------------------------------------------------------------
+ 
+ */
 double squexpcs(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
     smodel[0] = ih[D+1];
     return squexp(x1,x2,d1,d2,D,ih,smodel);
@@ -269,7 +272,10 @@ int squexpcssearchconv(double *h, int D, double* ih){
     
     return 0;
 }
-
+/*
+ --------------------------------------------------------------------------
+ 
+ */
 double squexpps(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
     //noise is parabolic in the first axis
     //I use x1 as s is only used when s1=s2
@@ -300,8 +306,44 @@ int squexppssearchconv(double *h, int D, double* ih){
     ih[D+3] = h[D+3];
     return 0;
 }
+/*
+ --------------------------------------------------------------------------
+ 
+ */
+double squexpbs(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
+    //noise is parabolic in the first axis
+    //I use x1 as s is only used when s1=s2
+    double tmp = ih[D+1]*pow(x1[0],ih[D+2]*ih[D+3])*pow(1.-x1[0],ih[D+2]*(1.-ih[D+3]))+1e-10;
+    if (tmp>0.){smodel[0] = tmp;}
+    else {smodel[0]=1e-9;}
+    
+    return squexp(x1,x2,d1,d2,D,ih,smodel);
+}
+int squexpbsconv(double *h, int D, double* ih){
+    ih[0] = pow(h[0],2);
+    for (int i=1; i<D+1; i++){
+	ih[i] = 1./pow(h[i],2);
+        
+    }
+    ih[D+1] = h[D+1];
+    ih[D+2] = h[D+2];
+    ih[D+3] = h[D+3];    
+    return 0;
+}
 
-
+//all are searched in log space exept last one which is ~sigmoid
+int squexpbssearchconv(double *h, int D, double* ih){
+    for (int i=0; i<D+3; i++){
+        //printf("_%f",h[i]);
+	ih[i] = pow(10.,h[i]);
+    }
+    ih[D+3] = 1./(1.+pow(2.718,h[D+3]));
+    return 0;
+}
+/*
+ --------------------------------------------------------------------------
+ 
+ */
 int linXPsquexpsearchconv(double *h, int D, double* ih){
     lin1searchconv(h,D,ih);
     squexpsearchconv(&h[3],D-1,&ih[3]);
@@ -391,7 +433,7 @@ double squexpsquexpPsquexp(double *x1, double *x2, int d1, int d2, int D, double
 
 typedef double (*KP)(double*, double*, int, int, int, double*,double*);
 
-extern "C" const KP kern[8] = {&squexp,&lin1,&linXPsquexp,&linsquexpXPsquexp,squexp1Ssquexp,&squexpsquexpPsquexp,&squexpcs,&squexpps};
+extern "C" const KP kern[9] = {&squexp,&lin1,&linXPsquexp,&linsquexpXPsquexp,squexp1Ssquexp,&squexpsquexpPsquexp,&squexpcs,&squexpps,&squexpbs};
 
 extern "C" double k(double *x1, double *x2, int d1, int d2, int D, double* ih, int kindex, double* smodel){
     smodel[0] = 0.;
@@ -403,7 +445,7 @@ return kern[kindex](&x1[0], &x2[0], d1, d2, D, &ih[0],smodel);
 
 typedef int (*HP)(double *h, int D, double* ih);
 
-extern "C" const HP hypcons[8] = {&squexpconv,&lin1conv,&linXPsquexpconv,&linsquexpXPsquexpconv,&squexp1Ssquexpconv,&squexpsquexpPsquexpconv,&squexpcsconv,squexppsconv};
+extern "C" const HP hypcons[9] = {&squexpconv,&lin1conv,&linXPsquexpconv,&linsquexpXPsquexpconv,&squexp1Ssquexpconv,&squexpsquexpPsquexpconv,&squexpcsconv,&squexppsconv,&squexpbsconv};
 
 extern "C" int hypconvert(double *h, int kindex, int D, double* ih){
     return hypcons[kindex](h,D,ih);
@@ -411,7 +453,7 @@ extern "C" int hypconvert(double *h, int kindex, int D, double* ih){
 
 typedef int (*SP)(double *h, int D, double* ih);
 
-extern "C" const SP hypsearchcons[8] = {&squexpsearchconv,&lin1searchconv,&linXPsquexpsearchconv,&linsquexpXPsquexpsearchconv,&squexp1Ssquexpsearchconv,&squexpsquexpPsquexpsearchconv,&squexpcssearchconv,&squexppssearchconv};
+extern "C" const SP hypsearchcons[9] = {&squexpsearchconv,&lin1searchconv,&linXPsquexpsearchconv,&linsquexpXPsquexpsearchconv,&squexp1Ssquexpsearchconv,&squexpsquexpPsquexpsearchconv,&squexpcssearchconv,&squexppssearchconv,&squexpbssearchconv};
 
 extern "C" int hypsearchconvert(double *h, int kindex, int D, double* ih){
     return hypsearchcons[kindex](h,D,ih);
@@ -439,6 +481,9 @@ extern "C" int numhyp(int kindex, int D){
         return D+2;
     }
     else if (kindex==7){
+        return D+4;
+    }
+    else if (kindex==8){
         return D+4;
     }
     else{

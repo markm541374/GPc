@@ -14,37 +14,37 @@ import GPdc
 
 nt=80
 d=1
-lb = sp.array([-1.]*d)
+lb = sp.array([0.]*d)
 ub = sp.array([1.]*d)
 [X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([0.9,0.25]),s=0.)
 S*=0.
 for i in xrange(nt):
     x = X[i,0]
-    s = -(1e-2)*(x-1.)*(x+1.1)
+    s = -(1e-2)*(x-1.)*(x)**3.
     Y[i,0]+= sps.norm.rvs(0,sp.sqrt(s))
 
 f0 = plt.figure()
 a0 = plt.subplot(111)
 a0.plot(sp.array(X[:,0]).flatten(),Y,'g.')
 
-lb = sp.array([-2.,-2.,-9,-2.,-2.])
-ub = sp.array([2.,2.,-1,2.,2.])
-MLEH =  GPdc.searchMLEhyp(X,Y,S,D,lb,ub,GPdc.SQUEXPPS,mx=20000)
+lb = sp.array([-2.,-2.,-9,-1.,-4.])
+ub = sp.array([2.,2.,-1,1.,4.])
+MLEH =  GPdc.searchMLEhyp(X,Y,S,D,lb,ub,GPdc.SQUEXPBS,mx=20000)
 
-mprior = sp.array([0.,-1.,-5.,-0.5,0.5])
-sprior = sp.array([1.,1.,3.,1.,1.])
+mprior = sp.array([0.,-1.,-5.,0.,0.0])
+sprior = sp.array([1.,1.,3.,1.,2.])
 
-MAPH = GPdc.searchMAPhyp(X,Y,S,D,mprior,sprior,GPdc.SQUEXPPS,mx=20000)
+MAPH = GPdc.searchMAPhyp(X,Y,S,D,mprior,sprior,GPdc.SQUEXPBS,mx=20000)
 print "MLEH: "+str(MLEH)
 print "MAPH: "+str(MAPH)
-G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXPPS,1,sp.array(MAPH)))
+G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXPBS,1,sp.array(MAPH)))
 
 
 
 print G.llk()
 
 np=180
-sup = sp.linspace(-1,1,np)
+sup = sp.linspace(0,1,np)
 Dp = [[sp.NaN]]*np
 Xp = sp.vstack([sp.array([i]) for i in sup])
 
@@ -52,7 +52,7 @@ Xp = sp.vstack([sp.array([i]) for i in sup])
 sq = sp.sqrt(v)
 S = sp.empty([np,1])
 for i in xrange(np):
-    S[i,0] = -MAPH[2]*(Xp[i,0]-MAPH[3])*(Xp[i,0]-MAPH[4])
+    S[i,0] = MAPH[2]*((Xp[i,0])**(MAPH[3]*MAPH[4]))* ((1.-Xp[i,0])**(MAPH[3]*(1.-MAPH[4])))
 sc= sp.sqrt(S.flatten())
 
 a0.plot(sup,m.flatten())

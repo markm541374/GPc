@@ -204,6 +204,7 @@ SQUEXP1SSQUEXP = 4
 SSPS = 5
 SQUEXPCS = 6
 SQUEXPPS = 7
+SQUEXPBS = 8
 class kernel(object):
     def __init__(self,K,D,H):
         self.dim = D
