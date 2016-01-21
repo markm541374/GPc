@@ -6,7 +6,7 @@
 #slice sampling
 #TODO need to check initial steps
 import scipy as sp
-
+from tqdm import tqdm
 def slice_sample(loglike, init, iters, sigma, step_out=True,burn=20,subsam=4):
     """
     from http://isaacslavitt.com/2013/12/30/metropolis-hastings-and-
@@ -24,7 +24,7 @@ def slice_sample(loglike, init, iters, sigma, step_out=True,burn=20,subsam=4):
     # initialize
     xx = init.copy()
     pt = 0
-    for i in xrange(iters*subsam+burn*subsam):
+    for i in tqdm(xrange(iters*subsam+burn*subsam)):
         mn=i-burn+1
         #print '\r Drawn %d    ' % mn,
         #sys.stdout.flush()
