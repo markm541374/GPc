@@ -250,6 +250,7 @@ double squexp(double *x1, double *x2, int d1, int d2, int D, double* ih, double*
  
  */
 double squexpcs(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
+    
     smodel[0] = ih[D+1];
     return squexp(x1,x2,d1,d2,D,ih,smodel);
 }

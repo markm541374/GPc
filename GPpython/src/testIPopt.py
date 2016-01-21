@@ -75,7 +75,7 @@ para['sfn'] = sfn
 para['axis'] = 0
 para['value'] = para['sl']
 OI = OPTutils.PESIP(ojf,lb,ub,para)
-for i in xrange(45):
+for i in xrange(3):
     OI.step()
     
     

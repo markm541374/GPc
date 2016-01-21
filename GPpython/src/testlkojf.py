@@ -23,19 +23,23 @@ X = sp.array([sp.linspace(0,nf,np)]).T
 H = sp.empty([np,1])
 T = sp.empty([np,1])
 for i in xrange(np):
-    [H[i,0],T[i,0]] = L.llks(sp.array([0.3,0.13,0.2,1e-4]),int(X[i,0]))
+    [H[i,0],T[i,0]] = L.llks(sp.array([1.3,0.13,0.2,1e-2]),int(X[i,0]))
 
 
-lb = sp.array([0.,0.,-4.,-0.5*float(nf),float(nf)])
-ub = sp.array([4.,3.,3.,0.,1.5*float(nf)])
-MLEH =  GPdc.searchMLEhyp(X,H,sp.zeros([np,1]),[[sp.NaN]]*(np),lb,ub,GPdc.SQUEXPPS,mx=10000)
-G = GPdc.GPcore(X.copy(),H,sp.zeros([np,1]),[[sp.NaN]]*(np),GPdc.kernel(GPdc.SQUEXPPS,1,sp.array(MLEH)))
+#lb = sp.array([0.,0.,-4.,-0.5*float(nf),float(nf)])
+#ub = sp.array([4.,3.,3.,0.,1.5*float(nf)])
+#MLEH =  GPdc.searchMLEhyp(X,H,sp.zeros([np,1]),[[sp.NaN]]*(np),lb,ub,GPdc.SQUEXPPS,mx=10000)
+#G = GPdc.GPcore(X.copy(),H,sp.zeros([np,1]),[[sp.NaN]]*(np),GPdc.kernel(GPdc.SQUEXPPS,1,sp.array(MLEH)))
+lb = sp.array([0.,0.,-4.,-1.,-3.])
+ub = sp.array([4.,3.,3.,0.5,3.])
+MLEH =  GPdc.searchMLEhyp(1./float(nf)*X,H,sp.zeros([np,1]),[[sp.NaN]]*(np),lb,ub,GPdc.SQUEXPBS,mx=10000)
+G = GPdc.GPcore(1./float(nf)*X.copy(),H,sp.zeros([np,1]),[[sp.NaN]]*(np),GPdc.kernel(GPdc.SQUEXPBS,1,sp.array(MLEH)))
 
-[m,v] = G.infer_diag(X,[[sp.NaN]]*(np))
+[m,v] = G.infer_diag(1./float(nf)*X,[[sp.NaN]]*(np))
 
 S = sp.empty([np,1])
 for i in xrange(np):
-    S[i,0] = -MLEH[2]*(X[i,0]-MLEH[3])*(X[i,0]-MLEH[4])
+    S[i,0] = MLEH[2]*((1./float(nf)*X[i,0])**(MLEH[3]*MLEH[4]))* ((1.-1./float(nf)*X[i,0])**(MLEH[3]*(1.-MLEH[4])))
 
 lbc = sp.array([-4.,0.,-6.])
 ubc = sp.array([2.,3.,0.])

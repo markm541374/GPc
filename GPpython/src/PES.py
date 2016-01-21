@@ -180,17 +180,28 @@ def Vadj(m,V):
 
 #basic PES class if search_pes is used. variable noise if search_acq is used
 class PES:
-    def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,mode=ESutils.SUPPORT_SLICELCB):
+    def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,mode=ESutils.SUPPORT_SLICELCB,noS=False):
         print "PES init:"
         self.lb=lb
         self.ub=ub
+        self.noS=noS
+        if noS:
+            S=sp.zeros(S.shape)
         self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
         print "hyp draws: "+str([k.hyp for k in self.G.kf])
         self.Z = drawmins(self.G,DM_SAMPLES,lb,ub,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA,mode=mode)
         print "mindraws: "+str(self.Z)
         self.Ga = [GPdc.GPcore(*addmins(self.G,X,Y,S,D,self.Z[i,:])+[self.G.kf]) for i in xrange(DM_SAMPLES)]
+        #class MJMError(Exception):
+            #pass
+        
+        #print [k(sp.array([0.1,0.1]),sp.array([0.1,0.2]),[[sp.NaN]],[[sp.NaN]],gets=True) for k in self.G.kf]
+        #if noS:
+        #    self.postS = 
+        #raise MJMError("tmp!!!")
         
     def query_pes(self,Xq,Sq,Dq):
+        
         a = PESgain(self.G,self.Ga,self.Z,Xq,Dq,Sq)
         return a
     
@@ -203,6 +214,10 @@ class PES:
     def search_pes(self,s,maxf=2500,dv=[[sp.NaN]]):
         def directwrap(Q,extra):
             x = sp.array([Q])
+            if self.noS:
+                alls = [k(x,x,dv,dv,gets=True)[1] for k in self.G.kf]
+                s = sp.exp(sp.mean(sp.log(alls)))
+                
             acq = PESgain(self.G,self.Ga,self.Z,x,dv,[s])
             R = -acq
             return (R,0)

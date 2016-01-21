@@ -20,7 +20,7 @@ ub = sp.array([1.]*d)
 S*=0.
 for i in xrange(nt):
     x = X[i,0]
-    s = -(1e-2)*(x-1.)*(x)**3.
+    s = (1e-2)*(1.-x)*(x)**3.
     Y[i,0]+= sps.norm.rvs(0,sp.sqrt(s))
 
 f0 = plt.figure()

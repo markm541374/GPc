@@ -215,11 +215,13 @@ class kernel(object):
         libGP.hypconvert(self.hyp.ctypes.data_as(ctpd),cint(self.Kindex), cint(self.dim), self.ihyp.ctypes.data_as(ctpd))
         return
     
-    def __call__(self,x1, x2, d1=[sp.NaN], d2=[sp.NaN]):
+    def __call__(self,x1, x2, d1=[sp.NaN], d2=[sp.NaN],gets=False):
         D1 = 0 if sp.isnan(d1[0]) else int(sum([8**x for x in d1]))
         D2 = 0 if sp.isnan(d2[0]) else int(sum([8**x for x in d2]))
-        self.smodel=0.
-        r=libGP.k(x1.ctypes.data_as(ctpd),x2.ctypes.data_as(ctpd), cint(D1),cint(D2),cint(self.dim),self.ihyp.ctypes.data_as(ctpd),cint(self.Kindex),ct.byref(ct.c_double(self.smodel)))
+        self.smodel=sp.empty(1)
+        r=libGP.k(x1.ctypes.data_as(ctpd),x2.ctypes.data_as(ctpd), cint(D1),cint(D2),cint(self.dim),self.ihyp.ctypes.data_as(ctpd),cint(self.Kindex),self.smodel.ctypes.data_as(ctpd))
+        if gets:
+            return [r,self.smodel[0]]
         return r
     
 

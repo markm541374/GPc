@@ -48,12 +48,14 @@ def banana(x,s,d):
     return [f+noise,1.]
 
 
-def gensquexpdraw(d,lb,ub):
+def gensquexpdraw(d,lb,ub,ignores=-1):
     nt=14
     [X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([1.5]+[0.30]*d))
     G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,d,sp.array([1.5]+[0.30]*d)))
     def obj(x,s,d):
         #print [x,s,d]
+        if ignores>0:
+            s=ignores
         if s==0.:
             noise = 0.
         else:
@@ -92,7 +94,7 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
 
 
 
-class opt:
+class opt(object):
     def __init__(self,objective,lb,ub,para=None):
         self.ojf = objective
         self.lb = lb
@@ -186,8 +188,9 @@ class opt:
         for i in xrange(n):
             M[i] = spl.norm(self.X[i,:]-truex)
             V[i] = spl.norm(self.R[i,:]-truex)
-        ax[1].semilogy(M,c)
+        ax[1].semilogy(M,c,label=str(type(self)))
         ax[1].set_ylabel('Xeval')
+        ax[1].legend(loc='upper center',ncol=2).draggable()
         ax[2].semilogy(V,c)
         ax[2].set_ylabel('Xrecc')
         
@@ -268,7 +271,7 @@ class EIMLE(opt):
         [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.maxf, logfilename='/dev/null')
         return xmin
     
-class PESFX(opt):
+class PESFS(opt):
     def init_search(self,para):
         self.para=para
         self.sdefault = para['s']
@@ -278,7 +281,7 @@ class PESFX(opt):
         return
     
     def run_search(self):
-        print "begin PES:"
+        print "begin PESFS:"
         self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'])
         [xmin,ymin,ierror] = self.pesobj.search_pes(self.sdefault,maxf=self.para['maxf'])
         return [xmin,self.para['s'],[sp.NaN]]
@@ -289,7 +292,22 @@ class PESFX(opt):
             return (m,0)
         [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.para['maxf'], logfilename='/dev/null')
         return xmin
+
+class PESIS(PESFS):
+    def init_search(self,para):
+        self.para=para
+        self.sdefault = -1
+        for i in xrange(para['ninit']):
+            self.step(random=True)
+        return
     
+    def run_search(self):
+        print "begin PESIS:"
+        self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'],noS=True)
+        [xmin,ymin,ierror] = self.pesobj.search_pes(-1,maxf=self.para['maxf'])
+        return [xmin,0.,[sp.NaN]]
+
+
 class PESVS(opt):
     def init_search(self,para):
         self.para=para
@@ -356,3 +374,4 @@ class PESIP(opt):
 
     def plotstate(self,a):
         self.pesobj.query_acq(x,1e-8,[sp.NaN])
+        
