@@ -21,11 +21,12 @@ kindex = GPdc.SQUEXP
 mprior = sp.array([0.]+[-1.]*d)
 sprior = sp.array([1.]*(d+1))
 maxf = 4000
+volper=1e-7
 s = 1e-6
 ninit = 10
 
 #para = [kindex,hlb,hub,maxf,s,ninit]
-para = [kindex,mprior,sprior,maxf,s,ninit]
+para = [kindex,mprior,sprior,volper,s,ninit]
 
 
 OE = OPTutils.EIMLE(ojf,lb,ub,para)
@@ -38,7 +39,8 @@ para['mprior'] = sp.array([0.]+[-1.]*d)
 para['sprior'] = sp.array([1.]*(d+1))
 para['s'] = 1e-6
 para['ninit'] = 10
-para['maxf'] = 2500
+#para['maxf'] = 2500
+para['volper'] = 1e-7
 para['DH_SAMPLES'] = 8
 para['DM_SAMPLES'] = 8
 para['DM_SUPPORT'] = 600

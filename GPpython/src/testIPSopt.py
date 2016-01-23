@@ -46,12 +46,11 @@ kindex = GPdc.SQUEXP
 mprior = sp.array([0.]+[-1.]*d)
 sprior = sp.array([1.]*(d+1))
 maxf = 4000
-volper = 1e-7
 s = 1e-6
 ninit = 10
 
 #para = [kindex,hlb,hub,maxf,s,ninit]
-para = [kindex,mprior,sprior,volper,s,ninit]
+para = [kindex,mprior,sprior,maxf,s,ninit]
 
 
 
@@ -62,22 +61,21 @@ para['mprior'] = sp.array([0.]+[-1.]*(d+1)+[-2.])
 para['sprior'] = sp.array([1.]*(d+2)+[2.])
 para['d'] = d+1
 para['ninit'] = 10
-#para['maxf'] = 2500
-para['volper'] = 1e-7
+para['maxf'] = 7500
 para['DH_SAMPLES'] = 8
 para['DM_SAMPLES'] = 8
 para['DM_SUPPORT'] = 800
 para['DM_SLICELCBPARA'] = 1.
-para['SUPPORT_MODE'] = ESutils.SUPPORT_SLICELCB
-para['cfn'] = lambda x,s: sp.exp(-0.2*x.flatten()[0])
+para['SUPPORT_MODE'] = ESutils.SUPPORT_SLICEEI
+para['cfn'] = lambda x,s: sp.exp(-0.5*x.flatten()[0])
 para['sl'] = 0.
 para['su'] = 1.
 para['s'] = 1e-6
-para['sfn'] = sfn
+para['sfn'] = None
 para['axis'] = 0
 para['value'] = para['sl']
-OI = OPTutils.PESIP(ojf,lb,ub,para)
-for i in tqdm_gui(xrange(1),gui=True):
+OI = OPTutils.PESIPS(ojf,lb,ub,para)
+for i in tqdm_gui(xrange(35),gui=True):
     OI.step()
     
     

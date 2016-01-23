@@ -313,7 +313,7 @@ void GP::ping(){
 		}
 	printf("]\nih:\n[");
 
-	for (int i=0; i<D+1; i++){
+	for (int i=0; i<numhyp(K,D); i++){
 		printf("%f  ",ih[i]);
 	}
 

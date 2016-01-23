@@ -64,7 +64,7 @@ def gensquexpdraw(d,lb,ub,ignores=-1):
     def dirwrap(x,y):
         z = obj(x,0.,[sp.NaN])
         return (z,0)
-    [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=10000, logfilename='/dev/null')
+    [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=20000, logfilename='/dev/null')
     
     return [obj,xmin]
 
@@ -75,7 +75,7 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
     print sp.hstack([sp.array([[sl]]),lb])
     print sp.hstack([sp.array([[su]]),ub])
     [X,Y,S,D] = ESutils.gen_dataset(nt,d+1,sp.hstack([sp.array([[sl]]),lb]).flatten(),sp.hstack([sp.array([[su]]),ub]).flatten(),GPdc.SQUEXP,sp.array([1.5]+[sls]+[0.30]*d))
-    G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,d+1,sp.array([1.5]+[sls]+[0.30]*d)))
+    G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,d+1,sp.array([1.5]+[sls]+[0.20]*d)))
     def obj(x,s,d):
         x = x.flatten()
         if sfn(x)==0.:
@@ -87,7 +87,7 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
     def dirwrap(x,y):
         z = obj(sp.array([[sl]+[i for i in x]]),sl,[sp.NaN])
         return (z,0)
-    [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=10000, logfilename='/dev/null')
+    [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=20000, logfilename='/dev/null')
     
     return [obj,xmin]
 
@@ -194,11 +194,11 @@ class opt(object):
         ax[2].semilogy(V,c)
         ax[2].set_ylabel('Xrecc')
         
-        ax[3].plot([sum(self.C[:i]) for i in xrange(n)],c)
+        ax[3].plot(self.C[:i],c)
         ax[3].set_ylabel('cost')
         
         ax[4].semilogy([sum(self.C[:i]) for i in xrange(n)],V,c)
-        ax[4].set_ylabel('Xrecc/cost')
+        ax[4].set_ylabel('Xrecc/acccost')
         
         ax[5].plot(self.T,c)
         ax[5].set_ylabel('Stime')
@@ -211,7 +211,7 @@ class LCBMLE(opt):
         self.kindex = para[0]
         self.mprior = para[1]
         self.sprior = para[2]
-        self.maxf = para[3]
+        self.volper = para[3]
         self.s = para[4]
         self.sdefault = para[4]
         ninit=para[5]
@@ -228,13 +228,13 @@ class LCBMLE(opt):
             
             a = self.G.infer_LCB(x,[[sp.NaN]],1.)[0,0]
             return (a,0)
-        [xmin,ymin,ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.maxf, logfilename='/dev/null')
+        [xmin,ymin,ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, volper=self.volper, logfilename='/dev/null')
         return [xmin,self.s,[sp.NaN]]
     def reccomend(self):
         def dirwrap(x,y):
             m  =self.G.infer_m(x,[[sp.NaN]])[0,0]
             return (m,0)
-        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.maxf, logfilename='/dev/null')
+        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, volper=self.volper, logfilename='/dev/null')
         return xmin
     
 class EIMLE(opt):
@@ -242,7 +242,7 @@ class EIMLE(opt):
         self.kindex = para[0]
         self.mprior = para[1]
         self.sprior = para[2]
-        self.maxf = para[3]
+        self.volper = para[3]
         self.s = para[4]
         self.sdefault = para[4]
         ninit=para[5]
@@ -261,14 +261,14 @@ class EIMLE(opt):
             #print [x,a]
             #print G.infer_diag_post(x,[[sp.NaN]])
             return (-a[0,0],0)
-        [xmin,ymin,ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.maxf, logfilename='/dev/null')
+        [xmin,ymin,ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1,  volper = self.volper, logfilename='/dev/null')
         return [xmin,self.s,[sp.NaN]]
     
     def reccomend(self):
         def dirwrap(x,y):
             m  =self.G.infer_m(x,[[sp.NaN]])[0,0]
             return (m,0)
-        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.maxf, logfilename='/dev/null')
+        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, volper= self.volper, logfilename='/dev/null')
         return xmin
     
 class PESFS(opt):
@@ -283,14 +283,14 @@ class PESFS(opt):
     def run_search(self):
         print "begin PESFS:"
         self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'])
-        [xmin,ymin,ierror] = self.pesobj.search_pes(self.sdefault,maxf=self.para['maxf'])
+        [xmin,ymin,ierror] = self.pesobj.search_pes(self.sdefault,volper=self.para['volper'])
         return [xmin,self.para['s'],[sp.NaN]]
     
     def reccomend(self):
         def dirwrap(x,y):
             m  =self.pesobj.G.infer_m(x,[[sp.NaN]])[0,0]
             return (m,0)
-        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.para['maxf'], logfilename='/dev/null')
+        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, volper=self.para['volper'], logfilename='/dev/null')
         return xmin
 
 class PESIS(PESFS):
@@ -304,7 +304,7 @@ class PESIS(PESFS):
     def run_search(self):
         print "begin PESIS:"
         self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'],noS=True)
-        [xmin,ymin,ierror] = self.pesobj.search_pes(-1,maxf=self.para['maxf'])
+        [xmin,ymin,ierror] = self.pesobj.search_pes(-1,volper=self.para['volper'])
         return [xmin,0.,[sp.NaN]]
 
 
@@ -320,14 +320,14 @@ class PESVS(opt):
     def run_search(self):
         print "begin PES:"
         self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'])
-        [Qmin,ymin,ierror] = self.pesobj.search_acq(self.para['cfn'],self.para['logsl'],self.para['logsu'],maxf=self.para['maxf'])
+        [Qmin,ymin,ierror] = self.pesobj.search_acq(self.para['cfn'],self.para['logsl'],self.para['logsu'],volper=self.para['volper'])
         return [Qmin[:-1],10**Qmin[-1],[sp.NaN]]
     
     def reccomend(self):
         def dirwrap(x,y):
             m  =self.pesobj.G.infer_m(x,[[sp.NaN]])[0,0]
             return (m,0)
-        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=self.para['maxf'], logfilename='/dev/null')
+        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, volper=self.para['volper'], logfilename='/dev/null')
         return xmin
     
     def query_ojf(self,x,s,d):
@@ -335,7 +335,7 @@ class PESVS(opt):
         c = self.para['cfn'](x,s)
         return [y,c]
 
-
+#I'm defining that the augmented dimension must be rescaled to [0,1] with 0 as the true objective
 class PESIP(opt):
     def init_search(self,para):
         self.para=para
@@ -352,15 +352,16 @@ class PESIP(opt):
         print "begin PES:"
         
         self.pesobj = PES.PES_inplane(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],self.para['axis'],self.para['value'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'])
-        
-        [Qmin,ymin,ierror] = self.pesobj.search_acq(self.para['cfn'],self.para['sfn'],maxf=self.para['maxf'])
+        self.train_costest()
+        [Qmin,ymin,ierror] = self.pesobj.search_acq(self.costest,self.para['sfn'],volper=self.para['volper'])
         return [Qmin,self.para['sfn'](Qmin),[sp.NaN]]
     
     def reccomend(self):
         def dirwrap(x,y):
             m  =self.pesobj.G.infer_m(sp.hstack([self.para['sl'],x]),[[sp.NaN]])[0,0]
             return (m,0)
-        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb[:,1:],self.ub[:,1:],user_data=[], algmethod=1, maxf=self.para['maxf'], logfilename='/dev/null')
+        
+        [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb[:,1:],self.ub[:,1:],user_data=[], algmethod=1, volper=self.para['volper'], logfilename='/dev/null')
         return sp.hstack([sp.array(self.para['sl']),xmin])
     def reccomend_random(self):
         i = sp.argmin(self.Y)
@@ -371,7 +372,51 @@ class PESIP(opt):
         [y,c0] = self.ojf(x,s,d)
         c = self.para['cfn'](x,s)
         return [y,c]
-
-    def plotstate(self,a):
-        self.pesobj.query_acq(x,1e-8,[sp.NaN])
+    def train_costest(self):
+        print self.X[:,0]
+        X = self.X[:,0].copy().reshape([len(self.C),1])
+        C = sp.array(self.C)
+        D = [[sp.NaN]]*len(self.C)
+        S = sp.zeros([len(self.C),1])
+        lbc = sp.array([-3.,-2.,-6.])
+        ubc = sp.array([3.,2.,1.])
+        MLEC =  GPdc.searchMLEhyp(X,sp.log(C),S,D,lbc,ubc,GPdc.SQUEXPCS,mx=10000)
+        print "MLEC "+str(MLEC)
+        self.ce = GPdc.GPcore(X.copy(),sp.log(C),S,D,GPdc.kernel(GPdc.SQUEXPCS,1,sp.array(MLEC)))
+        #self.ce = GPdc.GPcore(X,C,S,D,GPdc.kernel(GPdc.SQUEXPCS,1,sp.array([1.,0.3,1e-3])))
+        #self.ce.printc()
+        return
+    def costest(self,x,s):
+        m = sp.exp(self.ce.infer_m(sp.array(x[:,0]),[[sp.NaN]]))
+        return m
+    def plotcosts(self,a):
+        #print self.X[:,0].flatten().shape
+        #print sp.array(self.C).shape
+        self.train_costest()
+        a.plot(self.X[:,0].flatten(),sp.array(self.C).flatten(),'g.')
+        sup = sp.linspace(0,1,100)
+        mc,vc = self.ce.infer_diag(sup,[[sp.NaN]]*100)
+        sc =sp.sqrt(vc)
+        a.plot(sup,sp.exp(mc.flatten()),'b')
+        a.fill_between(sup,sp.exp(mc.flatten()-2*sc).flatten(),sp.exp(mc.flatten()+2*sc).flatten(), facecolor='lightblue',edgecolor='lightblue')
+        return
         
+class PESIPS(PESIP):
+    def init_search(self,para):
+        self.para=para
+        self.sdefault = -1
+        self.lb = sp.hstack([sp.array([[para['sl']]]),self.lb])
+        self.ub = sp.hstack([sp.array([[para['su']]]),self.ub])
+        print self.lb
+        print self.ub
+        for i in xrange(para['ninit']):
+            self.step(random=True)
+        return
+    
+    def run_search(self):
+        print "begin PES:"
+        
+        self.pesobj = PES.PES_inplane(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],self.para['axis'],self.para['value'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'],noS=True)
+        self.train_costest()
+        [Qmin,ymin,ierror] = self.pesobj.search_acq(self.costest,self.para['sfn'],volper=self.para['volper'])
+        return [Qmin,0.,[sp.NaN]]

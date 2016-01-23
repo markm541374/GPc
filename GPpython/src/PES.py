@@ -211,21 +211,23 @@ class PES:
             a[i] = a[i]/costfn(Xq[i,:].flatten(),Sq[i,:].flatten())
         return a
     
-    def search_pes(self,s,maxf=2500,dv=[[sp.NaN]]):
+    def search_pes(self,s,volper=1e-6,dv=[[sp.NaN]]):
+        self.stmp = s
         def directwrap(Q,extra):
             x = sp.array([Q])
             if self.noS:
                 alls = [k(x,x,dv,dv,gets=True)[1] for k in self.G.kf]
                 s = sp.exp(sp.mean(sp.log(alls)))
-                
+            else:
+                s= self.stmp
             acq = PESgain(self.G,self.Ga,self.Z,x,dv,[s])
             R = -acq
             return (R,0)
         
-        [xmin, ymin, ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=maxf, logfilename='/dev/null')
+        [xmin, ymin, ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, volper=volper, logfilename='/dev/null')
         return [xmin,ymin,ierror]
     
-    def search_acq(self,cfn,logsl,logsu,maxf=2500,dv=[[sp.NaN]]):
+    def search_acq(self,cfn,logsl,logsu,volper=1e-6,dv=[[sp.NaN]]):
         def directwrap(Q,extra):
             x = sp.array([Q[:-1]])
             s = 10**Q[-1]
@@ -233,15 +235,18 @@ class PES:
             R = -acq/cfn(x,s)
             return (R,0)
         
-        [xmin, ymin, ierror] = DIRECT.solve(directwrap,sp.hstack([self.lb,logsl]),sp.hstack([self.ub,logsu]),user_data=[], algmethod=1, maxf=maxf, logfilename='/dev/null')
+        [xmin, ymin, ierror] = DIRECT.solve(directwrap,sp.hstack([self.lb,logsl]),sp.hstack([self.ub,logsu]),user_data=[], algmethod=1, volper=volper, logfilename='/dev/null')
         return [xmin,ymin,ierror]
 
 #augmented space PES
 class PES_inplane:
-    def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,axis,value,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,AM_POLICY=NOMIN,mode=ESutils.SUPPORT_SLICELCB):
+    def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,axis,value,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,AM_POLICY=NOMIN,mode=ESutils.SUPPORT_SLICELCB,noS=False):
         print "PES init:"
         self.lb=lb
         self.ub=ub
+        self.noS=noS
+        if noS:
+            S=sp.zeros(S.shape)
         self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
         print "hyp draws:\n"+str([k.hyp for k in self.G.kf])
         self.Z = drawmins_inplane(self.G,DM_SAMPLES,lb,ub,axis=axis,value=value,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA,mode=mode)
@@ -258,14 +263,18 @@ class PES_inplane:
             a[i] = a[i]/costfn(Xq[i,:].flatten())
         return a
     
-    def search_acq(self,cfn,sfn,maxf=2500,dv=[[sp.NaN]]):
+    def search_acq(self,cfn,sfn,volper=1e-6,dv=[[sp.NaN]]):
         def directwrap(Q,extra):
             x = sp.array([Q])
-            s = sfn(x)
+            if self.noS:
+                alls = [k(x,x,dv,dv,gets=True)[1] for k in self.G.kf]
+                s = sp.exp(sp.mean(sp.log(alls)))
+            else:
+                s = sfn(x)
             acq = PESgain(self.G,self.Ga,self.Z,x,dv,[s])
             R = -acq/cfn(x,s)
             return (R,0)
         print self.lb
         print self.ub
-        [xmin, ymin, ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, maxf=maxf, logfilename='/dev/null')
+        [xmin, ymin, ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, volper=volper, logfilename='/dev/null')
         return [xmin,ymin,ierror]

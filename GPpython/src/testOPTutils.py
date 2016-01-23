@@ -7,30 +7,30 @@ import scipy as sp
 from matplotlib import pyplot as plt
 import GPdc
 import ESutils
-
+from tqdm import tqdm_gui
 d=2
 lb = sp.array([[-1.]*d])
 ub = sp.array([[1.]*d])
-[ojf,truexmin] = OPTutils.gensquexpdraw(d,sp.array([-1.]*d),sp.array([1.]*d))
+[ojf,truexmin] = OPTutils.gensquexpdraw(d,sp.array([-1.]*d),sp.array([1.]*d),ignores=1e-6)
 
 O = OPTutils.opt(ojf,lb,ub)
-for i in xrange(20):
+for i in tqdm_gui(xrange(40),gui=True):
     O.step()
 
 
 kindex = GPdc.SQUEXP
 mprior = sp.array([0.]+[-1.]*d)
 sprior = sp.array([1.]*(d+1))
-maxf = 4000
+volper=1e-8
 s = 1e-6
 ninit = 10
-para = [kindex,mprior,sprior,maxf,s,ninit]
+para = [kindex,mprior,sprior,volper,s,ninit]
 
 OE = OPTutils.EIMLE(ojf,lb,ub,para)
-OL = OPTutils.LCBMLE(ojf,lb,ub,para)
-for i in xrange(10):
+#OL = OPTutils.LCBMLE(ojf,lb,ub,para)
+for i in tqdm_gui(xrange(30),gui=True):
     OE.step()
-    OL.step()
+    #OL.step()
 
 
 para = dict()
@@ -39,24 +39,22 @@ para['mprior'] = sp.array([0.]+[-1.]*d)
 para['sprior'] = sp.array([1.]*(d+1))
 para['s'] = 1e-6
 para['ninit'] = 10
-para['maxf'] = 2500
+#para['maxf'] = 2500
+para['volper'] = 1e-7
 para['DH_SAMPLES'] = 8
 para['DM_SAMPLES'] = 8
 para['DM_SUPPORT'] = 400
 para['DM_SLICELCBPARA'] = 1.
 para['SUPPORT_MODE'] = ESutils.SUPPORT_SLICELCB
 OP = OPTutils.PESFS(ojf,lb,ub,para)
-for i in xrange(3):
-    try:
-        OP.step()
-    except RuntimeError as e:
-        print e
-        break
+for i in tqdm_gui(xrange(30),gui=True):
+    OP.step()
+    
 
 f,a = plt.subplots(7)
 O.plot(truexmin,a,'b')
 OE.plot(truexmin,a,'r')
 OP.plot(truexmin,a,'g')
-OL.plot(truexmin,a,'c')
+#OL.plot(truexmin,a,'c')
 
 plt.show()
