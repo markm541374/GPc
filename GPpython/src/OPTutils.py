@@ -64,7 +64,7 @@ def gensquexpdraw(d,lb,ub,ignores=-1):
     def dirwrap(x,y):
         z = obj(x,0.,[sp.NaN])
         return (z,0)
-    [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=20000, logfilename='/dev/null')
+    [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, volper = 1e-10, logfilename='/dev/null')
     
     return [obj,xmin]
 
@@ -75,7 +75,7 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
     print sp.hstack([sp.array([[sl]]),lb])
     print sp.hstack([sp.array([[su]]),ub])
     [X,Y,S,D] = ESutils.gen_dataset(nt,d+1,sp.hstack([sp.array([[sl]]),lb]).flatten(),sp.hstack([sp.array([[su]]),ub]).flatten(),GPdc.SQUEXP,sp.array([1.5]+[sls]+[0.30]*d))
-    G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,d+1,sp.array([1.5]+[sls]+[0.20]*d)))
+    G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,d+1,sp.array([1.5]+[sls]+[0.30]*d)))
     def obj(x,s,d):
         x = x.flatten()
         if sfn(x)==0.:
@@ -114,6 +114,7 @@ class opt(object):
         self.T = []
         self.Tr = []
         self.Ymin = []
+        self.Xmin = sp.empty([0,self.d])
         self.sdefault = 1e-6
         self.init_search(para)
         return
@@ -169,7 +170,10 @@ class opt(object):
         self.Tr.append(t2-t1)
         self.C.append(c)
         self.T.append(t1-t0)
+        
         self.Ymin.append(sp.amin(self.Y))
+        
+        self.Xmin = sp.vstack([self.Xmin,self.X[sp.argmin(self.Y),:]])
         return
 
     def compX(self,xtrue):
@@ -185,9 +189,11 @@ class opt(object):
         n=self.X.shape[0]
         M = sp.empty(n)
         V = sp.empty(n)
+        Z = sp.empty(n)
         for i in xrange(n):
             M[i] = spl.norm(self.X[i,:]-truex)
             V[i] = spl.norm(self.R[i,:]-truex)
+            Z[i] = spl.norm(self.Xmin[i,:]-truex)
         ax[1].semilogy(M,c,label=str(type(self)))
         ax[1].set_ylabel('Xeval')
         ax[1].legend(loc='upper center',ncol=2).draggable()
@@ -204,6 +210,8 @@ class opt(object):
         ax[5].set_ylabel('Stime')
         ax[6].plot(self.Tr,c)
         ax[6].set_ylabel('Rtime')
+        ax[2].semilogy(Z,c,linestyle='--')
+        ax[2].set_ylabel('Xmin')
         return
     
 class LCBMLE(opt):
@@ -254,6 +262,7 @@ class EIMLE(opt):
         
         MAP = GPdc.searchMAPhyp(self.X,self.Y,self.S,self.D,self.mprior,self.sprior, self.kindex)
         self.G = GPdc.GPcore(self.X,self.Y,self.S,self.D,GPdc.kernel(self.kindex,self.d,MAP))
+        
         def directwrap(x,y):
             x.resize([1,self.d])
             
@@ -292,7 +301,39 @@ class PESFS(opt):
             return (m,0)
         [xmin,ymin,ierror] = DIRECT.solve(dirwrap,self.lb,self.ub,user_data=[], algmethod=1, volper=self.para['volper'], logfilename='/dev/null')
         return xmin
-
+    
+    def pcs(self):
+        self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'])
+        xmin = self.reccomend()
+        plt.figure(1)
+        plt.plot(xmin[0],xmin[1],'r.')
+        print xmin
+        plt.figure(2)
+        plt.subplot(4,1,1)
+        ns = 6000
+        sup = sp.linspace(-1,1,ns)
+        for i in xrange(2):
+            X = sp.vstack([xmin for k in xrange(ns)])
+            print X.shape
+            for j in xrange(ns):
+                X[j,i] = sup[j]
+            [m,v] = self.pesobj.G.infer_diag_post(X,[[sp.NaN]]*ns)
+            s = sp.sqrt(v)
+            plt.subplot(4,1,2*i+1)
+            plt.fill_between(sup,(m-2*s).flatten(),(m+2*s).flatten(), facecolor='lightblue',edgecolor='lightblue')
+            plt.plot(sup,m.flatten())
+            [m,v] = self.pesobj.G.infer_diag_post(X,[[i]]*ns)
+            s = sp.sqrt(v)
+            plt.subplot(4,1,2*i+2)
+            plt.fill_between(sup,(m-2*s).flatten(),(m+2*s).flatten(), facecolor='lightblue',edgecolor='lightblue')
+            plt.plot(sup,m.flatten(),'r')
+            p = sp.exp(-0.5*(m**2)/v)
+            
+            
+            
+            plt.twinx().plot(sup,p.flatten(),'g')
+        return
+    
 class PESIS(PESFS):
     def init_search(self,para):
         self.para=para

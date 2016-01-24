@@ -7,10 +7,12 @@ import slice
 import scipy as sp
 from scipy import linalg as spl
 from scipy import stats as sps
+from matplotlib import pyplot as plt
 
 SUPPORT_UNIFORM = 0
 SUPPORT_SLICELCB = 1
 SUPPORT_SLICEEI = 2
+SUPPORT_SLICEPM = 3
 #drawing points between lb and ub using specified method
 def draw_support(g, lb, ub, n, method, para=1.):
     #para is the std confidence bound
@@ -27,18 +29,46 @@ def draw_support(g, lb, ub, n, method, para=1.):
     elif method==SUPPORT_SLICELCB:
         def f(x):
             if all(x>lb) and all(x<ub):
-                return -g.infer_LCB_post(sp.array(x),[[sp.NaN]],para)[0,0]
+                return -5.*g.infer_LCB_post(sp.array(x),[[sp.NaN]],para)[0,0]
             else:
                 return -1e99
         print "Drawing support using slice sample over LCB:"
         X = slice.slice_sample(f,0.5*(ub+lb),n,0.1*(ub-lb))
-    elif method==SUPPORT_SLICEEI:
+    elif method==SUPPORT_SLICELCB:
         def f(x):
             if all(x>lb) and all(x<ub):
-                return g.infer_EI_post(sp.array(x),[[sp.NaN]])[0,0]
+                return -10.*g.infer_LCB_post(sp.array(x),[[sp.NaN]],para)[0,0]
             else:
                 return -1e99
-        print "Drawing support using slice sample over EI:"
+        print "Drawing support using slice sample over LCB:"
+        X = slice.slice_sample(f,0.5*(ub+lb),n,0.1*(ub-lb))
+    elif method==SUPPORT_SLICEPM:
+        def f(x):
+            if all(x>lb) and all(x<ub):
+                [m,v] = g.infer_diag_post(sp.vstack([sp.array(x)]*d),[[i] for i in xrange(d)])
+                p = 0.
+                for i in xrange(d):
+                    p+= -0.5*(m[0,i]**2)/v[0,i]
+                ym = g.infer_m_post(sp.array(x),[[sp.NaN]])[0,0]
+                if not sp.isfinite(p):
+                    print [m,V,p]
+                    #raise ValueError
+                return -10*ym+0.04*p
+            else:
+                return -1e99
+        if False:
+            A = sp.empty([100,100])
+            sup = sp.linspace(-0.999,0.999,100)
+            for i in xrange(100):
+                for j in xrange(100):
+                    print sp.array([sup[i],sup[j]])
+                    A[99-j,i] = f([sup[i],sup[j]])
+                    print A[99-j,i]
+            print A
+            plt.figure()
+            plt.imshow(A)
+            plt.figure()
+        print "Drawing support using slice sample over PM:"
         X = slice.slice_sample(f,0.5*(ub+lb),n,0.1*(ub-lb))
     else:
         raise RuntimeError("draw_support method invalid")

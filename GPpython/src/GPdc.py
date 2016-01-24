@@ -80,7 +80,7 @@ class GPcore:
         R = self.infer_m(X_i,D_i)
         #m = sp.sum(R,axis=0).reshape([1,ns])
         #return m/float(self.size)
-        print sp.mean(R,axis=0).shape
+        #print sp.mean(R,axis=0).shape
         return sp.mean(R,axis=0).reshape([1,ns])
     def infer_full(self,X_i,D_i):
         ns=X_i.shape[0]

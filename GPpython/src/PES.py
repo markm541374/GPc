@@ -7,6 +7,7 @@ import eprop
 import scipy as sp
 from scipy import stats as sps
 import DIRECT
+from matplotlib import pyplot as plt
 
 def makeG(X,Y,S,D,kindex,mprior,sprior,nh):
     #draw hyps based on plk
@@ -18,6 +19,11 @@ def makeG(X,Y,S,D,kindex,mprior,sprior,nh):
 def drawmins(G,n,lb,ub,SUPPORT=300,mode = ESutils.SUPPORT_SLICELCB,SLICELCB_PARA=1.):
     #draw support points
     W = ESutils.draw_support(G, lb,ub,SUPPORT,mode, para = SLICELCB_PARA)
+    if False:
+        
+        plt.figure()
+        plt.plot(W[:,0],W[:,1],'g.')
+        plt.draw()
     #draw in samples on the support
     R = ESutils.draw_min(G,W,n)
     return R
