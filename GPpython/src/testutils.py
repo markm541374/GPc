@@ -50,5 +50,28 @@ a0.plot(sup,sp.array(lcb).flatten(),'g')
 
 ei = G.infer_EI(Xp,Dp)
 a1.plot(sup,sp.array(ei).flatten(),'r')
+print "\nRRRRRRRR"
+import ctypes as ct
+ctpd = ct.POINTER(ct.c_double)
+def r(x):
+    m = sp.array([x])
+    s = sp.array(1.)
+    R = sp.empty(1)
+    GPdc.libGP.EI(m.ctypes.data_as(ctpd),s.ctypes.data_as(ctpd),ct.c_double(0.),ct.c_int(1),R.ctypes.data_as(ctpd))
+    return R[0]
+
+def lr(x):
+    m = sp.array([x])
+    s = sp.array(1.)
+    R = sp.empty(1)
+    GPdc.libGP.lEI(m.ctypes.data_as(ctpd),s.ctypes.data_as(ctpd),ct.c_double(0.),ct.c_int(1),R.ctypes.data_as(ctpd))
+    return R[0]
+
+sup = sp.linspace(-5,100,600)
+y = sp.array(map(r,sup))
+ly = sp.array(map(lr,sup))
+plt.figure()
+plt.plot(sup,map(sp.log,y),'b')
+plt.plot(sup,ly,'r')
 
 plt.show()

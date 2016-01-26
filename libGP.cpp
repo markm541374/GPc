@@ -186,6 +186,18 @@ int infer_EI(int k, int s, int n, double* X, int* D, double* R){
     }
     return 0;
 }
+
+int infer_lEI(int k, int s, int n, double* X, int* D, double* R){
+    if (SS[k]==0){
+	printf("trying to use deleted GP\n");
+	return -1;
+    };
+    //#pragma omp parallel for
+    for (int i=0; i<s; i++){
+        lEI_gp(SS[k+i], n, X, D, &R[n*i]);
+    }
+    return 0;
+}
 #ifdef __cplusplus
 }
 #endif

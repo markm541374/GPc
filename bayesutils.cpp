@@ -37,3 +37,23 @@ extern "C" int EI_gp(GP* g, int n, double* X, int* D, double* R){
     //printf("{%f %f %f %f}",U[0],U[n],R[0],ymin);
     return 0;
 }
+
+extern "C" int lEI_gp(GP* g, int n, double* X, int* D, double* R){
+    
+    std::vector<double> U = std::vector<double>(2*n);
+    g->infer_diag(n,X,D,&U[0]);
+    
+    for (int i=n; i<2*n; i++){
+        U[i] = sqrt(U[i]);
+    }
+    
+    double ymin = 1e99;
+    for (int i=0; i<g->N; i++){
+        //printf("%f_",g->Yd[i]);
+        if(g->Yd[i]<ymin){ymin = g->Yd[i];}
+    }
+    
+    lEI(&U[0], &U[n], ymin, n, &R[0]);
+    //printf("{%f %f %f %f}",U[0],U[n],R[0],ymin);
+    return 0;
+}

@@ -30,4 +30,5 @@ int newGP_LKonly(int D, int N, double* Xin, double* Yin, double* Sin, int* Din, 
 int newGP(int D, int N, int kindex, double* X, double* Y, double* Sx, int* D, double* h);
 int infer_LCB(int k, int s, int n, double* X, int* D, double p, double* R);
 int infer_EI(int k, int s, int n, double* X, int* D, double* R);
+int infer_lEI(int k, int s, int n, double* X, int* D, double* R);
 #endif /* LIBGPD_H_ */

@@ -15,7 +15,9 @@
 #define MISCTOOLS_H
 
 extern "C" int EI(double*, double*, double, int, double*);
+extern "C" int lEI(double*, double*, double, int, double*);
 double pdf(double);
+double lpdf(double);
 double cdf(double);
 extern "C" int drawcov(double* K, int n, double* R, int m);
 extern "C" int drawk(double* K, int n, double* R, int m);

@@ -9,12 +9,12 @@ import GPdc
 import ESutils
 from tqdm import tqdm, tqdm_gui
 import copy
-runn = 30
+runn = 150
 d=2
 lb = sp.array([[-1.]*d])
 ub = sp.array([[1.]*d])
-[ojf,truexmin] = OPTutils.gensquexpdraw(d,sp.array([-1.]*d),sp.array([1.]*d),ignores=1e-6)
-
+[ojf,truexmin] = OPTutils.gensquexpdraw(d,sp.array([-1.]*d),sp.array([1.]*d),ignores=1e-9)
+print "truexmin "+ str(truexmin)
 f,a = plt.subplots(8)
 
 O = OPTutils.opt(ojf,lb,ub)
@@ -27,7 +27,7 @@ kindex = GPdc.SQUEXP
 mprior = sp.array([0.]+[-1.]*d)
 sprior = sp.array([1.]*(d+1))
 volper=1e-8
-s = 1e-6
+s = 1e-9
 ninit = 10
 para = [kindex,mprior,sprior,volper,s,ninit]
 
@@ -43,7 +43,7 @@ para = dict()
 para['kindex'] = GPdc.SQUEXP
 para['mprior'] = sp.array([0.]+[-1.]*d)
 para['sprior'] = sp.array([1.]*(d+1))
-para['s'] = 1e-5
+para['s'] = 1e-9
 para['ninit'] = 10
 #para['maxf'] = 2500
 para['volper'] = 1e-6
@@ -56,25 +56,35 @@ para['SUPPORT_MODE'] = ESutils.SUPPORT_SLICEPM
 OP = OPTutils.PESFS(ojf,lb,ub,para)
 [OP.X,OP.Y,OP.S,OP.D,OP.R,OP.C,OP.T,OP.Tr,OP.Ymin,OP.Xmin] = copy.deepcopy(initstate)
 for i in tqdm_gui(xrange(runn),gui=True):
+    
     state = [OP.X,OP.Y,OP.S,OP.D,OP.R,OP.C,OP.T,OP.Tr,OP.Ymin]
     try:
-        OP.step()
+        pass
+        #OP.step()
     except:
         import pickle
         pickle.dump(state,open('state.p','wb'))
+        
+        
     OE.step()
     O.step()
     #OL.step()
     
-    plt.close(f)
-    f,a = plt.subplots(8)
+    #plt.close(f)
+    #f,a = plt.subplots(8)
     
-    OE.plot(truexmin,a,'r')
-    OP.plot(truexmin,a,'g')
-    O.plot(truexmin,a,'b')
-    plt.draw()
+    #OE.plot(truexmin,a,'r')
+    #OP.plot(truexmin,a,'g')
+    #O.plot(truexmin,a,'b')
+    #plt.draw()
     
-        
+
+f,a = plt.subplots(8)
+    
+OE.plot(truexmin,a,'r')
+OP.plot(truexmin,a,'g')
+O.plot(truexmin,a,'b')
+    #plt.draw()        
 
 
 plt.show()

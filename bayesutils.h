@@ -18,6 +18,7 @@
 
 extern "C" int LCB(GP* g, int n, double* X, int* D, double p, double* R);
 extern "C" int EI_gp(GP* g, int n, double* X, int* D, double* R);
+extern "C" int lEI_gp(GP* g, int n, double* X, int* D, double* R);
 
 #endif /* BAYESUTILS_H */
 

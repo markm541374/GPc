@@ -62,7 +62,8 @@ def gensquexpdraw(d,lb,ub,ignores=-1):
             noise = sp.random.normal(scale=sp.sqrt(s))
         return [G.infer_m(x,[d])[0,0]+noise,1.]
     def dirwrap(x,y):
-        z = obj(x,0.,[sp.NaN])
+        z = G.infer_m(x,[[sp.NaN]])[0,0]
+        #z = obj(x,0.,[sp.NaN])
         return (z,0)
     [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, volper = 1e-10, logfilename='/dev/null')
     
@@ -266,7 +267,7 @@ class EIMLE(opt):
         def directwrap(x,y):
             x.resize([1,self.d])
             
-            a = self.G.infer_EI(x,[[sp.NaN]])
+            a = self.G.infer_lEI(x,[[sp.NaN]])
             #print [x,a]
             #print G.infer_diag_post(x,[[sp.NaN]])
             return (-a[0,0],0)

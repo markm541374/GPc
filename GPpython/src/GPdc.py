@@ -193,6 +193,13 @@ class GPcore:
             R[0,i] = EI(sp.amin(self.Y_s),m[0,i],v[0,i])
         
         return R
+    
+    def infer_lEI(self,X_i,D_i):
+        ns=X_i.shape[0]
+        D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]
+        R=sp.empty([self.size,ns])
+        libGP.infer_lEI(self.s, cint(self.size),ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D), R.ctypes.data_as(ctpd))
+        return R
 #kf = gen_sqexp_k_d([1.,0.3])
 
 
