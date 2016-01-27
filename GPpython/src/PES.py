@@ -12,13 +12,16 @@ from matplotlib import pyplot as plt
 def makeG(X,Y,S,D,kindex,mprior,sprior,nh):
     #draw hyps based on plk
     H = ESutils.drawhyp_plk(X,Y,S,D,kindex,mprior,sprior,nh)
-    #make a G with draws
+    print "XXX---XXX"
+    print sp.hstack([X,Y])
     G = GPdc.GPcore(X,Y,S,D,[GPdc.kernel(kindex,X.shape[1],i) for i in H])
+    
     return G
 
-def drawmins(G,n,lb,ub,SUPPORT=300,mode = ESutils.SUPPORT_SLICELCB,SLICELCB_PARA=1.):
+def drawmins(G,n,lb,ub,SUPPORT=300,mode = [ESutils.SUPPORT_SLICELCB],SLICELCB_PARA=1.):
     #draw support points
-    W = ESutils.draw_support(G, lb,ub,SUPPORT,mode, para = SLICELCB_PARA)
+    
+    W = sp.vstack([ESutils.draw_support(G, lb,ub,SUPPORT/len(mode),m, para = SLICELCB_PARA) for m in mode])
     if False:
         
         plt.figure()
@@ -26,6 +29,7 @@ def drawmins(G,n,lb,ub,SUPPORT=300,mode = ESutils.SUPPORT_SLICELCB,SLICELCB_PARA
         plt.draw()
     #draw in samples on the support
     R = ESutils.draw_min(G,W,n)
+    plt.show()
     return R
 
 def drawmins_inplane(G,n,lb,ub,axis,value, SUPPORT=300, mode=ESutils.SUPPORT_SLICELCB, SLICELCB_PARA=1.):

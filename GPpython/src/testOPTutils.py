@@ -51,7 +51,7 @@ para['DH_SAMPLES'] = 8
 para['DM_SAMPLES'] = 8
 para['DM_SUPPORT'] = 800
 para['DM_SLICELCBPARA'] = 1.
-para['SUPPORT_MODE'] = ESutils.SUPPORT_SLICEPM
+para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
 
 OP = OPTutils.PESFS(ojf,lb,ub,para)
 [OP.X,OP.Y,OP.S,OP.D,OP.R,OP.C,OP.T,OP.Tr,OP.Ymin,OP.Xmin] = copy.deepcopy(initstate)
@@ -59,24 +59,24 @@ for i in tqdm_gui(xrange(runn),gui=True):
     
     state = [OP.X,OP.Y,OP.S,OP.D,OP.R,OP.C,OP.T,OP.Tr,OP.Ymin]
     try:
-        pass
-        #OP.step()
+        #pass
+        OP.step()
     except:
         import pickle
         pickle.dump(state,open('state.p','wb'))
-        
+        raise
         
     OE.step()
     O.step()
     #OL.step()
     
-    #plt.close(f)
-    #f,a = plt.subplots(8)
+    plt.close(f)
+    f,a = plt.subplots(8)
     
-    #OE.plot(truexmin,a,'r')
-    #OP.plot(truexmin,a,'g')
-    #O.plot(truexmin,a,'b')
-    #plt.draw()
+    OE.plot(truexmin,a,'r')
+    OP.plot(truexmin,a,'g')
+    O.plot(truexmin,a,'b')
+    plt.draw()
     
 
 f,a = plt.subplots(8)

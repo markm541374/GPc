@@ -53,7 +53,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
                 if not sp.isfinite(p):
                     print [m,V,p]
                     #raise ValueError
-                return -10*ym+0.04*p
+                return -10*ym+0.01*p
             else:
                 return -1e99
         if False:

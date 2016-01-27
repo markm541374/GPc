@@ -65,7 +65,7 @@ def gensquexpdraw(d,lb,ub,ignores=-1):
         z = G.infer_m(x,[[sp.NaN]])[0,0]
         #z = obj(x,0.,[sp.NaN])
         return (z,0)
-    [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, volper = 1e-10, logfilename='/dev/null')
+    [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=89000, logfilename='/dev/null')
     
     return [obj,xmin]
 
