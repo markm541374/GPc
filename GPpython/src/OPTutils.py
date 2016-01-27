@@ -52,11 +52,11 @@ def gensquexpdraw(d,lb,ub,ignores=-1):
     nt=14
     [X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([1.5]+[0.30]*d))
     G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,d,sp.array([1.5]+[0.30]*d)))
-    def obj(x,s,d):
+    def obj(x,s,d,override=False):
         #print [x,s,d]
         if ignores>0:
             s=ignores
-        if s==0.:
+        if s==0. or override:
             noise = 0.
         else:
             noise = sp.random.normal(scale=sp.sqrt(s))
@@ -67,7 +67,7 @@ def gensquexpdraw(d,lb,ub,ignores=-1):
         return (z,0)
     [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=89000, logfilename='/dev/null')
     
-    return [obj,xmin]
+    return [obj,xmin,ymin]
 
 def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
     #axis = 0 value = sl
@@ -116,6 +116,8 @@ class opt(object):
         self.Tr = []
         self.Ymin = []
         self.Xmin = sp.empty([0,self.d])
+        self.Yreg = sp.empty([0,1])
+        self.Rreg = sp.empty([0,1])
         self.sdefault = 1e-6
         self.init_search(para)
         return
@@ -175,6 +177,8 @@ class opt(object):
         self.Ymin.append(sp.amin(self.Y))
         
         self.Xmin = sp.vstack([self.Xmin,self.X[sp.argmin(self.Y),:]])
+        self.Yreg = sp.vstack([self.Yreg,self.ojf(self.X[sp.argmin(self.Y),:],0.,[sp.NaN],override=True)[0]])
+        self.Rreg = sp.vstack([self.Rreg,self.ojf(self.R[-1,:],0.,[sp.NaN],override=True)[0]])
         return
 
     def compX(self,xtrue):
@@ -184,7 +188,7 @@ class opt(object):
             R[0,i] = spl.norm(self.X[i,:]-xtrue)
             R[1,i] = sp.amin(R[0,:i+1])
         return R
-    def plot(self,truex,ax,c):
+    def plot(self,truex,truey,ax,c):
         ax[0].plot(self.Ymin,c)
         ax[0].set_ylabel('Ymin')
         n=self.X.shape[0]
@@ -197,7 +201,7 @@ class opt(object):
             Z[i] = spl.norm(self.Xmin[i,:]-truex)
         ax[1].semilogy(M,c,label=str(type(self)))
         ax[1].set_ylabel('Xeval')
-        ax[1].legend(loc='upper center',ncol=2).draggable()
+        #ax[1].legend(loc='upper center',ncol=2).draggable()
         ax[2].semilogy(V,c)
         ax[2].set_ylabel('Xrecc')
         
@@ -209,10 +213,13 @@ class opt(object):
         
         ax[5].plot(self.T,c)
         ax[5].set_ylabel('Stime')
-        ax[6].plot(self.Tr,c)
-        ax[6].set_ylabel('Rtime')
+        
         ax[2].semilogy(Z,c,linestyle='--')
         ax[2].set_ylabel('Xmin')
+        
+        ax[6].semilogy((self.Yreg-truey).flatten(),c,linestyle='--')
+        ax[6].semilogy((self.Rreg-truey).flatten(),c)
+        ax[6].set_ylabel('Regret')
         return
     
 class LCBMLE(opt):

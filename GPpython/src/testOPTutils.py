@@ -9,11 +9,11 @@ import GPdc
 import ESutils
 from tqdm import tqdm, tqdm_gui
 import copy
-runn = 150
+runn = 60
 d=2
 lb = sp.array([[-1.]*d])
 ub = sp.array([[1.]*d])
-[ojf,truexmin] = OPTutils.gensquexpdraw(d,sp.array([-1.]*d),sp.array([1.]*d),ignores=1e-9)
+[ojf,truexmin,trueymin] = OPTutils.gensquexpdraw(d,sp.array([-1.]*d),sp.array([1.]*d),ignores=1e-9)
 print "truexmin "+ str(truexmin)
 f,a = plt.subplots(8)
 
@@ -49,7 +49,7 @@ para['ninit'] = 10
 para['volper'] = 1e-6
 para['DH_SAMPLES'] = 8
 para['DM_SAMPLES'] = 8
-para['DM_SUPPORT'] = 800
+para['DM_SUPPORT'] = 1200
 para['DM_SLICELCBPARA'] = 1.
 para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
 
@@ -59,8 +59,8 @@ for i in tqdm_gui(xrange(runn),gui=True):
     
     state = [OP.X,OP.Y,OP.S,OP.D,OP.R,OP.C,OP.T,OP.Tr,OP.Ymin]
     try:
-        #pass
-        OP.step()
+        pass
+        #OP.step()
     except:
         import pickle
         pickle.dump(state,open('state.p','wb'))
@@ -73,17 +73,17 @@ for i in tqdm_gui(xrange(runn),gui=True):
     plt.close(f)
     f,a = plt.subplots(8)
     
-    OE.plot(truexmin,a,'r')
-    OP.plot(truexmin,a,'g')
-    O.plot(truexmin,a,'b')
+    OE.plot(truexmin,trueymin,a,'r')
+    OP.plot(truexmin,trueymin,a,'g')
+    O.plot(truexmin,trueymin,a,'b')
     plt.draw()
     
 
 f,a = plt.subplots(8)
     
-OE.plot(truexmin,a,'r')
-OP.plot(truexmin,a,'g')
-O.plot(truexmin,a,'b')
+OE.plot(truexmin,trueymin,a,'r')
+OP.plot(truexmin,trueymin,a,'g')
+O.plot(truexmin,trueymin,a,'b')
     #plt.draw()        
 
 
