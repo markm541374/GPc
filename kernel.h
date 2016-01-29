@@ -7,7 +7,7 @@
 
 #ifndef KERNEL_H_
 #define KERNEL_H_
-const int n=9; //how many kernels there are
+const int n=10; //how many kernels there are
 
 
 //k is the kindex^th kernel in d dimensions between x1 and x2 and differentiated accoding to d1 and d2 with adjusted hyperparameters ih

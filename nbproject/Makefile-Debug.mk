@@ -41,6 +41,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/hypsearch.o \
 	${OBJECTDIR}/kernel.o \
 	${OBJECTDIR}/libGP.o \
+	${OBJECTDIR}/matern.o \
 	${OBJECTDIR}/misctools.o
 
 
@@ -97,6 +98,11 @@ ${OBJECTDIR}/libGP.o: libGP.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/libGP.o libGP.cpp
+
+${OBJECTDIR}/matern.o: matern.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/matern.o matern.cpp
 
 ${OBJECTDIR}/misctools.o: misctools.cpp 
 	${MKDIR} -p ${OBJECTDIR}

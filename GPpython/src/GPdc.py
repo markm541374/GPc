@@ -14,7 +14,7 @@ import sys
 from scipy.stats import norm as norms
 #print os.path.join(os.path.split(__file__)[0],'../../dist/Release/GNU-Linux/libGPshared.so')
 libGP = ct.cdll.LoadLibrary(os.path.join(os.path.split(__file__)[0],'../../dist/Release/GNU-Linux/libGPshared.so')) #path to c-shared library
-print libGP
+#print libGP
 libGP.k.restype = ct.c_double
 
 ctpd = ct.POINTER(ct.c_double)
@@ -216,6 +216,7 @@ SSPS = 5
 SQUEXPCS = 6
 SQUEXPPS = 7
 SQUEXPBS = 8
+MAT52 = 9
 class kernel(object):
     def __init__(self,K,D,H):
         self.dim = D

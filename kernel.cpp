@@ -2,7 +2,7 @@
 #include <cmath>
 #include <stdlib.h>
 #include <stdio.h>
-
+#include "matern.h"
 
 int lin1conv(double *h, int D, double* ih){
     ih[0] = pow(h[0],2);
@@ -434,7 +434,7 @@ double squexpsquexpPsquexp(double *x1, double *x2, int d1, int d2, int D, double
 
 typedef double (*KP)(double*, double*, int, int, int, double*,double*);
 
-extern "C" const KP kern[9] = {&squexp,&lin1,&linXPsquexp,&linsquexpXPsquexp,squexp1Ssquexp,&squexpsquexpPsquexp,&squexpcs,&squexpps,&squexpbs};
+extern "C" const KP kern[10] = {&squexp,&lin1,&linXPsquexp,&linsquexpXPsquexp,squexp1Ssquexp,&squexpsquexpPsquexp,&squexpcs,&squexpps,&squexpbs,&mat52};
 
 extern "C" double k(double *x1, double *x2, int d1, int d2, int D, double* ih, int kindex, double* smodel){
     smodel[0] = 0.;
@@ -446,7 +446,7 @@ return kern[kindex](&x1[0], &x2[0], d1, d2, D, &ih[0],smodel);
 
 typedef int (*HP)(double *h, int D, double* ih);
 
-extern "C" const HP hypcons[9] = {&squexpconv,&lin1conv,&linXPsquexpconv,&linsquexpXPsquexpconv,&squexp1Ssquexpconv,&squexpsquexpPsquexpconv,&squexpcsconv,&squexppsconv,&squexpbsconv};
+extern "C" const HP hypcons[10] = {&squexpconv,&lin1conv,&linXPsquexpconv,&linsquexpXPsquexpconv,&squexp1Ssquexpconv,&squexpsquexpPsquexpconv,&squexpcsconv,&squexppsconv,&squexpbsconv,&mat52conv};
 
 extern "C" int hypconvert(double *h, int kindex, int D, double* ih){
     return hypcons[kindex](h,D,ih);
@@ -454,7 +454,7 @@ extern "C" int hypconvert(double *h, int kindex, int D, double* ih){
 
 typedef int (*SP)(double *h, int D, double* ih);
 
-extern "C" const SP hypsearchcons[9] = {&squexpsearchconv,&lin1searchconv,&linXPsquexpsearchconv,&linsquexpXPsquexpsearchconv,&squexp1Ssquexpsearchconv,&squexpsquexpPsquexpsearchconv,&squexpcssearchconv,&squexppssearchconv,&squexpbssearchconv};
+extern "C" const SP hypsearchcons[10] = {&squexpsearchconv,&lin1searchconv,&linXPsquexpsearchconv,&linsquexpXPsquexpsearchconv,&squexp1Ssquexpsearchconv,&squexpsquexpPsquexpsearchconv,&squexpcssearchconv,&squexppssearchconv,&squexpbssearchconv,&mat52searchconv};
 
 extern "C" int hypsearchconvert(double *h, int kindex, int D, double* ih){
     return hypsearchcons[kindex](h,D,ih);
@@ -486,6 +486,9 @@ extern "C" int numhyp(int kindex, int D){
     }
     else if (kindex==8){
         return D+4;
+    }
+    else if (kindex==9){
+        return D+1;
     }
     else{
         printf("%d %d a bad thing happened :(",kindex,D);
