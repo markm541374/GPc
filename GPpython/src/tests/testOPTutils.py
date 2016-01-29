@@ -25,7 +25,7 @@ for i in tqdm(xrange(10)):
 initstate = [O.X.copy(),O.Y.copy(),O.S.copy(),[i for i in O.D],O.R.copy(),[i for i in O.C],[i for i in O.T],[i for i in O.Tr],[i for i in O.Ymin],O.Xmin.copy()]
 
     
-kindex = GPdc.SQUEXP
+kindex = GPdc.MAT52
 mprior = sp.array([0.]+[-1.]*d)
 sprior = sp.array([1.]*(d+1))
 volper=1e-8

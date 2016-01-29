@@ -171,23 +171,63 @@ double mat52(double *x1, double *x2, int d1, int d2, int D, double* ih, double* 
 		}
 		else if (P==12){
 			//one second and two first
-			printf("invalid derivatives %d %d",d1,d2);
-                        return 0.;
+                        if (r2==0.) {return 0.;}
+			int i = 0;
+			while (V[i]!=1){i+=1;}
+			int j = i+1;
+			while (V[j]==0){j+=1;}
+			int k = 0;
+			while (V[k]!=2){k+=1;}
+			double xi = (x1[i]-x2[i]);
+			double li = ih[i+1];
+			double xj = (x1[j]-x2[j]);
+			double lj = ih[j+1];
+			double xk = (x1[k]-x2[k]);
+			double lk = ih[k+1];
+                        //k is the repeated axis
+                        return ih[0]*5.*FIVETHIRDS*xi*xj*li*lj*lk*oversq5r2*(lk*pow(xk,2)*(1-sq5r2)*pow(oversq5r2,2)*5. -1.)*core*double(sign);
 		}
 		else if (P==9){
 			//two second derivatives
-			printf("invalid derivatives %d %d",d1,d2);
-                        return 0.;
+                        
+                        
+			int i = 0;
+			while (V[i]==0){i+=1;}
+			int j = i+1;
+			while (V[j]==0){j+=1;}
+			double xi = (x1[i]-x2[i]);
+			double li = ih[i+1];
+			double xj = (x1[j]-x2[j]);
+			double lj = ih[j+1];
+                        if (r2==0.) {return ih[0]*5.*FIVETHIRDS*li*lj*core*double(sign);}
+                        
+                        return ih[0]*5.*FIVETHIRDS*li*lj*(1.-5.*oversq5r2*(pow(xi,2)*li+pow(xj,2)*lj)+25.*pow(oversq5r2*xi*xj,2)*li*lj*(1+oversq5r2))*core*double(sign);
 		}
 		else if (P==8){
 			//third and first derivative
-			printf("invalid derivatives %d %d",d1,d2);
-                        return 0.;
+                        //j is the repeated axis
+                        if (r2==0.) {return 0.;}
+			int i = 0;
+			while (V[i]!=1){i+=1;}
+			int j = 0;
+			while (V[j]!=3){j+=1;}
+			double xi = (x1[i]-x2[i]);
+			double li = ih[i+1];
+			double xj = (x1[j]-x2[j]);
+			double lj = ih[j+1];
+			
+                        return ih[0]*25.*FIVETHIRDS*pow(xj*lj,2)*xj*xi*li*oversq5r2*(lj*(1.-sq5r2)*(1./r2)-3.)*core*double(sign);
 		}
 		else if (P==5){
                     //fourth derivative
-                    printf("invalid derivatives %d %d",d1,d2);
-                    return 0.;
+                    
+                    int i = 0;
+                    while (V[i]==0){i+=1;}
+                    double xi = (x1[i]-x2[i]);
+                    double li = ih[i+1];
+                    if (r2==0.) {return ih[0]*5.*FIVETHIRDS*3.*li*li*core*double(sign);}
+                    
+                    return ih[0]*5.*FIVETHIRDS*(3.*pow(li,2)-30.*pow(xi*li,2)*li*oversq5r2+25.*pow(xi*li*oversq5r2,3)*xi*li*(1.+sq5r2))*core*double(sign);
 		}
 		else{
 			printf("invalid derivatives %d %d",d1,d2);
