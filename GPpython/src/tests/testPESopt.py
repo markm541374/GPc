@@ -1,18 +1,20 @@
 # To change this license header, choose License Headers in Project Properties.
 # To change this template file, choose Tools | Templates
 # and open the template in the editor.
-
+import sys
+sys.path.append("./..")
 import OPTutils
 import scipy as sp
 from matplotlib import pyplot as plt
 import GPdc
 import ESutils
-
+from tqdm import tqdm, tqdm_gui
+runn=50
 d=2
 lb = sp.array([[-1.]*d])
 ub = sp.array([[1.]*d])
 
-[ojf,truexmin] = OPTutils.gensquexpdraw(d,sp.array([-1.]*d),sp.array([1.]*d))
+[ojf,truexmin,trueymin] = OPTutils.gensquexpdraw(d,sp.array([-1.]*d),sp.array([1.]*d))
 
 
 
@@ -30,8 +32,6 @@ para = [kindex,mprior,sprior,volper,s,ninit]
 
 
 OE = OPTutils.EIMLE(ojf,lb,ub,para)
-for i in xrange(10):
-    OE.step()
 
 para = dict()
 para['kindex'] = GPdc.SQUEXP
@@ -45,8 +45,8 @@ para['DH_SAMPLES'] = 8
 para['DM_SAMPLES'] = 8
 para['DM_SUPPORT'] = 600
 para['DM_SLICELCBPARA'] = 1.
-para['SUPPORT_MODE'] = ESutils.SUPPORT_SLICELCB
-para['cfn'] = lambda x,s: ((1e-6)/s)**0.2
+para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
+para['cfn'] = lambda x,s: ((1e-6)/s)**0.3
 para['logsl'] = -8.
 para['logsu'] = -2.
 """
@@ -56,34 +56,18 @@ pr.enable()
 """
 
 OV = OPTutils.PESVS(ojf,lb,ub,para)
-for i in xrange(5):
+for i in tqdm_gui(xrange(runn),gui=True):
     try:
         OV.step()
     except RuntimeError as e:
         print e
         break
-
-"""
-pr.disable()
-s = StringIO.StringIO()
-sortby = 'cumulative'
-ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-ps.print_stats()
-print s.getvalue()
-
-OS = OPTutils.PESFX(ojf,lb,ub,para)
-for i in xrange(10):
-    try:
-        OS.step()
-    except RuntimeError as e:
-        print e
-        break
-"""
+    OE.step()
 
 f,a = plt.subplots(7)
 
-OE.plot(truexmin,a,'r')
-OV.plot(truexmin,a,'g')
+OE.plot(truexmin,trueymin,a,'r')
+OV.plot(truexmin,trueymin,a,'g')
 #OS.plot(truexmin,a,'b')
 
 

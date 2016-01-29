@@ -15,13 +15,18 @@ def gaussian_fusion(m1,m2,V1,V2):
     return m,V
 
 def expectation_prop(m0,V0,Y,Z,F,z):
+    needed = [True]*V0.shape[0]
+    for i in xrange(V0.shape[0]):
+        needed[i] =  not [Z[i]*(m0[0,i]-Z[i]*5*V0[i,i])>Z[i]*Y[i]]
+    if any(needed):
+        print "EP not needed for all values (>5std): "+str(needed)
     try:
-        return expectation_prop_inner(m0,V0,Y,Z,F,z)
+        return expectation_prop_inner(m0,V0,Y,Z,F,z,needed)
     except:
         import pickle
         pickle.dump([m0,V0,Y,Z,F,z],open('epkill.p','wb'))
         raise
-def expectation_prop_inner(m0,V0,Y,Z,F,z):
+def expectation_prop_inner(m0,V0,Y,Z,F,z,needed):
     #expectation propagation on multivariate gaussian for soft inequality constraint
     #m0,v0 are mean vector , covariance before EP
     #Y is inequality value, Z is sign, 1 for geq, -1 for leq, F is softness variance
@@ -37,11 +42,13 @@ def expectation_prop_inner(m0,V0,Y,Z,F,z):
     V = sp.empty([n,n])
     conv = sp.empty(z)
     for i in xrange(z):
+        
         #compute the m V give ep obs
         m,V = gaussian_fusion(m0,mt,V0,Vt)
         mtprev=mt.copy()
         Vtprev=Vt.copy()
-        for j in xrange(n):
+        for j in [k for k in xrange(n) if needed[k]]:
+            print [i,j]
             #the cavity dist at index j
             tmp = 1./(Vt[j,j]-V[j,j])
             v_ = (V[j,j]*Vt[j,j])*tmp
@@ -55,8 +62,10 @@ def expectation_prop_inner(m0,V0,Y,Z,F,z):
                 pr = -alpha
             beta = pr*(pr+alpha)/(v_+F[j])
             kappa = sp.sign(Z[j])*(pr+alpha) / (sp.sqrt(v_+F[j]))
+            
             #print [alpha,beta,kappa,pr]
             mt[j] = m_+1./kappa
+            #mt[j] = min(abs(mt[j]),1e5)*sp.sign(mt[j])
             Vt[j,j] = min(1e10,1./beta - v_)
         #print sp.amax(mtprev-mt)
         #print sp.amax(sp.diagonal(Vtprev)-sp.diagonal(Vt))

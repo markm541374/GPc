@@ -166,7 +166,7 @@ extern "C" int HypSearchMAP(int d, int n, double* Xin, double* Yin, double* Sin,
         printf("DIRECT found (");
         for (int i=0; i<nhyp; i++){printf("%f ",xbest[i]);}
         printf("\b) raw with llk %f which is (",*lk);
-        for (int i=0; i<nhyp; i++){printf("%f ",Rhyp[i]);}
+        for (int i=0; i<nhyp; i++){printf("%e ",Rhyp[i]);}
         printf("\b)true\n");
         //printf("zzz");
 	return 0;

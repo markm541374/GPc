@@ -12,8 +12,7 @@ from matplotlib import pyplot as plt
 def makeG(X,Y,S,D,kindex,mprior,sprior,nh):
     #draw hyps based on plk
     H = ESutils.drawhyp_plk(X,Y,S,D,kindex,mprior,sprior,nh)
-    print "XXX---XXX"
-    print sp.hstack([X,Y])
+    
     G = GPdc.GPcore(X,Y,S,D,[GPdc.kernel(kindex,X.shape[1],i) for i in H])
     
     return G
@@ -198,7 +197,7 @@ class PES:
         if noS:
             S=sp.zeros(S.shape)
         self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
-        print "hyp draws: "+str([k.hyp for k in self.G.kf])
+        print "hyp draws: "+str(sp.vstack([k.hyp for k in self.G.kf]))
         self.Z = drawmins(self.G,DM_SAMPLES,lb,ub,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA,mode=mode)
         print "mindraws: "+str(self.Z)
         self.Ga = [GPdc.GPcore(*addmins(self.G,X,Y,S,D,self.Z[i,:])+[self.G.kf]) for i in xrange(DM_SAMPLES)]

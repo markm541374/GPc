@@ -3,14 +3,18 @@
 #GPcore takes a single hyperparameter value or a set. With a set the infer_ methods produce individual inferences while infer_post methods return the posterior
 
 #
+
 __author__ = "mark"
 __date__ = "$22-Nov-2015 21:27:19$"
 import numpy as np
 import scipy as sp
 import ctypes as ct
+import os
+import sys
 from scipy.stats import norm as norms
-
-libGP = ct.cdll.LoadLibrary('../../dist/Release/GNU-Linux/libGPshared.so') #path to c-shared library
+#print os.path.join(os.path.split(__file__)[0],'../../dist/Release/GNU-Linux/libGPshared.so')
+libGP = ct.cdll.LoadLibrary(os.path.join(os.path.split(__file__)[0],'../../dist/Release/GNU-Linux/libGPshared.so')) #path to c-shared library
+print libGP
 libGP.k.restype = ct.c_double
 
 ctpd = ct.POINTER(ct.c_double)

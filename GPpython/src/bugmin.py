@@ -19,3 +19,6 @@ print Y
 print Z
 print F
 print z
+
+import eprop
+eprop.expectation_prop(m0,V0,Y,Z,F,z)

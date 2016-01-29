@@ -24,6 +24,24 @@ def cosines(x,s,d):
         noise = sp.random.normal(scale=sp.sqrt(s))
     return [f +noise,1.]
 
+def digitfn():
+    from sklearn import datasets, svm
+    digits = datasets.load_digits()
+    n_samples = len(digits.images)
+    data = digits.images.reshape((n_samples, -1))
+    def digitojf(x,s,d,override=False):
+        x.resize([1,x.size])
+        g = 10**((x[0,0]-1.)*3)
+        c = 6.*x[0,1]
+        # Create a classifier: a support vector classifier
+        classifier = svm.SVC(gamma=g, coef0=c,kernel='sigmoid')
+        # We learn the digits on the first half of the digits
+        classifier.fit(data[:n_samples / 2], digits.target[:n_samples / 2])
+        # Now predict the value of the digit on the second half:
+        r = classifier.score(data[n_samples / 2:],digits.target[n_samples / 2:])
+        return [1-r,1.]
+    return digitojf
+
 def quad(x,s,d):
     assert(d==[sp.NaN])
     f = sum((x.flatten()-0.1)**2)
@@ -32,21 +50,25 @@ def quad(x,s,d):
     else:
         noise = sp.random.normal(scale=sp.sqrt(s))
     return [f +noise,1.]
-bananamin = sp.array([0.2,0.2])
-def banana(x,s,d):
-    assert(d==[sp.NaN])
-    x.resize([1,x.size])
-    u = 5.*x[0,0]
-    v = 5.*x[0,1]
-    a=1.
-    b=100.
-    f = 1e-3*((a-u)**2 + b*(v-u**2)**2)
-    if s==0.:
-        noise = 0.
-    else:
-        noise = sp.random.normal(scale=sp.sqrt(s))
-    return [f+noise,1.]
 
+bananamin = sp.array([0.2,0.2])
+def genbanana(ignores=-1.):
+    def banana(x,s,d,override=False):
+        assert(d==[sp.NaN])
+        x.resize([1,x.size])
+        u = 5.*x[0,0]
+        v = 5.*x[0,1]
+        a=1.
+        b=100.
+        f = 1e-3*((a-u)**2 + b*(v-u**2)**2)
+        if ignores>0:
+            s=ignores
+        if s==0.:
+            noise = 0.
+        else:
+            noise = sp.random.normal(scale=sp.sqrt(s))
+        return [f+noise,1.]
+    return banana
 
 def gensquexpdraw(d,lb,ub,ignores=-1):
     nt=14
@@ -60,6 +82,7 @@ def gensquexpdraw(d,lb,ub,ignores=-1):
             noise = 0.
         else:
             noise = sp.random.normal(scale=sp.sqrt(s))
+        print "EVAL WITH NOISE: "+str(noise) + "FROM S= "+str(s)
         return [G.infer_m(x,[d])[0,0]+noise,1.]
     def dirwrap(x,y):
         z = G.infer_m(x,[[sp.NaN]])[0,0]
@@ -191,35 +214,41 @@ class opt(object):
     def plot(self,truex,truey,ax,c):
         ax[0].plot(self.Ymin,c)
         ax[0].set_ylabel('Ymin')
-        n=self.X.shape[0]
-        M = sp.empty(n)
-        V = sp.empty(n)
-        Z = sp.empty(n)
-        for i in xrange(n):
-            M[i] = spl.norm(self.X[i,:]-truex)
-            V[i] = spl.norm(self.R[i,:]-truex)
-            Z[i] = spl.norm(self.Xmin[i,:]-truex)
-        ax[1].semilogy(M,c,label=str(type(self)))
-        ax[1].set_ylabel('Xeval')
-        #ax[1].legend(loc='upper center',ncol=2).draggable()
-        ax[2].semilogy(V,c)
-        ax[2].set_ylabel('Xrecc')
+        if not truex==None:
+            n=self.X.shape[0]
+            M = sp.empty(n)
+            V = sp.empty(n)
+            Z = sp.empty(n)
+            for i in xrange(n):
+                M[i] = spl.norm(self.X[i,:]-truex)
+                V[i] = spl.norm(self.R[i,:]-truex)
+                Z[i] = spl.norm(self.Xmin[i,:]-truex)
+            ax[1].semilogy(M,c,label=str(type(self)))
+            ax[1].set_ylabel('Xeval')
+            #ax[1].legend(loc='upper center',ncol=2).draggable()
+            ax[2].semilogy(V,c)
+            ax[2].set_ylabel('Xrecc')
+            ax[4].semilogy([sum(self.C[:i]) for i in xrange(n)],V,c)
+            ax[4].set_ylabel('Xrecc/acccost')
+            ax[2].semilogy(Z,c,linestyle='--')
+            ax[2].set_ylabel('Xmin')
+            ax[6].semilogx(sp.log10(self.Yreg-truey).flatten(),c,linestyle='--')
+            ax[6].semilogx(sp.log10(self.Rreg-truey).flatten(),c)
+            #print "recc:\n"+str((self.Yreg-truey).flatten())+"\nmmmmm\n"+str((self.Rreg-truey).flatten())
         
-        ax[3].plot(self.C[:i],c)
+            ax[6].set_ylabel('Regret')
+            ax[5].plot([sum(self.C[:i]) for i in xrange(n)],sp.log10(self.Yreg-truey).flatten(),c,linestyle='--')
+            ax[5].plot([sum(self.C[:i]) for i in xrange(n)],sp.log10(self.Rreg-truey).flatten(),c)
+            ax[5].set_ylabel('REgret/cost')
+        
+        ax[3].plot(self.C,c)
         ax[3].set_ylabel('cost')
         
-        ax[4].semilogy([sum(self.C[:i]) for i in xrange(n)],V,c)
-        ax[4].set_ylabel('Xrecc/acccost')
+         
         
-        ax[5].plot(self.T,c)
-        ax[5].set_ylabel('Stime')
         
-        ax[2].semilogy(Z,c,linestyle='--')
-        ax[2].set_ylabel('Xmin')
+        #print "recc:\n"+str((self.Yreg-truey).flatten())+"\nmmmmm\n"+str((self.Rreg-truey).flatten())
         
-        ax[6].semilogy((self.Yreg-truey).flatten(),c,linestyle='--')
-        ax[6].semilogy((self.Rreg-truey).flatten(),c)
-        ax[6].set_ylabel('Regret')
         return
     
 class LCBMLE(opt):

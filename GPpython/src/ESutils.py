@@ -29,19 +29,16 @@ def draw_support(g, lb, ub, n, method, para=1.):
     elif method==SUPPORT_SLICELCB:
         def f(x):
             if all(x>lb) and all(x<ub):
-                return -5.*g.infer_LCB_post(sp.array(x),[[sp.NaN]],para)[0,0]
+                try:
+                    return -5.*g.infer_LCB_post(sp.array(x),[[sp.NaN]],para)[0,0]
+                except:
+                    g.printc()
+                    raise
             else:
                 return -1e99
         print "Drawing support using slice sample over LCB:"
         X = slice.slice_sample(f,0.5*(ub+lb),n,0.1*(ub-lb))
-    elif method==SUPPORT_SLICELCB:
-        def f(x):
-            if all(x>lb) and all(x<ub):
-                return -10.*g.infer_LCB_post(sp.array(x),[[sp.NaN]],para)[0,0]
-            else:
-                return -1e99
-        print "Drawing support using slice sample over LCB:"
-        X = slice.slice_sample(f,0.5*(ub+lb),n,0.1*(ub-lb))
+    
     elif method==SUPPORT_SLICEPM:
         def f(x):
             if all(x>lb) and all(x<ub):
@@ -145,13 +142,19 @@ def plot_gp(g,axis,x,d):
 #draw hyperparameters given data from posterior likelihood
 def drawhyp_plk(X,Y,S,D,ki,hm,hs,n,burn=80,subsam=5):
     def f(loghyp):
-        r=GPdc.GP_LKonly(X,Y,S,D,GPdc.kernel(ki,X.shape[1],[10**i for i in loghyp])).plk(hm,hs)
-        if sp.isnan(r):
-            class MJMError(Exception):
-                pass
-            print 'nan from GPLKonly with input'
-            print [X,Y,S,D,ki,hm,hs,n,burn,subsam]
-            raise MJMError('nan from GPLKonly with input')
+        ub = hm+1.8*hs
+        lb = hm-1.8*hs
+        if all(loghyp<ub) and all(loghyp>lb):
+            r=GPdc.GP_LKonly(X,Y,S,D,GPdc.kernel(ki,X.shape[1],[10**i for i in loghyp])).plk(hm,hs)
+            if sp.isnan(r):
+                class MJMError(Exception):
+                    pass
+                print 'nan from GPLKonly with input'
+                print [X,Y,S,D,ki,hm,hs,n,burn,subsam]
+                raise MJMError('nan from GPLKonly with input')
+        else:
+            r=-1e99
+        #print [loghyp, r]
         return r
     X = slice.slice_sample(f,hm,n,0.05*hs,burn=burn,subsam=subsam)
     return 10**X
