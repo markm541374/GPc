@@ -79,8 +79,13 @@ double mat52(double *x1, double *x2, int d1, int d2, int D, double* ih, double* 
 		}
 		else if (P==4){
 			//first derivative on two axes
-			printf("invalid derivatives %d %d",d1,d2);
-                        return 0.;
+			int i = 0;
+			while (V[i]==0){i+=1;}
+			int j = i+1;
+			while (V[j]==0){j+=1;}
+                        
+                        
+                        return ih[0]*ih[j+1]*(x1[j]-x2[j])*ih[i+1]*(x1[i]-x2[i])*5.*FIVETHIRDS*core*double(sign);
 		}
 		else{
 			printf("invalid derivatives %d %d",d1,d2);

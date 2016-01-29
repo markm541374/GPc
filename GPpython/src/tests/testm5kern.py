@@ -24,15 +24,20 @@ X0 = sp.vstack([[i,0.,0.,0.] for i in xax])
 X1 = sp.vstack([[0.,i,0.,0.] for i in xax])
 X2 = sp.vstack([[0.,0.,i,0.] for i in xax])
 X3 = sp.vstack([[0.,0.,0.,i] for i in xax])
+C0 = sp.vstack([[-i,i,-i,i] for i in xax])
+C1 = sp.vstack([[i,-i,i,-i] for i in xax])
+C2 = sp.vstack([[i,-i,-i,i] for i in xax])
+C3 = sp.vstack([[-i,i,i,-i] for i in xax])
 Xax=[X0,X1,X2,X3]
+Cax=[C0,C1,C2,C3]
 
 #noderivative  --------------------------------------------------------------
 d0 = [[sp.NaN]]
 d1 = [[sp.NaN]]
 a[0,0].set_ylabel('[n][n]')
 for i in xrange(D):
-    y = [ke(Xo[j,:],Xax[i][j,:],d0,d1) for j in xrange(ns)]
-    ym = [km(Xo[j,:],Xax[i][j,:],d0,d1) for j in xrange(ns)]
+    y = [ke(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
+    ym = [km(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
     a[0,i].plot(xax,y,'b')
     a[0,i].plot(xax,ym,'r')
 
@@ -41,8 +46,8 @@ d0 = [[sp.NaN]]
 d1 = [0]
 a[1,0].set_ylabel('[n][0]')
 for i in xrange(D):
-    y = [ke(Xo[j,:],Xax[i][j,:],d0,d1) for j in xrange(ns)]
-    ym = [km(Xo[j,:],Xax[i][j,:],d0,d1) for j in xrange(ns)]
+    y = [ke(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
+    ym = [km(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
     a[1,i].plot(xax,y,'b')
     a[1,i].plot(xax,ym,'r')
     
@@ -51,8 +56,8 @@ d0 = [[sp.NaN]]
 d1 = [1]
 a[2,0].set_ylabel('[n][1]')
 for i in xrange(D):
-    y = [ke(Xo[j,:],Xax[i][j,:],d0,d1) for j in xrange(ns)]
-    ym = [km(Xo[j,:],Xax[i][j,:],d0,d1) for j in xrange(ns)]
+    y = [ke(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
+    ym = [km(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
     a[2,i].plot(xax,y,'b')
     a[2,i].plot(xax,ym,'r')
     
@@ -61,8 +66,8 @@ d0 = [[sp.NaN]]
 d1 = [2]
 a[3,0].set_ylabel('[n][2]')
 for i in xrange(D):
-    y = [ke(Xo[j,:],Xax[i][j,:],d0,d1) for j in xrange(ns)]
-    ym = [km(Xo[j,:],Xax[i][j,:],d0,d1) for j in xrange(ns)]
+    y = [ke(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
+    ym = [km(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
     a[3,i].plot(xax,y,'b')
     a[3,i].plot(xax,ym,'r')
     
@@ -75,4 +80,47 @@ for i in xrange(D):
     ym = [km(Xo[j,:],Xax[i][j,:],d0,d1) for j in xrange(ns)]
     a[4,i].plot(xax,y,'b')
     a[4,i].plot(xax,ym,'r')
+    
+f,a = plt.subplots(4,D)
+#different first derivatives--------------------------------------------------------------
+#0,1  --------------------------------------------------------------
+d0 = [0]
+d1 = [1]
+a[0,0].set_ylabel('[0][1]')
+for i in xrange(D):
+    y = [ke(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
+    ym = [km(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
+    a[0,i].plot(xax,y,'b')
+    a[0,i].plot(xax,ym,'r')
+    
+#2,0  --------------------------------------------------------------
+d0 = [2]
+d1 = [0]
+a[1,0].set_ylabel('[2][0]')
+for i in xrange(D):
+    y = [ke(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
+    ym = [km(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
+    a[1,i].plot(xax,y,'b')
+    a[1,i].plot(xax,ym,'r')
+    
+#1,2  --------------------------------------------------------------
+d0 = [1]
+d1 = [2]
+a[2,0].set_ylabel('[1][2]')
+for i in xrange(D):
+    y = [ke(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
+    ym = [km(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
+    a[2,i].plot(xax,y,'b')
+    a[2,i].plot(xax,ym,'r')
+    
+#3,1  --------------------------------------------------------------
+d0 = [3]
+d1 = [1]
+a[3,0].set_ylabel('[3][1]')
+for i in xrange(D):
+    y = [ke(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
+    ym = [km(Xo[j,:],Cax[i][j,:],d0,d1) for j in xrange(ns)]
+    a[3,i].plot(xax,y,'b')
+    a[3,i].plot(xax,ym,'r')
+
 plt.show()
