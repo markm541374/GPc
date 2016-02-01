@@ -3,83 +3,74 @@
 
 # Having a look at how noise affects convergence when using rosenbock
 
-import OPTutils
+
 import scipy as sp
 from matplotlib import pyplot as plt
 import GPdc
-import ESutils
-from tqdm import tqdm, tqdm_gui
-import copy
-runn = 80
+import OPTutils
+import search
+import os
+import pickle
+
+
 d=2
 lb = sp.array([[-1.]*d])
 ub = sp.array([[1.]*d])
-
-ojf = OPTutils.genbanana(ignores=1e-9)
-truexmin=OPTutils.bananamin
-trueymin=0.
-O = OPTutils.opt(ojf,lb,ub)
-for i in tqdm(xrange(10)):
-    O.step()
-initstate = [O.X.copy(),O.Y.copy(),O.S.copy(),[i for i in O.D],O.R.copy(),[i for i in O.C],[i for i in O.T],[i for i in O.Tr],[i for i in O.Ymin],O.Xmin.copy()]
-
-    
-kindex = GPdc.SQUEXPCS
-mprior = sp.array([0.]+[-1.]*d+[-3.])
+pwr = 0.2
+cfn = lambda s:((1e-6)/s)**pwr
+ojf = OPTutils.genbanana(cfn=cfn)
+kindex = GPdc.MAT52
+prior = sp.array([0.]+[-1.]*d+[-3.])
 sprior = sp.array([1.]*(d+1)+[2.])
-volper=1e-8
-s = 0.
-ninit = 10
-para = [kindex,mprior,sprior,volper,s,ninit]
+kernel = [kindex,prior,sprior]
+nreps = 2
+bd = 40
+slist = [1e-5,1e-7 ,1e-9]
+f,a = plt.subplots(3)
 
-OE = OPTutils.EIMLE(ojf,lb,ub,para)
-#OL = OPTutils.LCBMLE(ojf,lb,ub,para)
-#[OL.X,OL.Y,OL.S,OL.D,OL.R,OL.C,OL.T,OL.Tr,OL.Ymin] = initstate
-[OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin] = copy.deepcopy(initstate)
-
-
-
-
-para = dict()
-para['kindex'] = GPdc.SQUEXPCS
-para['mprior'] = sp.array([0.]+[-1.]*d+[-3.])
-para['sprior'] = sp.array([1.]*(d+1)+[2.])
-para['s'] = 0.
-para['ninit'] = 10
-#para['maxf'] = 2500
-para['volper'] = 1e-6
-para['DH_SAMPLES'] = 8
-para['DM_SAMPLES'] = 8
-para['DM_SUPPORT'] = 1200
-para['DM_SLICELCBPARA'] = 1.
-para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
-
-OP = OPTutils.PESIS(ojf,lb,ub,para)
-[OP.X,OP.Y,OP.S,OP.D,OP.R,OP.C,OP.T,OP.Tr,OP.Ymin,OP.Xmin] = copy.deepcopy(initstate)
-for i in tqdm_gui(xrange(runn),gui=True):
-    
-    state = [OP.X,OP.Y,OP.S,OP.D,OP.R,OP.C,OP.T,OP.Tr,OP.Ymin]
-    try:
-        pass
-        #OP.step()
-    except:
-        import pickle
-        pickle.dump(state,open('state.p','wb'))
-        raise
+for s in slist:
+    yr=[]
+    zr=[]
+    for i in xrange(nreps):
+        fname = "../cache/rosennoise/EIMLE_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(bd)+"_"+str(i)+".p"
+        if os.path.exists(fname):
+            [X,Y,S,D,R,C,T,Tr,Xmin,Ymin,Rreg, Yreg] = pickle.load(open(fname,'rb'))
+        else:
+            [X,Y,S,D,R,C,T,Tr,Xmin,Ymin,Rreg, Yreg] = search.MLEFS(ojf,lb,ub,kernel,s,bd)
+            pickle.dump([X,Y,S,D,R,C,T,Tr,Xmin,Ymin,Rreg, Yreg],open(fname,'wb'))
+        yr.append([Yreg])
+        a[1].semilogy([sum(C[:j]) for j in xrange(len(C))],Yreg,'bx-')
         
-    OE.step()
-    O.step()
-    #OL.step()
+        fname = "../cache/rosennoise/PESFS_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(bd)+"_"+str(i)+".p"
+        if os.path.exists(fname):
+            [X,Y,S,D,R,C,T,Tr,Xmin,Ymin,Rreg, Yreg] = pickle.load(open(fname,'rb'))
+        else:
+            [X,Y,S,D,R,C,T,Tr,Xmin,Ymin,Rreg, Yreg] = search.PESFS(ojf,lb,ub,kernel,s,bd)
+            pickle.dump([X,Y,S,D,R,C,T,Tr,Xmin,Ymin,Rreg, Yreg],open(fname,'wb'))
+        zr.append([Yreg])
+        a[1].semilogy([sum(C[:i]) for i in xrange(len(C))],Yreg,'bo-')
+        
+    
+    Z = sp.vstack(yr)
+    m = sp.mean(sp.log10(Z),axis=0)
+    v = sp.var(sp.log10(Z),axis=0)
+    print m.shape
+    print sp.array([sum(C[:j]) for j in xrange(len(C))]).shape
+    sq = sp.sqrt(v)
+    a[2].fill_between(sp.array([sum(C[:j]) for j in xrange(len(C))]),(m-sq).flatten(),(m+sq).flatten(),facecolor='lightblue',edgecolor='lightblue',alpha=0.5)
+    a[2].plot([sum(C[:j]) for j in xrange(len(C))],m.flatten(),'x-')
+    
+    Z = sp.vstack(zr)
+    m = sp.mean(sp.log10(Z),axis=0)
+    v = sp.var(sp.log10(Z),axis=0)
+    sq = sp.sqrt(v)
+    a[2].fill_between(sp.array([sum(C[:j]) for j in xrange(len(C))]),(m-sq).flatten(),(m+sq).flatten(),facecolor='lightgreen',edgecolor='lightgreen',alpha=0.5)
+    a[2].plot([sum(C[:j]) for j in xrange(len(C))],m.flatten(),'o-')
+    f.savefig("tmp.png")
     
     
-    
-
-f,a = plt.subplots(7)
-    
-OE.plot(truexmin,trueymin,a,'r')
-OP.plot(truexmin,trueymin,a,'g')
-O.plot(truexmin,trueymin,a,'b')
-    #plt.draw()        
-
-
+sx = sp.logspace(0,-8,100)
+cx = map(cfn,sx)
+a[0].loglog(sx,cx)
+f.savefig("tmp.png")
 plt.show()

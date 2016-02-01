@@ -17,6 +17,9 @@
 int mat52conv(double *h, int D, double* ih);
 int mat52searchconv(double *h, int D, double* ih);
 double mat52(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel);
+int mat52csconv(double *h, int D, double* ih);
+int mat52cssearchconv(double *h, int D, double* ih);
+double mat52cs(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel);
 
 #endif /* MATERN_H */
 

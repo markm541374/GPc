@@ -217,6 +217,7 @@ SQUEXPCS = 6
 SQUEXPPS = 7
 SQUEXPBS = 8
 MAT52 = 9
+MAT52CS = 9
 class kernel(object):
     def __init__(self,K,D,H):
         self.dim = D

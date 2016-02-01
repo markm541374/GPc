@@ -14,7 +14,7 @@ import DIRECT
 
 #base dimension
 d = 2
-kindex = GPdc.SQUEXP
+kindex = GPdc.MAT52
 nt = 34
 lb = sp.array([0.]+[-1.]*d)
 ub = sp.array([5.]+[1.]*d)

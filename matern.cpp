@@ -240,3 +240,28 @@ double mat52(double *x1, double *x2, int d1, int d2, int D, double* ih, double* 
 	}
 
 }
+
+double mat52cs(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
+    
+    smodel[0] = ih[D+1];
+    return mat52(x1,x2,d1,d2,D,ih,smodel);
+}
+            
+int mat52csconv(double *h, int D, double* ih){
+    ih[0] = pow(h[0],2);
+    for (int i=1; i<D+1; i++){
+	ih[i] = 1./pow(h[i],2);
+        
+    }
+    ih[D+1] = h[D+1];
+    return 0;
+}
+//all are searched in log space
+int mat52cssearchconv(double *h, int D, double* ih){
+    for (int i=0; i<D+2; i++){
+        //printf("_%f",h[i]);
+	ih[i] = pow(10.,h[i]);
+    }
+    
+    return 0;
+}

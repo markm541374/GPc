@@ -9,7 +9,7 @@ import GPdc
 import ESutils
 from tqdm import tqdm, tqdm_gui
 import copy
-runn = 40
+runn = 80
 d=2
 lb = sp.array([[-1.]*d])
 ub = sp.array([[1.]*d])
@@ -42,7 +42,7 @@ OE = OPTutils.EIMLE(ojf,lb,ub,para)
 
 
 para = dict()
-para['kindex'] = GPdc.SQUEXP
+para['kindex'] = GPdc.MAT52
 para['mprior'] = sp.array([0.]+[-1.]*d)
 para['sprior'] = sp.array([1.]*(d+1))
 para['s'] = 1e-9
@@ -61,8 +61,8 @@ for i in tqdm_gui(xrange(runn),gui=True):
     
     state = [OP.X,OP.Y,OP.S,OP.D,OP.R,OP.C,OP.T,OP.Tr,OP.Ymin]
     try:
-        pass
-        #OP.step()
+        #pass
+        OP.step()
     except:
         import pickle
         pickle.dump(state,open('state.p','wb'))

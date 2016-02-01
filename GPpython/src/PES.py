@@ -28,7 +28,7 @@ def drawmins(G,n,lb,ub,SUPPORT=300,mode = [ESutils.SUPPORT_SLICELCB],SLICELCB_PA
         plt.draw()
     #draw in samples on the support
     R = ESutils.draw_min(G,W,n)
-    plt.show()
+    #plt.show()
     return R
 
 def drawmins_inplane(G,n,lb,ub,axis,value, SUPPORT=300, mode=ESutils.SUPPORT_SLICELCB, SLICELCB_PARA=1.):

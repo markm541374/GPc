@@ -52,8 +52,9 @@ def quad(x,s,d):
     return [f +noise,1.]
 
 bananamin = sp.array([0.2,0.2])
-def genbanana(ignores=-1.):
-    def banana(x,s,d,override=False):
+def genbanana(ignores=-1.,cfn = lambda x:1.,):
+    def banana(x,s,d, override=False):
+        
         assert(d==[sp.NaN])
         x.resize([1,x.size])
         u = 5.*x[0,0]
@@ -65,9 +66,14 @@ def genbanana(ignores=-1.):
             s=ignores
         if s==0.:
             noise = 0.
+            
         else:
+            
             noise = sp.random.normal(scale=sp.sqrt(s))
-        return [f+noise,1.]
+        try:
+            return [f+noise,cfn(s)]
+        except ZeroDivisionError:
+            return [f+noise,sp.inf]
     return banana
 
 def gensquexpdraw(d,lb,ub,ignores=-1):
