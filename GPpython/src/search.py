@@ -5,20 +5,38 @@ import OPTutils
 import ESutils
 from tqdm import tqdm, tqdm_gui
 import scipy as sp
+import os
+import pickle
+import math
 
-def MLEFS(ojf,lb,ub,ki,s,b):
+def MLEFS(ojf,lb,ub,ki,s,b,fname):
     #use kernel ki and evaluate ojf with variance s at step for a budget b
+    
     d = lb.size
     volper=1e-8
     ninit = 10
     para = [ki[0],ki[1],ki[2],volper,s,ninit]
-    OE = OPTutils.EIMLE(ojf,lb,ub,para)
-    ns = int(b/OE.C[0]) - ninit
-    for i in tqdm(xrange(ns)):
-        OE.step()
-    return [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Xmin,OE.Ymin,OE.Rreg, OE.Yreg]
+    if os.path.exists(fname):
+        print "starting from "+str(fname)
+        OE = OPTutils.EIMLE(ojf,lb,ub,para,initstate=pickle.load(open(fname,'rb')))
+    else:
+        print "fresh start"
+        OE = OPTutils.EIMLE(ojf,lb,ub,para)
+    if sum(OE.C)>=b:
+        print "no further steps needed"
+        k=0
+        while sum(OE.C[:k])<b:
+            k+=1
+        state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
+    else:
+        while sum(OE.C)<b:
+            OE.step()
+        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
+        print "saving as "+str(fname)
+        pickle.dump(state,open(fname,'wb'))
+    return state
 
-def PESFS(ojf,lb,ub,ki,s,b):
+def PESFS(ojf,lb,ub,ki,s,b,fname):
     para = dict()
     para['kindex'] = ki[0]
     para['mprior'] = ki[1]
@@ -31,13 +49,20 @@ def PESFS(ojf,lb,ub,ki,s,b):
     para['DM_SUPPORT'] = 1200
     para['DM_SLICELCBPARA'] = 1.
     para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
-    OE = OPTutils.PESFS(ojf,lb,ub,para)
-    ns = int(b/OE.C[0]) - para['ninit']
-    for i in tqdm(xrange(ns)):
-        OE.step()
-    return [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Xmin,OE.Ymin,OE.Rreg, OE.Yreg]
+    if os.path.exists(fname):
+        OE = OPTutils.PESFS(ojf,lb,ub,para,initstate=pickle.load(open(fname,'rb')))
+    else:
+        OE = OPTutils.PESFS(ojf,lb,ub,para)
+    if sum(OE.C)>=b:
+        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin, OE.Yreg, OE.Rreg]
+    else:
+        while sum(OE.C)<b:
+            OE.step()
+        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
+        pickle.dump(state,open(fname,'wb'))
+    return state
 
-def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu):
+def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fname):
     para = dict()
     para['kindex'] = ki[0]
     para['mprior'] = ki[1]
@@ -54,11 +79,19 @@ def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu):
     para['logsl'] = lsl
     para['logsu'] = lsu
     para['s'] = 10**lsu
-
-    OE = OPTutils.PESVS(ojf,lb,ub,para)
+    if os.path.exists(fname):
+        OE = OPTutils.PESVS(ojf,lb,ub,para,initstate=pickle.load(open(fname,'rb')))
+    else:
+        OE = OPTutils.PESVS(ojf,lb,ub,para)
+    
     pbar = tqdm(total=(b-sum(OE.C)))
-    while sum(OE.C)<b:
-        print "XXXXXXXXXXx"+str(sum(OE.C))+" "+str(b)+" "+str(sum(OE.C)<b)
-        pbar.update(OE.C[-1])
-        OE.step()
-    return [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Xmin,OE.Ymin,OE.Rreg, OE.Yreg]
+    if sum(OE.C)>=b:
+        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
+    else:
+        while sum(OE.C)<b:
+            print "XXXXXXXXXXx"+str(sum(OE.C))+" "+str(b)+" "+str(sum(OE.C)<b)
+            pbar.update(OE.C[-1])
+            OE.step()
+        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
+        pickle.dump(state,open(fname,'wb'))
+    return state
