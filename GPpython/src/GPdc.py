@@ -129,7 +129,7 @@ class GPcore:
             print "_______________"
             #self.printc()
             raise(MJMError)
-        if sp.amin(sp.var(m,axis=0))<=-0.:
+        if sp.amin(sp.var(m,axis=0))<-0.:
             class MJMError(Exception):
                 pass
             print "negativevar of mean"
@@ -217,7 +217,7 @@ SQUEXPCS = 6
 SQUEXPPS = 7
 SQUEXPBS = 8
 MAT52 = 9
-MAT52CS = 9
+MAT52CS = 10
 class kernel(object):
     def __init__(self,K,D,H):
         self.dim = D

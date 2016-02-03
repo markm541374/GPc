@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 import GPdc
 import ESutils
 from tqdm import tqdm, tqdm_gui
-runn=50
+runn=60
 d=2
 lb = sp.array([[-1.]*d])
 ub = sp.array([[1.]*d])
@@ -24,7 +24,7 @@ mprior = sp.array([0.]+[-1.]*d)
 sprior = sp.array([1.]*(d+1))
 maxf = 4000
 volper=1e-7
-s = 1e-6
+s = 1e-5
 ninit = 10
 
 #para = [kindex,hlb,hub,maxf,s,ninit]
@@ -37,16 +37,16 @@ para = dict()
 para['kindex'] = GPdc.SQUEXP
 para['mprior'] = sp.array([0.]+[-1.]*d)
 para['sprior'] = sp.array([1.]*(d+1))
-para['s'] = 1e-6
+para['s'] = 1e-2
 para['ninit'] = 10
 #para['maxf'] = 2500
 para['volper'] = 1e-7
 para['DH_SAMPLES'] = 8
 para['DM_SAMPLES'] = 8
-para['DM_SUPPORT'] = 600
+para['DM_SUPPORT'] = 800
 para['DM_SLICELCBPARA'] = 1.
 para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
-para['cfn'] = lambda x,s: ((1e-6)/s)**0.3
+para['cfn'] = lambda x,s: ((1e-6)/s)**0.2
 para['logsl'] = -8.
 para['logsu'] = -2.
 """
@@ -56,7 +56,7 @@ pr.enable()
 """
 
 OV = OPTutils.PESVS(ojf,lb,ub,para)
-for i in tqdm_gui(xrange(runn),gui=True):
+for i in tqdm(xrange(runn)):
     try:
         OV.step()
     except RuntimeError as e:

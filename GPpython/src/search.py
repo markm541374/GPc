@@ -36,3 +36,29 @@ def PESFS(ojf,lb,ub,ki,s,b):
     for i in tqdm(xrange(ns)):
         OE.step()
     return [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Xmin,OE.Ymin,OE.Rreg, OE.Yreg]
+
+def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu):
+    para = dict()
+    para['kindex'] = ki[0]
+    para['mprior'] = ki[1]
+    para['sprior'] = ki[2]
+    para['s'] = s
+    para['ninit'] = 10
+    para['volper'] = 1e-6
+    para['DH_SAMPLES'] = 8
+    para['DM_SAMPLES'] = 8
+    para['DM_SUPPORT'] = 1200
+    para['DM_SLICELCBPARA'] = 1.
+    para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
+    para['cfn'] = cfn
+    para['logsl'] = lsl
+    para['logsu'] = lsu
+    para['s'] = 10**lsu
+
+    OE = OPTutils.PESVS(ojf,lb,ub,para)
+    pbar = tqdm(total=(b-sum(OE.C)))
+    while sum(OE.C)<b:
+        print "XXXXXXXXXXx"+str(sum(OE.C))+" "+str(b)+" "+str(sum(OE.C)<b)
+        pbar.update(OE.C[-1])
+        OE.step()
+    return [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Xmin,OE.Ymin,OE.Rreg, OE.Yreg]

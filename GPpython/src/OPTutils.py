@@ -125,7 +125,8 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
 
 
 class opt(object):
-    def __init__(self,objective,lb,ub,para=None):
+    def __init__(self,objective,lb,ub,para=None,initstate=False):
+        self.initstate=initstate
         self.ojf = objective
         self.lb = lb
         self.ub = ub
@@ -151,8 +152,27 @@ class opt(object):
         self.init_search(para)
         return
     
+    def setstate(self):
+        self.X = self.initstate[0]
+        self.Y = self.initstate[1]
+        self.S = self.initstate[2]
+        self.D = self.initstate[3]
+        
+        self.R = self.initstate[4]
+        self.C = self.initstate[5]
+        self.T = self.initstate[6]
+        self.Tr = self.initstate[7]
+        self.Ymin = self.initstate[8]
+        self.Xmin = self.initstate[9]
+        self.Yreg = self.initstate[10]
+        self.Rreg = self.initstate[11]
+        return
+    
     def init_search(self,para):
-        self.method = "Default: RandomSearch"
+        if self.initstate:
+            self.setstate()
+        else:
+            self.method = "Default: RandomSearch"
         return
     
     def run_search(self):
@@ -266,8 +286,11 @@ class LCBMLE(opt):
         self.s = para[4]
         self.sdefault = para[4]
         ninit=para[5]
-        for i in xrange(ninit):
-            self.step(random=True)
+        if self.initstate:
+            self.setstate()
+        else:
+            for i in xrange(ninit):
+                self.step(random=True)
         return
     
     def run_search(self):
@@ -297,8 +320,11 @@ class EIMLE(opt):
         self.s = para[4]
         self.sdefault = para[4]
         ninit=para[5]
-        for i in xrange(ninit):
-            self.step(random=True)
+        if self.initstate:
+            self.setstate()
+        else:
+            for i in xrange(ninit):
+                self.step(random=True)
         return
     
     def run_search(self):
@@ -327,9 +353,11 @@ class PESFS(opt):
     def init_search(self,para):
         self.para=para
         self.sdefault = para['s']
-        
-        for i in xrange(para['ninit']):
-            self.step(random=True)
+        if self.initstate:
+            self.setstate()
+        else:
+            for i in xrange(para['ninit']):
+                self.step(random=True)
         return
     
     def run_search(self):
@@ -381,8 +409,11 @@ class PESIS(PESFS):
     def init_search(self,para):
         self.para=para
         self.sdefault = -1
-        for i in xrange(para['ninit']):
-            self.step(random=True)
+        if self.initstate:
+            self.setstate()
+        else:
+            for i in xrange(para['ninit']):
+                self.step(random=True)
         return
     
     def run_search(self):
@@ -396,9 +427,11 @@ class PESVS(opt):
     def init_search(self,para):
         self.para=para
         self.sdefault = para['s']
-        
-        for i in xrange(para['ninit']):
-            self.step(random=True)
+        if self.initstate:
+            self.setstate()
+        else:
+            for i in xrange(para['ninit']):
+                self.step(random=True)
         return
     
     def run_search(self):
@@ -428,8 +461,11 @@ class PESIP(opt):
         self.ub = sp.hstack([sp.array([[para['su']]]),self.ub])
         print self.lb
         print self.ub
-        for i in xrange(para['ninit']):
-            self.step(random=True)
+        if self.initstate:
+            self.setstate()
+        else:
+            for i in xrange(para['ninit']):
+                self.step(random=True)
         return
     
     def run_search(self):
@@ -493,8 +529,11 @@ class PESIPS(PESIP):
         self.ub = sp.hstack([sp.array([[para['su']]]),self.ub])
         print self.lb
         print self.ub
-        for i in xrange(para['ninit']):
-            self.step(random=True)
+        if self.initstate:
+            self.setstate()
+        else:
+            for i in xrange(para['ninit']):
+                self.step(random=True)
         return
     
     def run_search(self):
@@ -504,3 +543,30 @@ class PESIPS(PESIP):
         self.train_costest()
         [Qmin,ymin,ierror] = self.pesobj.search_acq(self.costest,self.para['sfn'],volper=self.para['volper'])
         return [Qmin,0.,[sp.NaN]]
+
+def bounds(Xs,Ys,ns=100):
+    #use a gp to infer mean and bounds on sets of x/y data that have diffent x
+    #f,a = plt.subplots(2)
+    #for i in xrange(len(Ys)):
+    #    a[0].plot(Xs[i],Ys[i])
+    
+    X = sp.hstack(Xs)
+    np = X.size
+    Y = sp.hstack(Ys)
+    X.resize([np,1])
+    Y.resize([np,1])
+    #a[1].plot(X,Y,'r.')
+    np = X.size
+    S = sp.zeros(np)
+    D = [[sp.NaN]]*np
+    ki = GPdc.MAT52CS
+    mprior = sp.array([1.,2.,1.])
+    sprior = sp.array([2.,2.,2.])
+    MAPH = GPdc.searchMAPhyp(X,Y,S,D,mprior,sprior, ki)
+    g = GPdc.GPcore(X,Y,S,D,GPdc.kernel(ki,1,MAPH))
+    sup = sp.linspace(min(X),max(X),ns)
+    [m,V] = g.infer_diag_post(sup,[[sp.NaN]]*ns)
+    std = sp.sqrt(V+MAPH[2])
+    #plt.fill_between(sup.flatten(),(m-std).flatten(),(m+std).flatten(),facecolor='lightblue',edgecolor='lightblue',alpha=0.5)
+    #a[1].plot(sup,m.flatten(),'b')
+    return [sup,m,std]

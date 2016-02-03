@@ -9,7 +9,7 @@ import GPdc
 import ESutils
 from tqdm import tqdm, tqdm_gui
 import copy
-runn = 80
+runn = 10
 d=2
 lb = sp.array([[-1.]*d])
 ub = sp.array([[1.]*d])
@@ -22,7 +22,7 @@ f,a = plt.subplots(8)
 O = OPTutils.opt(ojf,lb,ub)
 for i in tqdm(xrange(10)):
     O.step()
-initstate = [O.X.copy(),O.Y.copy(),O.S.copy(),[i for i in O.D],O.R.copy(),[i for i in O.C],[i for i in O.T],[i for i in O.Tr],[i for i in O.Ymin],O.Xmin.copy()]
+initstate = copy.deepcopy([O.X,O.Y,O.S,O.D,O.R,O.C,O.T,O.Tr,O.Ymin,O.Xmin,O.Yreg,O.Rreg])
 
     
 kindex = GPdc.MAT52
@@ -33,10 +33,10 @@ s = 1e-9
 ninit = 10
 para = [kindex,mprior,sprior,volper,s,ninit]
 
-OE = OPTutils.EIMLE(ojf,lb,ub,para)
+OE = OPTutils.EIMLE(ojf,lb,ub,para,initstate=copy.deepcopy(initstate))
 #OL = OPTutils.LCBMLE(ojf,lb,ub,para)
 #[OL.X,OL.Y,OL.S,OL.D,OL.R,OL.C,OL.T,OL.Tr,OL.Ymin] = initstate
-[OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin] = copy.deepcopy(initstate)
+#[OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg,OE.Rreg] = copy.deepcopy(initstate)
 
 
 
@@ -55,14 +55,14 @@ para['DM_SUPPORT'] = 1200
 para['DM_SLICELCBPARA'] = 1.
 para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
 
-OP = OPTutils.PESFS(ojf,lb,ub,para)
-[OP.X,OP.Y,OP.S,OP.D,OP.R,OP.C,OP.T,OP.Tr,OP.Ymin,OP.Xmin] = copy.deepcopy(initstate)
+OP = OPTutils.PESFS(ojf,lb,ub,para,initstate=copy.deepcopy(initstate))
+#[OP.X,OP.Y,OP.S,OP.D,OP.R,OP.C,OP.T,OP.Tr,OP.Ymin,OP.Xmin,OP.Yreg,OP.Rreg] = copy.deepcopy(initstate)
 for i in tqdm_gui(xrange(runn),gui=True):
     
     state = [OP.X,OP.Y,OP.S,OP.D,OP.R,OP.C,OP.T,OP.Tr,OP.Ymin]
     try:
-        #pass
-        OP.step()
+        pass
+        #OP.step()
     except:
         import pickle
         pickle.dump(state,open('state.p','wb'))
