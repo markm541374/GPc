@@ -293,6 +293,7 @@ def searchMAPhyp(X,Y,S,D,m,s, ki, MAPmargin = 1.8, mx=5000,fg=-1e9):
     hy = sp.empty(libGP.numhyp(cint(ki),cint(dim)))
     
     lk = sp.empty(1)
+    print "datasetsize = "+str(ns)
     r = libGP.HypSearchMAP(cint(dim),cint(len(Dx)),X.ctypes.data_as(ctpd),Y.ctypes.data_as(ctpd),S.ctypes.data_as(ctpd),(cint*len(Dx))(*Dx),m.ctypes.data_as(ctpd),s.ctypes.data_as(ctpd),ct.c_double(MAPmargin),cint(ki), hy.ctypes.data_as(ctpd),lk.ctypes.data_as(ctpd))
     #print "yyy"
     return hy

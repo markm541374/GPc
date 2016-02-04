@@ -33,7 +33,7 @@ def drawmins(G,n,lb,ub,SUPPORT=300,mode = [ESutils.SUPPORT_SLICELCB],SLICELCB_PA
     return R
 
 def drawmins_inplane(G,n,lb,ub,axis,value, SUPPORT=300, mode=ESutils.SUPPORT_SLICELCB, SLICELCB_PARA=1.):
-    W = ESutils.draw_support_inplane(G, lb,ub,SUPPORT,mode,axis,value,para = SLICELCB_PARA)
+    W = sp.vstack([ESutils.draw_support_inplane(G, lb,ub,SUPPORT/len(mode),m, axis,value,para = SLICELCB_PARA) for m in mode])
     #draw in samples on the support
     R = ESutils.draw_min(G,W,n)
     return R

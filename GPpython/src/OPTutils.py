@@ -106,9 +106,9 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
     print sp.hstack([sp.array([[su]]),ub])
     [X,Y,S,D] = ESutils.gen_dataset(nt,d+1,sp.hstack([sp.array([[sl]]),lb]).flatten(),sp.hstack([sp.array([[su]]),ub]).flatten(),GPdc.SQUEXP,sp.array([1.5]+[sls]+[0.30]*d))
     G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,d+1,sp.array([1.5]+[sls]+[0.30]*d)))
-    def obj(x,s,d):
+    def obj(x,s,d,override=False):
         x = x.flatten()
-        if sfn(x)==0.:
+        if sfn(x)==0. or override:
             noise = 0.
         else:
             noise = sp.random.normal(scale=sp.sqrt(sfn(x)))
@@ -119,7 +119,7 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
         return (z,0)
     [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=20000, logfilename='/dev/null')
     
-    return [obj,xmin]
+    return [obj,xmin,ymin]
 
 
 
@@ -562,7 +562,8 @@ def bounds(Xs,Ys,ns=100):
     ki = GPdc.MAT52CS
     mprior = sp.array([1.,2.,1.])
     sprior = sp.array([2.,2.,2.])
-    MAPH = GPdc.searchMAPhyp(X,Y,S,D,mprior,sprior, ki)
+    #MAPH = GPdc.searchMAPhyp(X,Y,S,D,mprior,sprior, ki,mx=500)
+    MAPH = sp.array([0.5,5.,0.3])
     g = GPdc.GPcore(X,Y,S,D,GPdc.kernel(ki,1,MAPH))
     sup = sp.linspace(min(X),max(X),ns)
     [m,V] = g.infer_diag_post(sup,[[sp.NaN]]*ns)

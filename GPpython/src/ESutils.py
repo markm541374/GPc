@@ -128,6 +128,28 @@ def draw_support_inplane(g,lb,ub,n,method,axis,value,para=1.):
         ub_red = sp.hstack([ub[:axis],ub[axis+1:]])
         X = slice.slice_sample(f,0.5*(ub_red+lb_red),n,0.1*(ub_red-lb_red))
         return sp.hstack([X[:,:axis],sp.ones([n,1])*value,X[:,axis:]])
+    
+    elif method==SUPPORT_SLICEPM:
+        def f(x):
+            y = sp.hstack([x[:axis],value,x[axis:]])
+            if all(y.flatten()>lb) and all(y.flatten()<ub):
+                y.reshape([1,d])
+                [m,v] = g.infer_diag_post(sp.vstack([y]*d),[[i] for i in xrange(d)])
+                p = 0.
+                for i in xrange(d):
+                    p+= -0.5*(m[0,i]**2)/v[0,i]
+                ym = g.infer_m_post(sp.array(x),[[sp.NaN]])[0,0]
+                if not sp.isfinite(p):
+                    print [m,V,p]
+                    #raise ValueError
+                return -10*ym+0.01*p
+            else:
+                return -1e99
+        print "Drawing support using slice sample over PM:"
+        lb_red = sp.hstack([lb[:axis],lb[axis+1:]])
+        ub_red = sp.hstack([ub[:axis],ub[axis+1:]])
+        X = slice.slice_sample(f,0.5*(ub_red+lb_red),n,0.1*(ub_red-lb_red))
+        return sp.hstack([X[:,:axis],sp.ones([n,1])*value,X[:,axis:]])
     else:
         raise RuntimeError("draw_support method invalid")
     return -1

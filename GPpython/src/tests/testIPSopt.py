@@ -15,7 +15,7 @@ sl=0.
 su=1.
 sfn = lambda x:1e-8
 sls = (su-sl)*0.75
-[ojf,truexmin] = OPTutils.gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls)
+[ojf,truexmin,ymin] = OPTutils.gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls)
 
 print truexmin
 print ojf(sp.array([sl,truexmin[0],truexmin[1]]),1e-8,[sp.NaN])
@@ -61,21 +61,21 @@ para['mprior'] = sp.array([0.]+[-1.]*(d+1)+[-2.])
 para['sprior'] = sp.array([1.]*(d+2)+[2.])
 para['d'] = d+1
 para['ninit'] = 10
-para['maxf'] = 7500
+para['volper'] = 1e-7
 para['DH_SAMPLES'] = 8
 para['DM_SAMPLES'] = 8
 para['DM_SUPPORT'] = 800
 para['DM_SLICELCBPARA'] = 1.
-para['SUPPORT_MODE'] = ESutils.SUPPORT_SLICEEI
+para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB]
 para['cfn'] = lambda x,s: sp.exp(-0.5*x.flatten()[0])
 para['sl'] = 0.
 para['su'] = 1.
-para['s'] = 1e-6
+para['s'] = 0.
 para['sfn'] = None
 para['axis'] = 0
 para['value'] = para['sl']
 OI = OPTutils.PESIPS(ojf,lb,ub,para)
-for i in tqdm_gui(xrange(35),gui=True):
+for i in tqdm_gui(xrange(5),gui=True):
     OI.step()
     
     
@@ -83,11 +83,11 @@ print OI.X
 print OI.R
 print OI.Y
 print OI.S
-f,a = plt.subplots(7)
+#f,a = plt.subplots(7)
 
-OI.plot(sp.hstack([para['sl'],truexmin]),a,'r')
+#OI.plot(sp.hstack([para['sl'],truexmin]),ymin,a,'r')
 
-f.savefig("../figs/testIPopt.pdf")
+#f.savefig("../../figs/testIPopt.pdf")
 
 f,a = plt.subplots(1)
 OI.plotcosts(a)
