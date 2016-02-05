@@ -57,9 +57,15 @@ int newGP_hypset(int D, int N, int kindex, double* X, double* Y, double* Sx, int
     return base;
 }
 
-void killGP(int k){
-	SS[k]->~GP();
-	SS[k] = 0;
+void killGP(int k,int s){
+        if (SS[k]==0){
+		printf("trying to use deleted GP\n");
+		return;
+	};
+        for (int i=0; i<s; i++){
+            SS[k+i]->~GP();
+            SS[k] = 0;
+        }
 }
 int ping(int k, int s){
 	if (SS[k]==0){

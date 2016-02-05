@@ -211,7 +211,20 @@ class PES:
         #if noS:
         #    self.postS = 
         #raise MJMError("tmp!!!")
-        
+    def __del__(self):
+        try:
+            print "1"
+            self.G.__del__()
+            print "2"
+        except:
+            pass
+        try:
+            print "3"
+            self.Ga.__del__()
+            print "4"
+        except:
+            pass
+        return    
     def query_pes(self,Xq,Sq,Dq):
         
         a = PESgain(self.G,self.Ga,self.Z,Xq,Dq,Sq)
@@ -264,6 +277,17 @@ class PES_inplane:
         self.Z = drawmins_inplane(self.G,DM_SAMPLES,lb,ub,axis=axis,value=value,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA,mode=mode)
         print "mindraws:\n"+str(self.Z)
         self.Ga = [GPdc.GPcore(*addmins_inplane(self.G,X,Y,S,D,self.Z[i,:],axis=axis,value=value,MINPOLICY=AM_POLICY)+[self.G.kf]) for i in xrange(DM_SAMPLES)]
+        return
+    
+    def __del__(self):
+        try:
+            self.G.__del__()
+        except:
+            pass
+        try:
+            self.Ga.__del__()
+        except:
+            pass
         return
     def query_pes(self,Xq,Sq,Dq):
         a = PESgain(self.G,self.Ga,self.Z,Xq,Dq,Sq)

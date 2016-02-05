@@ -64,7 +64,9 @@ class GPcore:
         return
     
     def __del__(self):
-        libGP.killGP(self.s)
+        print "here"
+        libGP.killGP(self.s,cint(self.size))
+        print "also here"
         return
     
     def printc(self):

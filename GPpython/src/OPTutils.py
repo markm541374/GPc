@@ -296,6 +296,10 @@ class LCBMLE(opt):
     def run_search(self):
         
         MAP = GPdc.searchMAPhyp(self.X,self.Y,self.S,self.D,self.mprior,self.sprior, self.kindex)
+        try:
+            del(self.G)
+        except:
+            pass
         self.G = GPdc.GPcore(self.X,self.Y,self.S,self.D,GPdc.kernel(self.kindex,self.d,MAP))
         def directwrap(x,y):
             x.resize([1,self.d])
@@ -330,6 +334,10 @@ class EIMLE(opt):
     def run_search(self):
         
         MAP = GPdc.searchMAPhyp(self.X,self.Y,self.S,self.D,self.mprior,self.sprior, self.kindex)
+        try:
+            del(self.G)
+        except:
+            pass
         self.G = GPdc.GPcore(self.X,self.Y,self.S,self.D,GPdc.kernel(self.kindex,self.d,MAP))
         
         def directwrap(x,y):
@@ -340,6 +348,7 @@ class EIMLE(opt):
             #print G.infer_diag_post(x,[[sp.NaN]])
             return (-a[0,0],0)
         [xmin,ymin,ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1,  volper = self.volper, logfilename='/dev/null')
+        
         return [xmin,self.s,[sp.NaN]]
     
     def reccomend(self):
@@ -362,6 +371,10 @@ class PESFS(opt):
     
     def run_search(self):
         print "begin PESFS:"
+        try:
+            del(self.pesobj)
+        except:
+            pass
         self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'])
         [xmin,ymin,ierror] = self.pesobj.search_pes(self.sdefault,volper=self.para['volper'])
         return [xmin,self.para['s'],[sp.NaN]]
@@ -418,6 +431,12 @@ class PESIS(PESFS):
     
     def run_search(self):
         print "begin PESIS:"
+        try:
+            print "aaa"
+            del(self.pesobj)
+            print "bbb"
+        except:
+            print "ccc"
         self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'],noS=True)
         [xmin,ymin,ierror] = self.pesobj.search_pes(-1,volper=self.para['volper'])
         return [xmin,0.,[sp.NaN]]
@@ -436,6 +455,10 @@ class PESVS(opt):
     
     def run_search(self):
         print "begin PES:"
+        try:
+            del(self.pesobj)
+        except:
+            pass
         self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'])
         [Qmin,ymin,ierror] = self.pesobj.search_acq(self.para['cfn'],self.para['logsl'],self.para['logsu'],volper=self.para['volper'])
         return [Qmin[:-1],10**Qmin[-1],[sp.NaN]]
@@ -470,7 +493,10 @@ class PESIP(opt):
     
     def run_search(self):
         print "begin PES:"
-        
+        try:
+            del(self.pesobj)
+        except:
+            pass
         self.pesobj = PES.PES_inplane(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],self.para['axis'],self.para['value'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'])
         self.train_costest()
         [Qmin,ymin,ierror] = self.pesobj.search_acq(self.costest,self.para['sfn'],volper=self.para['volper'])
@@ -538,7 +564,10 @@ class PESIPS(PESIP):
     
     def run_search(self):
         print "begin PES:"
-        
+        try:
+            del(self.pesobj)
+        except:
+            pass
         self.pesobj = PES.PES_inplane(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],self.para['axis'],self.para['value'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'],noS=True)
         self.train_costest()
         [Qmin,ymin,ierror] = self.pesobj.search_acq(self.costest,self.para['sfn'],volper=self.para['volper'])

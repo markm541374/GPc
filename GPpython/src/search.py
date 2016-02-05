@@ -9,6 +9,7 @@ import os
 import pickle
 import math
 from pathos.multiprocessing import Pool
+import copy
 def multiMLEFS(ojf,lb,ub,ki,s,b,fnames):
     def f(fn):
         return MLEFS(ojf,lb,ub,ki,s,b,fn)
@@ -46,7 +47,7 @@ def multiPESFS(ojf,lb,ub,ki,s,b,fnames):
     def f(fn):
         return PESFS(ojf,lb,ub,ki,s,b,fn)
     p = Pool(8)
-    return p.map(f,fnames)
+    return map(f,fnames)
         
 def PESFS(ojf,lb,ub,ki,s,b,fname):
     para = dict()

@@ -25,7 +25,7 @@ int set_D(int k, int* D);
 int set_S(int k, double* Sin);
 int set_Y(int k, double* Y);
 int ping(int k, int s);
-void killGP(int k);
+void killGP(int k,int s);
 int newGP_LKonly(int D, int N, double* Xin, double* Yin, double* Sin, int* Din, double* hyp, double* R);
 int newGP(int D, int N, int kindex, double* X, double* Y, double* Sx, int* D, double* h);
 int infer_LCB(int k, int s, int n, double* X, int* D, double p, double* R);
