@@ -47,9 +47,10 @@ def multiPESFS(ojf,lb,ub,ki,s,b,fnames):
     def f(fn):
         return PESFS(ojf,lb,ub,ki,s,b,fn)
     p = Pool(8)
-    return map(f,fnames)
+    return p.map(f,fnames)
         
 def PESFS(ojf,lb,ub,ki,s,b,fname):
+    sp.random.seed(int(os.urandom(4).encode('hex'), 16))
     para = dict()
     para['kindex'] = ki[0]
     para['mprior'] = ki[1]
@@ -78,6 +79,44 @@ def PESFS(ojf,lb,ub,ki,s,b,fname):
         pickle.dump(state,open(fname,'wb'))
     return state
 
+def multiPESIS(ojf,lb,ub,ki,b,fnames):
+    def f(fn):
+        return PESIS(ojf,lb,ub,ki,b,fn)
+    p = Pool(8)
+    return p.map(f,fnames)
+        
+def PESIS(ojf,lb,ub,ki,b,fname):
+    sp.random.seed(int(os.urandom(4).encode('hex'), 16))
+    para = dict()
+    para['kindex'] = ki[0]
+    para['mprior'] = ki[1]
+    para['sprior'] = ki[2]
+    para['s'] = -1.
+    para['ninit'] = 10
+    para['volper'] = 1e-6
+    para['DH_SAMPLES'] = 8
+    para['DM_SAMPLES'] = 8
+    para['DM_SUPPORT'] = 1200
+    para['DM_SLICELCBPARA'] = 1.
+    para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
+    if os.path.exists(fname):
+        print "starting from "+str(fname)
+        OE = OPTutils.PESIS(ojf,lb,ub,para,initstate=pickle.load(open(fname,'rb')))
+    else:
+        print "fresh start"
+        OE = OPTutils.PESIS(ojf,lb,ub,para)
+    if sum(OE.C)>=b:
+        print "no further steps needed"
+        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin, OE.Yreg, OE.Rreg]
+    else:
+        while sum(OE.C)<b:
+            OE.step()
+        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
+        pickle.dump(state,open(fname,'wb'))
+    return state
+
+
+
 def multiPESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fnames):
     def f(fn):
         return PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fn)
@@ -85,6 +124,7 @@ def multiPESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fnames):
     return p.map(f,fnames)
         
 def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fname):
+    sp.random.seed(int(os.urandom(4).encode('hex'), 16))
     para = dict()
     para['kindex'] = ki[0]
     para['mprior'] = ki[1]
@@ -107,6 +147,53 @@ def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fname):
     else:
         print "fresh start"
         OE = OPTutils.PESVS(ojf,lb,ub,para)
+    
+    
+    if sum(OE.C)>=b:
+        print "no further steps needed"
+        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
+    else:
+        pbar = tqdm(total=(b-sum(OE.C)))
+        while sum(OE.C)<b:
+            print "XXXXXXXXXXx"+str(sum(OE.C))+" "+str(b)+" "+str(sum(OE.C)<b)
+            pbar.update(OE.C[-1])
+            OE.step()
+        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
+        pickle.dump(state,open(fname,'wb'))
+    return state
+
+def multiPESIPS(ojf,lb,ub,ki,b,fnames):
+    def f(fn):
+        return PESIPS(ojf,lb,ub,ki,b,fn)
+    p = Pool(8)
+    return p.map(f,fnames)
+
+def PESIPS(ojf,lb,ub,ki,b,fname):
+    sp.random.seed(int(os.urandom(4).encode('hex'), 16))
+    para = dict()
+    para['kindex'] = ki[0]
+    para['mprior'] = ki[1]
+    para['sprior'] = ki[2]
+    para['d'] = lb.size+1
+    para['ninit'] = 10
+    para['volper'] = 1e-7
+    para['DH_SAMPLES'] = 8
+    para['DM_SAMPLES'] = 8
+    para['DM_SUPPORT'] = 800
+    para['DM_SLICELCBPARA'] = 1.
+    para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB]
+    para['sl'] = 0.
+    para['su'] = 1.
+    para['s'] = 0.
+    para['sfn'] = None
+    para['axis'] = 0
+    para['value'] = para['sl']
+    if os.path.exists(fname):
+        print "starting from "+str(fname)
+        OE = OPTutils.PESIPS(ojf,lb,ub,para,initstate=pickle.load(open(fname,'rb')))
+    else:
+        print "fresh start"
+        OE = OPTutils.PESIPS(ojf,lb,ub,para)
     
     
     if sum(OE.C)>=b:

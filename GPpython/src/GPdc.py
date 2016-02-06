@@ -64,9 +64,9 @@ class GPcore:
         return
     
     def __del__(self):
-        print "here"
+        #print "here"
         libGP.killGP(self.s,cint(self.size))
-        print "also here"
+        #print "also here"
         return
     
     def printc(self):
@@ -277,8 +277,7 @@ def searchMLEhyp(X,Y,S,D,lb,ub, ki, mx=5000,fg=-1e9):
     ns=X.shape[0]
     dim = X.shape[1]
     Dx = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D]
-    print ki
-    print dim
+   
     hy = sp.empty(libGP.numhyp(cint(ki),cint(dim)))
     
     lk = sp.empty(1)

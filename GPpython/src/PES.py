@@ -213,15 +213,15 @@ class PES:
         #raise MJMError("tmp!!!")
     def __del__(self):
         try:
-            print "1"
+            #print "1"
             self.G.__del__()
-            print "2"
+            #print "2"
         except:
             pass
         try:
-            print "3"
+            #print "3"
             self.Ga.__del__()
-            print "4"
+            #print "4"
         except:
             pass
         return    
@@ -273,7 +273,9 @@ class PES_inplane:
         if noS:
             S=sp.zeros(S.shape)
         self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
-        print "hyp draws:\n"+str([k.hyp for k in self.G.kf])
+        HS = sp.vstack([k.hyp for k in self.G.kf])
+        print "\nhyp mean: "+str(sp.mean(HS,axis=0))
+        print "hyp std:  "+str(sp.sqrt(sp.mean(HS,axis=0)))
         self.Z = drawmins_inplane(self.G,DM_SAMPLES,lb,ub,axis=axis,value=value,SUPPORT=DM_SUPPORT,SLICELCB_PARA=DM_SLICELCBPARA,mode=mode)
         print "mindraws:\n"+str(self.Z)
         self.Ga = [GPdc.GPcore(*addmins_inplane(self.G,X,Y,S,D,self.Z[i,:],axis=axis,value=value,MINPOLICY=AM_POLICY)+[self.G.kf]) for i in xrange(DM_SAMPLES)]
@@ -310,7 +312,7 @@ class PES_inplane:
             acq = PESgain(self.G,self.Ga,self.Z,x,dv,[s])
             R = -acq/cfn(x,s)
             return (R,0)
-        print self.lb
-        print self.ub
+        #print self.lb
+        #print self.ub
         [xmin, ymin, ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, volper=volper, logfilename='/dev/null')
         return [xmin,ymin,ierror]

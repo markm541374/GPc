@@ -98,7 +98,7 @@ def gensquexpdraw(d,lb,ub,ignores=-1):
     
     return [obj,xmin,ymin]
 
-def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
+def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls,cfn):
     #axis = 0 value = sl
     #d dimensional objective +1 for s
     nt=25
@@ -113,9 +113,9 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls):
         else:
             noise = sp.random.normal(scale=sp.sqrt(sfn(x)))
         
-        return [G.infer_m(x,[d])[0,0]+noise,1.]
+        return [G.infer_m(x,[d])[0,0]+noise,cfn(x)]
     def dirwrap(x,y):
-        z = obj(sp.array([[sl]+[i for i in x]]),sl,[sp.NaN])
+        z = obj(sp.array([[sl]+[i for i in x]]),sl,[sp.NaN],override=True)
         return (z,0)
     [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=20000, logfilename='/dev/null')
     
@@ -213,6 +213,7 @@ class opt(object):
         t2=time.time()
         
         [y,c] = self.query_ojf(x,s,d)
+        
         self.X = sp.vstack([self.X,x])
         self.Y = sp.vstack([self.Y,y])
         self.S = sp.vstack([self.S,s])
@@ -432,9 +433,9 @@ class PESIS(PESFS):
     def run_search(self):
         print "begin PESIS:"
         try:
-            print "aaa"
+            #print "aaa"
             del(self.pesobj)
-            print "bbb"
+            #print "bbb"
         except:
             print "ccc"
         self.pesobj = PES.PES(self.X,self.Y,self.S,self.D,self.lb.flatten(),self.ub.flatten(),self.para['kindex'],self.para['mprior'],self.para['sprior'],DH_SAMPLES=self.para['DH_SAMPLES'], DM_SAMPLES=self.para['DM_SAMPLES'], DM_SUPPORT=self.para['DM_SUPPORT'],DM_SLICELCBPARA=self.para['DM_SLICELCBPARA'],mode=self.para['SUPPORT_MODE'],noS=True)
@@ -516,8 +517,8 @@ class PESIP(opt):
     
     def query_ojf(self,x,s,d):
         [y,c0] = self.ojf(x,s,d)
-        c = self.para['cfn'](x,s)
-        return [y,c]
+        #c = self.para['cfn'](x,s)
+        return [y,c0]
     def train_costest(self):
         print self.X[:,0]
         X = self.X[:,0].copy().reshape([len(self.C),1])
@@ -553,8 +554,8 @@ class PESIPS(PESIP):
         self.sdefault = -1
         self.lb = sp.hstack([sp.array([[para['sl']]]),self.lb])
         self.ub = sp.hstack([sp.array([[para['su']]]),self.ub])
-        print self.lb
-        print self.ub
+        #print self.lb
+        #print self.ub
         if self.initstate:
             self.setstate()
         else:
@@ -572,7 +573,17 @@ class PESIPS(PESIP):
         self.train_costest()
         [Qmin,ymin,ierror] = self.pesobj.search_acq(self.costest,self.para['sfn'],volper=self.para['volper'])
         return [Qmin,0.,[sp.NaN]]
-
+    def plot(self,truex,truey):
+        f,a = plt.subplots(3)
+        #print self.X.shape
+        a[0].plot(self.X[:,0].flatten(),'b')
+        a[0].set_ylabel("augx")
+        a[0].twinx().plot(self.C,'r')
+        a[1].plot(sp.log10(self.Rreg.flatten()-truey))
+        a[1].set_ylabel("regret")
+        a[2].plot([sum(self.C[:j]) for j in xrange(len(self.C))],sp.log10(self.Rreg.flatten()-truey))
+        a[2].set_ylabel("regret/c")
+        return
 def bounds(Xs,Ys,ns=100):
     #use a gp to infer mean and bounds on sets of x/y data that have diffent x
     #f,a = plt.subplots(2)

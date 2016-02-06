@@ -1,13 +1,14 @@
 # To change this license header, choose License Headers in Project Properties.
 # To change this template file, choose Tools | Templates
 # and open the template in the editor.
-
+import sys
+sys.path.append("./..")
 import OPTutils
 import scipy as sp
 from matplotlib import pyplot as plt
 import GPdc
 import ESutils
-from tqdm import tqdm_gui
+from tqdm import tqdm, tqdm_gui
 d=2
 lb = sp.array([[-1.]*d])
 ub = sp.array([[1.]*d])
@@ -15,7 +16,8 @@ sl=0.
 su=1.
 sfn = lambda x:1e-8
 sls = (su-sl)*0.75
-[ojf,truexmin,ymin] = OPTutils.gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls)
+cfn = lambda x: sp.exp(-0.5*x.flatten()[0])
+[ojf,truexmin,ymin] = OPTutils.gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls,cfn)
 
 print truexmin
 print ojf(sp.array([sl,truexmin[0],truexmin[1]]),1e-8,[sp.NaN])
@@ -67,7 +69,7 @@ para['DM_SAMPLES'] = 8
 para['DM_SUPPORT'] = 800
 para['DM_SLICELCBPARA'] = 1.
 para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB]
-para['cfn'] = lambda x,s: sp.exp(-0.5*x.flatten()[0])
+#para['cfn'] = lambda x,s: sp.exp(-0.5*x.flatten()[0])
 para['sl'] = 0.
 para['su'] = 1.
 para['s'] = 0.
@@ -75,17 +77,19 @@ para['sfn'] = None
 para['axis'] = 0
 para['value'] = para['sl']
 OI = OPTutils.PESIPS(ojf,lb,ub,para)
-for i in tqdm_gui(xrange(5),gui=True):
+for i in tqdm(xrange(2)):
     OI.step()
     
     
 print OI.X
 print OI.R
 print OI.Y
-print OI.S
+print OI.Ymin
+print OI.Rreg
+
 #f,a = plt.subplots(7)
 
-#OI.plot(sp.hstack([para['sl'],truexmin]),ymin,a,'r')
+OI.plot(sp.hstack([para['sl'],truexmin]),ymin)
 
 #f.savefig("../../figs/testIPopt.pdf")
 
