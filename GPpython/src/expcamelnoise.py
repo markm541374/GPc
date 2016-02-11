@@ -33,12 +33,12 @@ for s in slist:
     
     names = ["../cache/camelnoise/EIMLE_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
     results = search.multiMLEFS(ojf,lb,ub,kernel,s,bd,names)
-    yr = [r[10].flatten() for r in results]
+    yr = [r[11].flatten() for r in results]
     C = results[0][5]
     
     names = ["../cache/camelnoise/PESFS_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
     results = search.multiPESFS(ojf,lb,ub,kernel,s,bd,names)
-    zr = [r[10].flatten() for r in results]
+    zr = [r[11].flatten() for r in results]
     C = results[0][5]
     
         
@@ -72,7 +72,7 @@ s=1e-1
 #    [X,Y,S,D,R,C2,T,Tr,Ymin,Xmin,Yreg, Rreg] = search.PESVS(ojf,lb,ub,kernel,s,ba,lambda x,s:cfn(s),-9,-1,fname)
 names = ["../cache/braninnoise/PESVS_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
 results = search.multiPESVS(ojf,lb,ub,kernel,s,bd,lambda x,s:cfn(s),-9,-1,names)
-Rz = [sp.log10(sp.array(r[10])-camelmin).flatten() for r in results]
+Rz = [sp.log10(sp.array(r[11])-camelmin).flatten() for r in results]
 Cz = [[sum(r[5][:j]) for j in xrange(len(r[5]))] for r in results]
 #for i in xrange(nreps):
 #    a[2].plot(Cz[i],Rz[i].flatten(),'rx-')
@@ -81,10 +81,10 @@ Cz = [[sum(r[5][:j]) for j in xrange(len(r[5]))] for r in results]
 
 [sup,m,sd]=OPTutils.bounds(Cz,Rz)
 a[2].fill_between(sup.flatten(),(m-sd).flatten(),(m+sd).flatten(),facecolor='salmon',edgecolor='salmon',alpha=0.5)
-a[2].plot(sup,m.flatten(),'darkred')
+a[2].plot(sup,m.flatten(),'darkred')"""
 
 
-"""
+
 
 sx = sp.logspace(0,-8,100)
 cx = map(cfn,sx)

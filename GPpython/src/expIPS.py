@@ -34,7 +34,7 @@ def planemin(xp):
     def dirwrap(x,y):
         z,c = ojf(sp.hstack([xp,x]),-1,[sp.NaN],override=True)
         return (z,0)
-    [xm,ym,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=20000, logfilename='/dev/null')
+    [xm,ym,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=80000, logfilename='/dev/null')
     ye,c = ojf(sp.hstack([0.,xm]),-1,[sp.NaN],override=True)
     r=ye-ymin
     return [xm,ym,ye,r]

@@ -32,12 +32,12 @@ for s in slist:
     
     names = ["../cache/rosennoise/EIMLE_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
     results = search.multiMLEFS(ojf,lb,ub,kernel,s,bd,names)
-    yr = [r[10].flatten() for r in results]
+    yr = [r[11].flatten() for r in results]
     C = results[0][5]
     
     names = ["../cache/rosennoise/PESFS_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
     results = search.multiPESFS(ojf,lb,ub,kernel,s,bd,names)
-    zr = [r[10].flatten() for r in results]
+    zr = [r[11].flatten() for r in results]
     C = results[0][5]
         
     Z = sp.vstack(yr)
@@ -70,7 +70,7 @@ s=1e-1
 #    [X,Y,S,D,R,C2,T,Tr,Ymin,Xmin,Yreg, Rreg] = search.PESVS(ojf,lb,ub,kernel,s,ba,lambda x,s:cfn(s),-9,-1,fname)
 names = ["../cache/rosennoise/PESVS_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
 results = search.multiPESVS(ojf,lb,ub,kernel,s,bd,lambda x,s:cfn(s),-9,-1,names)
-Rz = [sp.log10(r[10]).flatten() for r in results]
+Rz = [sp.log10(r[11]).flatten() for r in results]
 print r[4]
 Cz = [[sum(r[5][:j]) for j in xrange(len(r[5]))] for r in results]
 #for i in xrange(nreps):
