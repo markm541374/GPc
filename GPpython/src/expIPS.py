@@ -44,8 +44,8 @@ plane025 = planemin(0.25)
 plane05 = planemin(0.5)
 plane001 = planemin(0.01)
 plane10 = planemin(1.)
-nreps=8
-bd=50
+nreps=12
+bd=40
 
 kindex = GPdc.MAT52CS
 prior = sp.array([0.]+[-1.]*(d+1)+[-2.])
@@ -57,13 +57,22 @@ results = search.multiPESIPS(ojf,lb,ub,kernel,bd,names)
 
 f,a = plt.subplots(3)
 aot = a[0].twinx()
+Xa = [sp.array(r[0][:,0]) for r in results]
+#Ca = [[sum(r[5][:j]) for j in xrange(len(r[5]))] for r in results]
+
+#Rg = [(r[11].flatten()-ymin) for r in results]
+
+#[sup,mxa,mxs]=OPTutils.bounds(Ca,Xa)
+#a[2].fill_between(sup.flatten(),(mxa-mxs).flatten(),(mxa+mxs).flatten(),facecolor='b',edgecolor='b')
+#a[2].plot(sup.flatten(),mxa.flatten(),'b')
+a[0].set_ylabel("cost")
 for r in results:
-    a[0].plot(r[0][:,0].flatten(),'b')
-    a[0].set_ylabel("augx")
-    aot.plot(r[5],'r')
+    #a[0].plot(r[0][:,0].flatten(),'b')
+    
+    a[0].plot(r[5],'r')
     a[1].semilogx(sp.log10(r[11].flatten()-ymin),'b')
     a[1].set_ylabel("regret")
-    a[2].semilogx([sum(r[5][:j]) for j in xrange(len(r[5]))],sp.log10(r[11].flatten()-ymin),'b')
+    a[2].plot([sum(r[5][:j]) for j in xrange(len(r[5]))],sp.log10(r[11].flatten()-ymin),'b')
     a[2].set_ylabel("regret/c")
 
 
@@ -75,11 +84,11 @@ print [truexmin,ymin]
 print plane00
 #a[2].plot([0,bd],[sp.log10(plane00[3])]*2,c[0],linestyle='--')
 print plane025
-a[2].plot([1.,bd],[sp.log10(plane025[3])]*2,color=c[1],linestyle='--')
+#a[2].plot([1.,bd],[sp.log10(plane025[3])]*2,color=c[1],linestyle='--')
 print plane10
-a[2].plot([1.,bd],[sp.log10(plane10[3])]*2,color=c[2],linestyle='--')
+#a[2].plot([1.,bd],[sp.log10(plane10[3])]*2,color=c[2],linestyle='--')
 print plane001
-a[2].plot([1.,bd],[sp.log10(plane001[3])]*2,color='k',linestyle='--')
+#a[2].plot([1.,bd],[sp.log10(plane001[3])]*2,color='k',linestyle='--')
 print "XXX"
 
 kindex = GPdc.MAT52CS
@@ -92,13 +101,18 @@ for i,xs in enumerate(subset):
         return ojf(sp.hstack([[xs],x.flatten()]),s,d,override=override)
     names = ["../cache/IPS/PESIS_"+str(xs)+"_"+str(dcc)+"_"+str(fls)+"_"+str(seed)+"_"+str(k)+".p" for k in xrange(nreps)]
     results = search.multiPESIS(ojfa,lb,ub,kernela,bd,names)
-    
+    Rg = sp.vstack([sp.log10(sp.array([ojf(sp.hstack([0.,r[4][j,:]]) ,0.,[sp.NaN],override=True)[0] for j in xrange(r[4].shape[0])])-ymin) for r in results])
+    mr = sp.mean(Rg,axis=0)
+    sr = sp.sqrt(sp.var(Rg,axis=0))
+    cacc = [sum(r[5][:j]) for j in xrange(len(r[5]))]
+    a[2].fill_between(cacc,(mr-sr).flatten(),(mr+sr).flatten(),facecolor=c[i],edgecolor=c[i],alpha=0.5)
+    a[2].plot(cacc,mr.flatten(),color=c[i])
     for r in results:
         a[0].plot(r[5],color=c[i])
         z=sp.array([ojf(sp.hstack([0.,r[4][j,:]]) ,0.,[sp.NaN],override=True)[0] for j in xrange(r[4].shape[0])])
         a[1].plot(sp.log10(z-ymin),color=c[i])
         
-        a[2].plot([sum(r[5][:j]) for j in xrange(len(r[5]))],sp.log10(z-ymin),color=c[i])
-        
+        #a[2].plot([sum(r[5][:j]) for j in xrange(len(r[5]))],sp.log10(z-ymin),color=c[i])
+#a[2].set_xscale('log')   
     
 plt.show()

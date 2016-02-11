@@ -70,7 +70,8 @@ s=1e-1
 #    [X,Y,S,D,R,C2,T,Tr,Ymin,Xmin,Yreg, Rreg] = search.PESVS(ojf,lb,ub,kernel,s,ba,lambda x,s:cfn(s),-9,-1,fname)
 names = ["../cache/rosennoise/PESVS_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
 results = search.multiPESVS(ojf,lb,ub,kernel,s,bd,lambda x,s:cfn(s),-9,-1,names)
-Rz = [sp.log(r[10]).flatten() for r in results]
+Rz = [sp.log10(r[10]).flatten() for r in results]
+print r[4]
 Cz = [[sum(r[5][:j]) for j in xrange(len(r[5]))] for r in results]
 #for i in xrange(nreps):
 #    a[2].plot(Cz[i],Rz[i].flatten(),'rx-')

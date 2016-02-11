@@ -9,11 +9,13 @@ import os
 import pickle
 import math
 from pathos.multiprocessing import Pool
+from multiprocessing import cpu_count
+nproc = cpu_count()
 import copy
 def multiMLEFS(ojf,lb,ub,ki,s,b,fnames):
     def f(fn):
         return MLEFS(ojf,lb,ub,ki,s,b,fn)
-    p = Pool(8)
+    p = Pool(nproc)
     return p.map(f,fnames)
         
 def MLEFS(ojf,lb,ub,ki,s,b,fname):
@@ -46,7 +48,7 @@ def MLEFS(ojf,lb,ub,ki,s,b,fname):
 def multiPESFS(ojf,lb,ub,ki,s,b,fnames):
     def f(fn):
         return PESFS(ojf,lb,ub,ki,s,b,fn)
-    p = Pool(8)
+    p = Pool(nproc)
     return p.map(f,fnames)
         
 def PESFS(ojf,lb,ub,ki,s,b,fname):
@@ -58,9 +60,9 @@ def PESFS(ojf,lb,ub,ki,s,b,fname):
     para['s'] = s
     para['ninit'] = 10
     para['volper'] = 1e-6
-    para['DH_SAMPLES'] = 8
-    para['DM_SAMPLES'] = 8
-    para['DM_SUPPORT'] = 1200
+    para['DH_SAMPLES'] = 16
+    para['DM_SAMPLES'] = 16
+    para['DM_SUPPORT'] = 4000
     para['DM_SLICELCBPARA'] = 1.
     para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
     if os.path.exists(fname):
@@ -71,7 +73,10 @@ def PESFS(ojf,lb,ub,ki,s,b,fname):
         OE = OPTutils.PESFS(ojf,lb,ub,para)
     if sum(OE.C)>=b:
         print "no further steps needed"
-        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin, OE.Yreg, OE.Rreg]
+        k=0
+        while sum(OE.C[:k])<b:
+            k+=1
+        state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
         while sum(OE.C)<b:
             OE.step()
@@ -82,7 +87,7 @@ def PESFS(ojf,lb,ub,ki,s,b,fname):
 def multiPESIS(ojf,lb,ub,ki,b,fnames):
     def f(fn):
         return PESIS(ojf,lb,ub,ki,b,fn)
-    p = Pool(8)
+    p = Pool(nproc)
     return p.map(f,fnames)
         
 def PESIS(ojf,lb,ub,ki,b,fname):
@@ -94,9 +99,9 @@ def PESIS(ojf,lb,ub,ki,b,fname):
     para['s'] = -1.
     para['ninit'] = 10
     para['volper'] = 1e-6
-    para['DH_SAMPLES'] = 8
-    para['DM_SAMPLES'] = 8
-    para['DM_SUPPORT'] = 1200
+    para['DH_SAMPLES'] = 16
+    para['DM_SAMPLES'] = 16
+    para['DM_SUPPORT'] = 4000
     para['DM_SLICELCBPARA'] = 1.
     para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
     if os.path.exists(fname):
@@ -107,7 +112,10 @@ def PESIS(ojf,lb,ub,ki,b,fname):
         OE = OPTutils.PESIS(ojf,lb,ub,para)
     if sum(OE.C)>=b:
         print "no further steps needed"
-        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin, OE.Yreg, OE.Rreg]
+        k=0
+        while sum(OE.C[:k])<b:
+            k+=1
+        state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
         while sum(OE.C)<b:
             OE.step()
@@ -120,7 +128,7 @@ def PESIS(ojf,lb,ub,ki,b,fname):
 def multiPESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fnames):
     def f(fn):
         return PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fn)
-    p = Pool(8)
+    p = Pool(nproc)
     return p.map(f,fnames)
         
 def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fname):
@@ -132,9 +140,9 @@ def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fname):
     para['s'] = s
     para['ninit'] = 10
     para['volper'] = 1e-6
-    para['DH_SAMPLES'] = 8
-    para['DM_SAMPLES'] = 8
-    para['DM_SUPPORT'] = 1200
+    para['DH_SAMPLES'] = 16
+    para['DM_SAMPLES'] = 16
+    para['DM_SUPPORT'] = 4000
     para['DM_SLICELCBPARA'] = 1.
     para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
     para['cfn'] = cfn
@@ -151,7 +159,10 @@ def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fname):
     
     if sum(OE.C)>=b:
         print "no further steps needed"
-        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
+        k=0
+        while sum(OE.C[:k])<b:
+            k+=1
+        state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
         pbar = tqdm(total=(b-sum(OE.C)))
         while sum(OE.C)<b:
@@ -165,7 +176,7 @@ def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fname):
 def multiPESIPS(ojf,lb,ub,ki,b,fnames):
     def f(fn):
         return PESIPS(ojf,lb,ub,ki,b,fn)
-    p = Pool(8)
+    p = Pool(nproc)
     return p.map(f,fnames)
 
 def PESIPS(ojf,lb,ub,ki,b,fname):
@@ -177,9 +188,9 @@ def PESIPS(ojf,lb,ub,ki,b,fname):
     para['d'] = lb.size+1
     para['ninit'] = 10
     para['volper'] = 1e-7
-    para['DH_SAMPLES'] = 8
-    para['DM_SAMPLES'] = 8
-    para['DM_SUPPORT'] = 800
+    para['DH_SAMPLES'] = 16
+    para['DM_SAMPLES'] = 16
+    para['DM_SUPPORT'] = 4000
     para['DM_SLICELCBPARA'] = 1.
     para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB]
     para['sl'] = 0.
@@ -198,7 +209,10 @@ def PESIPS(ojf,lb,ub,ki,b,fname):
     
     if sum(OE.C)>=b:
         print "no further steps needed"
-        state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
+        k=0
+        while sum(OE.C[:k])<b:
+            k+=1
+        state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
         pbar = tqdm(total=(b-sum(OE.C)))
         while sum(OE.C)<b:

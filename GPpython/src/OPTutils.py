@@ -76,6 +76,53 @@ def genbanana(ignores=-1.,cfn = lambda x:1.,):
             return [f+noise,sp.inf]
     return banana
 
+def genbranin(ignores=-1.,cfn = lambda x:1.,):
+    def branin(x,s,d, override=False):
+        
+        assert(d==[sp.NaN])
+        x.resize([1,x.size])
+        u = x[0,0]*7.5 + 2.5
+        v = x[0,1]*7.5 + 2.5
+        
+        f = (-1.275*(u/sp.pi)**2+5*u/sp.pi+v-6)**2 +(10.-5./(4*sp.pi))*sp.cos(u) + 10.
+        if ignores>0:
+            s=ignores
+        if s==0.:
+            noise = 0.
+            
+        else:
+            
+            noise = sp.random.normal(scale=sp.sqrt(s))
+        try:
+            return [f+noise,cfn(s)]
+        except ZeroDivisionError:
+            return [f+noise,sp.inf]
+    return branin
+
+def gencamel(ignores=-1.,cfn = lambda x:1.,):
+    def camel(x,s,d, override=False):
+        
+        assert(d==[sp.NaN])
+        x.resize([1,x.size])
+        u = x[0,0]*5
+        v = x[0,1]*7.5
+        
+        f = 4*u**2+u*v-4*v**2-2.1*u**4+4*v**4+(u**6)/3.
+        if ignores>0:
+            s=ignores
+        if s==0.:
+            noise = 0.
+            
+        else:
+            
+            noise = sp.random.normal(scale=sp.sqrt(s))
+        try:
+            return [f+noise,cfn(s)]
+        except ZeroDivisionError:
+            return [f+noise,sp.inf]
+    return camel
+
+
 def gensquexpdraw(d,lb,ub,ignores=-1):
     nt=14
     [X,Y,S,D] = ESutils.gen_dataset(nt,d,lb,ub,GPdc.SQUEXP,sp.array([1.5]+[0.30]*d))
@@ -117,8 +164,11 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls,cfn):
     def dirwrap(x,y):
         z = obj(sp.array([[sl]+[i for i in x]]),sl,[sp.NaN],override=True)
         return (z,0)
-    [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=20000, logfilename='/dev/null')
-    
+    [xmin0,ymin0,ierror] = DIRECT.solve(dirwrap,lb,ub,user_data=[], algmethod=1, maxf=89000, logfilename='/dev/null')
+    lb2 = xmin0-sp.ones(d)*1e-4
+    ub2 = xmin0+sp.ones(d)*1e-4
+    [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb2,ub2,user_data=[], algmethod=1, maxf=89000, logfilename='/dev/null')
+    print "RRRRR"+str([xmin0,xmin,ymin0,ymin,xmin0-xmin,ymin0-ymin])
     return [obj,xmin,ymin]
 
 
