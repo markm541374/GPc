@@ -81,13 +81,25 @@ class GPcore:
         libGP.infer_m(self.s, cint(self.size), ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D),R.ctypes.data_as(ctpd))
         return R
     
+    def infer_m_partial(self,X_i,D_i,ki,hyp):
+        
+        ns=X_i.shape[0]
+        D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]
+        R=sp.vstack([sp.empty(ns)]*1)
+        
+        #libGP.infer_m_partial(self.s, cint(ki),hyp.ctypes.data_as(ctpd),ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D),R.ctypes.data_as(ctpd))
+        libGP.infer_m_partial(self.s,cint(ki),hyp.ctypes.data_as(ctpd),ns,X_i.ctypes.data_as(ctpd),(cint*len(D))(*D),R.ctypes.data_as(ctpd))
+            
+        
+        return R
+    
     def infer_m_post(self,X_i,D_i):
         ns=X_i.shape[0]
         R = self.infer_m(X_i,D_i)
-        #m = sp.sum(R,axis=0).reshape([1,ns])
-        #return m/float(self.size)
-        #print sp.mean(R,axis=0).shape
+        
         return sp.mean(R,axis=0).reshape([1,ns])
+    
+    
     def infer_full(self,X_i,D_i):
         ns=X_i.shape[0]
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]

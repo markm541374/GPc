@@ -31,4 +31,5 @@ int newGP(int D, int N, int kindex, double* X, double* Y, double* Sx, int* D, do
 int infer_LCB(int k, int s, int n, double* X, int* D, double p, double* R);
 int infer_EI(int k, int s, int n, double* X, int* D, double* R);
 int infer_lEI(int k, int s, int n, double* X, int* D, double* R);
+int infer_m_partial(int k, int kp, double* h, int Ns,double* Xs, int* Ds, double* R);
 #endif /* LIBGPD_H_ */

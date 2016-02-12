@@ -57,7 +57,7 @@ public:
     int infer_full(int Ns, double* Xs, int* Ds, double* R);
     int draw(int N, double* X, int* D, double*R, int m);
     int llk(double* R);
-    
+    int infer_m_partial(int kp, double* ihp, int Ns, double* Xs, int* Ds, double* R);
 };
 #endif /* GPSIMPLE_H */
 
