@@ -42,7 +42,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/kernel.o \
 	${OBJECTDIR}/libGP.o \
 	${OBJECTDIR}/matern.o \
-	${OBJECTDIR}/misctools.o
+	${OBJECTDIR}/misctools.o \
+	${OBJECTDIR}/simplekernels.o
 
 
 # C Compiler Flags
@@ -108,6 +109,11 @@ ${OBJECTDIR}/misctools.o: misctools.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/misctools.o misctools.cpp
+
+${OBJECTDIR}/simplekernels.o: simplekernels.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/simplekernels.o simplekernels.cpp
 
 # Subprojects
 .build-subprojects:

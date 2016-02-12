@@ -28,9 +28,10 @@ a.plot(X,Y,'g.')
 S = sp.ones([n,1])*1e-6
 D = [[sp.NaN]]*n
 t0=time.clock()
-g = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.MAT52,1,sp.array([10.,0.5])))
+g = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.DEV,1,sp.array([10.,0.1,1.,2.])))
 t1=time.clock()
 print 'training time {0:e}'.format(t1-t0)
+
 
 ns = 3000
 sup = sp.linspace(dlb,dub,ns)
