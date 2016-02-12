@@ -26,8 +26,8 @@ kernel = [kindex,prior,sprior]
 nreps = 10
 bd = 30
 slist = [1e-3,1e-4,1e-6,1e-8]
-f,a = plt.subplots(3)
-
+f,a1 = plt.subplots(1)
+a = [None,None,a1]
 for s in slist:
     
     names = ["../cache/rosennoise/EIMLE_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
@@ -75,17 +75,18 @@ print r[4]
 Cz = [[sum(r[5][:j]) for j in xrange(len(r[5]))] for r in results]
 #for i in xrange(nreps):
 #    a[2].plot(Cz[i],Rz[i].flatten(),'rx-')
-[a[1].plot(r[5],'r') for r in results]
+#[a[1].plot(r[5],'r') for r in results]
     #a[2].plot(sp.array([sum(C2[:j]) for j in xrange(len(C2))]).flatten(),(sp.log(Yreg)).flatten(),'ro-')
 
 [sup,m,sd]=OPTutils.bounds(Cz,Rz)
 a[2].fill_between(sup.flatten(),(m-sd).flatten(),(m+sd).flatten(),facecolor='salmon',edgecolor='salmon',alpha=0.5)
 a[2].plot(sup,m.flatten(),'darkred')
 
+#for i in xrange(nreps):
+#    a[2].plot(Cz[i],Rz[i],'r')
 
-
-sx = sp.logspace(0,-8,100)
-cx = map(cfn,sx)
-a[0].loglog(sx,cx)
-f.savefig("tmp.png")
+#sx = sp.logspace(0,-8,100)
+#cx = map(cfn,sx)
+#a[0].loglog(sx,cx)
+f.savefig("../figs/rosennoise.png")
 plt.show()

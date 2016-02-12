@@ -92,5 +92,5 @@ for i in xrange(nreps):
 sx = sp.logspace(0,-8,100)
 cx = map(cfn,sx)
 a[0].loglog(sx,cx)
-f.savefig("tmp.png")
+f.savefig("../figs/braninnoise.png")
 plt.show()

@@ -64,7 +64,7 @@ for s in slist:
     
     f.savefig("tmp.png")
     
-"""
+
 s=1e-1
 
 #for i in xrange(nreps):
@@ -81,7 +81,7 @@ Cz = [[sum(r[5][:j]) for j in xrange(len(r[5]))] for r in results]
 
 [sup,m,sd]=OPTutils.bounds(Cz,Rz)
 a[2].fill_between(sup.flatten(),(m-sd).flatten(),(m+sd).flatten(),facecolor='salmon',edgecolor='salmon',alpha=0.5)
-a[2].plot(sup,m.flatten(),'darkred')"""
+a[2].plot(sup,m.flatten(),'darkred')
 
 
 
