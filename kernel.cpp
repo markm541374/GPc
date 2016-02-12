@@ -502,7 +502,7 @@ extern "C" int numhyp(int kindex, int D){
     }
     else if (kindex==13){
         //dev
-        return 4;
+        return 8;
     }
     else{
         printf("%d %d a bad thing happened :(",kindex,D);

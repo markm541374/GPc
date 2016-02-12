@@ -106,6 +106,7 @@ public:
     int infer_full(int Ns, double* Xs, int* Ds, double* R);
     int draw(int N, double* X, int* D, double*R, int m);
     int llk(double* R);
+    int infer_m_partial(int kp, double* ihp, int Ns, double* Xs, int* Ds, double* R);
     
 };
 
@@ -163,7 +164,19 @@ int GP::infer_m(int Ns, double* Xs, int* Ds, double* R){
 
 	return 0;
 }
-
+int GP::infer_m_partial(int kp, double* hp, int Ns, double* Xs, int* Ds, double* R){
+    int tmpk = K;
+    std::vector<double>tmpih = std::vector<double>(nhyp);
+    for (int i=0; i<nhyp;i++){tmpih[i]=ih[i];}
+    K = kp;
+    //int nh = numhyp(kp,D);
+    int c = hypconvert(hp,K,D,&ih[0]);
+    //for (int i=0; i<nhyp;i++){printf("%f ",ih[i]);}
+    int cc = this->infer_m(Ns, Xs, Ds, R);
+    K=tmpk;
+    for (int i=0; i<nhyp;i++){ih[i]=tmpih[i];}
+    return 0;
+}
 int GP::infer_full(int Ns, double* Xs, int* Ds, double* R){
 	//populate Kxs
     if (Ns>=maxinfer){

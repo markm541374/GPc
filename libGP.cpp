@@ -134,6 +134,19 @@ int infer_m(int k, int s, int Ns,double* Xs, int* Ds, double* R){
         }
 	return 0;
 }
+
+int infer_m_partial(int k, int kp, double* h, int Ns,double* Xs, int* Ds, double* R){
+	if (SS[k]==0){
+		printf("trying to use deleted GP\n");
+		return -1;
+	};
+        //#pragma omp parallel for
+        
+        SS[k]->infer_m_partial(kp, h, Ns, Xs,Ds,R);
+	return 0;
+}
+
+
 int llk(int k, int s, double* R){
 	if (SS[k]==0){
 		printf("trying to use deleted GP\n");
