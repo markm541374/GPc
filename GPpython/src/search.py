@@ -39,6 +39,7 @@ def MLEFS(ojf,lb,ub,ki,s,b,fname):
         state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
         while sum(OE.C)<b:
+            print "used {0} of {1} eval budget".format(sum(OE.C),b)
             OE.step()
         state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
         print "saving as "+str(fname)
@@ -75,6 +76,7 @@ def PESFS(ojf,lb,ub,ki,s,b,fname):
         print "no further steps needed"
         k=0
         while sum(OE.C[:k])<b:
+            print "used {0} of {1} eval budget".format(sum(OE.C),b)
             k+=1
         state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
@@ -114,6 +116,7 @@ def PESIS(ojf,lb,ub,ki,b,fname):
         print "no further steps needed"
         k=0
         while sum(OE.C[:k])<b:
+            print "used {0} of {1} eval budget".format(sum(OE.C),b)
             k+=1
         state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
@@ -161,12 +164,13 @@ def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fname):
         print "no further steps needed"
         k=0
         while sum(OE.C[:k])<b:
+            
             k+=1
         state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
         pbar = tqdm(total=(b-sum(OE.C)))
         while sum(OE.C)<b:
-            print "XXXXXXXXXXx"+str(sum(OE.C))+" "+str(b)+" "+str(sum(OE.C)<b)
+            print "used {0} of {1} eval budget".format(sum(OE.C),b)
             pbar.update(OE.C[-1])
             OE.step()
         state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
@@ -188,9 +192,9 @@ def PESIPS(ojf,lb,ub,ki,b,fname):
     para['d'] = lb.size+1
     para['ninit'] = 10
     para['volper'] = 1e-7
-    para['DH_SAMPLES'] = 16
-    para['DM_SAMPLES'] = 16
-    para['DM_SUPPORT'] = 4000
+    para['DH_SAMPLES'] = 12
+    para['DM_SAMPLES'] = 12
+    para['DM_SUPPORT'] = 1600
     para['DM_SLICELCBPARA'] = 1.
     para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB]
     para['sl'] = 0.
@@ -211,12 +215,14 @@ def PESIPS(ojf,lb,ub,ki,b,fname):
         print "no further steps needed"
         k=0
         while sum(OE.C[:k])<b:
+            
             k+=1
         state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
         pbar = tqdm(total=(b-sum(OE.C)))
         while sum(OE.C)<b:
-            print "XXXXXXXXXXx"+str(sum(OE.C))+" "+str(b)+" "+str(sum(OE.C)<b)
+            print "used {0} of {1} eval budget".format(sum(OE.C),b)
+            
             pbar.update(OE.C[-1])
             OE.step()
         state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]

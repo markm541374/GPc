@@ -180,7 +180,7 @@ class opt(object):
         self.ojf = objective
         self.lb = lb
         self.ub = ub
-        self.d = lb.shape[1]
+        self.d = lb.size
         try:
             self.d = para['d']
         except:
@@ -229,6 +229,11 @@ class opt(object):
         return self.run_search_random()
     
     def run_search_random(self):
+        print self.d
+        
+        print self.ub
+        print self.lb
+        
         xnext = sp.random.uniform(size=self.d)*(self.ub-self.lb)+self.lb
         snext = self.sdefault
         dnext = [sp.NaN]
@@ -379,7 +384,9 @@ class EIMLE(opt):
             self.setstate()
         else:
             for i in xrange(ninit):
+                
                 self.step(random=True)
+                
         return
     
     def run_search(self):

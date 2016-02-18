@@ -78,6 +78,54 @@ double mat52ppt(double *x1, double *x2, int d1, int d2, int D, double* ih, doubl
 
 }
 
+int matppconv(double *h, int D, double* ih){
+    ih[0] = pow(h[0],2);
+    ih[1] = 1./h[1];
+    ih[2] = h[2];
+    
+    ih[3] = pow(h[3],2);
+    ih[4] = 1./h[4];
+    
+    //ih[6] = pow(h[6],2);
+    //ih[7] = 1./h[7];
+    
+    return 0;
+}
+
+//all are searched in log space
+int matppsearchconv(double *h, int D, double* ih){
+    
+    ih[0] = pow(10.,h[0]);
+    ih[1] = pow(10.,h[1]);
+    ih[2] = pow(10.,h[2]);
+    ih[3] = pow(10.,h[3]);
+    ih[4] = pow(10.,h[4]);
+    
+    return 0;
+}
+
+double matpp(double *x1, double *x2, int d1, int d2, int D, double* ih, double* smodel){
+        //strictly 1d kernel
+        //A mat52( sin2(2pix/p) )*squexp
+	//ihyps outputscale**2,1/lengthscale,period,1/decay**2
+	if (d1!=0 or d2!=0 or D!=1){
+		printf("no derivatives for this kernel, D must be 1 %d %d %d",d1,d2,D);
+		return 0.;
+	}
+        double dx = x1[0]-x2[0];
+	
+        double r1 = fabs(double(ih[2]*ih[1]*OVERPI*sin(PI*dx/ih[2])));
+        double mp1 = ih[0]*(1.+SQRT5*r1+FIVETHIRDS*pow(r1,2))*exp(-SQRT5*r1);
+        
+        
+        double r3 = fabs(dx*ih[4]);
+        double mm = ih[3]*(1.+SQRT5*r3+FIVETHIRDS*pow(r3,2))*exp(-SQRT5*r3);
+        
+        
+        return mp1+mm;
+
+}
+
 int devconv(double *h, int D, double* ih){
     ih[0] = pow(h[0],2);
     ih[1] = 1./h[1];
