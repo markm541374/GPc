@@ -8,11 +8,13 @@ import scipy as sp
 from scipy import linalg as spl
 from scipy import stats as sps
 from matplotlib import pyplot as plt
+from scipy.optimize import minimize as spomin
 
 SUPPORT_UNIFORM = 0
 SUPPORT_SLICELCB = 1
 SUPPORT_SLICEEI = 2
 SUPPORT_SLICEPM = 3
+SUPPORT_LAPAPR = 3
 #drawing points between lb and ub using specified method
 def draw_support(g, lb, ub, n, method, para=1.):
     #para is the std confidence bound
@@ -26,17 +28,60 @@ def draw_support(g, lb, ub, n, method, para=1.):
         for i in xrange(d):
             X[:,i] *= ub[i]-lb[i]
             X[:,i] += lb[i]
+    elif method==SUPPORT_LAPAPR:
+        para = int(para)
+        over = 4
+        Xsto=sp.random.uniform(size=[over*para,d])
+        for i in xrange(d):
+            Xsto[:,i] *= ub[i]-lb[i]
+            Xsto[:,i] += lb[i]
+        fs = sp.empty(para*over)
+        for i in xrange(para*over):
+            fs[i] = g.infer_m_post(Xsto[i,:],[[sp.NaN]])[0,0]
+        Xst = sp.empty([2*para,d])
+        for i in xrange(para):
+            j = fs.argmin()
+            Xst[i,:] = Xsto[j,:]
+            fs[j]=1e99
+        def f(x):
+            return g.infer_m_post(sp.array(x),[[sp.NaN]])[0,0]
+        for i in xrange(para):
+            res = spomin(f,Xst[i,:],method='Powell')
+            if not res.success:
+                class MJMError(Exception):
+                    pass
+                print res.message
+                raise MJMError('failed in opt in support lapapr')
+            Xst[i+int(para),:] = res.x
+            print res.x
+        
+        X=Xst
     elif method==SUPPORT_SLICELCB:
         def f(x):
             if all(x>lb) and all(x<ub):
                 try:
-                    return -5.*g.infer_LCB_post(sp.array(x),[[sp.NaN]],para)[0,0]
+                    return -g.infer_LCB_post(sp.array(x),[[sp.NaN]],para)[0,0]
                 except:
                     g.printc()
                     raise
             else:
                 return -1e99
         print "Drawing support using slice sample over LCB:"
+        X = slice.slice_sample(f,0.5*(ub+lb),n,0.1*(ub-lb))
+    
+    elif method==SUPPORT_SLICEEI:
+        def f(x):
+            if all(x>lb) and all(x<ub):
+                try:
+                    ei=g.infer_EI(sp.array(x),[[sp.NaN]])[0,0]
+                    #print ei
+                    return sp.log(ei)
+                except:
+                    g.printc()
+                    raise
+            else:
+                return -1e99
+        print "Drawing support using slice sample over EI:"
         X = slice.slice_sample(f,0.5*(ub+lb),n,0.1*(ub-lb))
     
     elif method==SUPPORT_SLICEPM:

@@ -270,6 +270,7 @@ class PES_inplane:
         self.lb=lb
         self.ub=ub
         self.noS=noS
+        self.X=X
         if noS:
             S=sp.zeros(S.shape)
         self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
@@ -315,4 +316,65 @@ class PES_inplane:
         #print self.lb
         #print self.ub
         [xmin, ymin, ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, volper=volper, logfilename='/dev/null')
+        
+        
+        if True:
+            from matplotlib import pyplot as plt
+            import time
+            D = self.lb.size
+            ns=200
+            f,a = plt.subplots(2*D)
+            
+            if self.noS:
+                alls = [k(xmin,xmin,dv,dv,gets=True)[1] for k in self.G.kf]
+                s = sp.exp(sp.mean(sp.log(alls)))
+            else:
+                s = sfn(x)
+                
+            for d in xrange(D):
+                sup = sp.linspace(self.lb[d],self.ub[d],ns)
+                X = sp.vstack([xmin]*ns)
+                for j in xrange(ns):
+                    X[j,d] = sup[j]
+                [m,v] = self.G.infer_diag_post(X,[[sp.NaN]]*ns)
+                
+                sq = sp.sqrt(v)
+                a[d].fill_between(sup,(m-2*sq).flatten(),(m+2.*sq).flatten(),facecolor = 'lightblue',edgecolor='lightblue')
+                a[d].plot(sup,m.flatten())
+                ps = sp.empty(ns)
+                aps = sp.empty(ns)
+                for j in xrange(ns):
+                    ps[j] = self.query_pes(X[j,:],[s],[[sp.NaN]])
+                    if d==0:
+                        aps[j] = ps[j]/cfn(sp.array([X[j,:].flatten()]),s)
+                
+                a[d].twinx().plot(sup,ps,'r')
+                if d==0:
+                    a[d].twinx().plot(sup,aps,'g')
+            
+            for d in xrange(1,D):
+                sup = sp.linspace(self.lb[d],self.ub[d],ns)
+                X = sp.vstack([xmin]*ns)
+                for j in xrange(ns):
+                    X[j,d] = sup[j]
+                    X[j,0] = 0.
+                [m,v] = self.G.infer_diag_post(X,[[sp.NaN]]*ns)
+                
+                sq = sp.sqrt(v)
+                a[d+D-1].fill_between(sup,(m-2*sq).flatten(),(m+2.*sq).flatten(),facecolor = 'lightblue',edgecolor='lightblue')
+                a[d+D-1].plot(sup,m.flatten())
+                ps = sp.empty(ns)
+                aps = sp.empty(ns)
+                for j in xrange(ns):
+                    ps[j] = self.query_pes(X[j,:],[s],[[sp.NaN]])
+                    
+                
+                a[d+D-1].twinx().plot(sup,ps,'r')
+            
+            
+            a[2*D-1].hist(self.X[:,0].flatten(),50,facecolor='g')    
+            print xmin
+            
+            f.savefig('../figcache/{0}.png'.format(time.time()))
+            #plt.show()
         return [xmin,ymin,ierror]

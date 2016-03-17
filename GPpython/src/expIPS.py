@@ -117,6 +117,7 @@ for i,xs in enumerate(subset):
         a[1].plot(sp.log10(z-ymin),color=c[i])
         
         #a[2].plot([sum(r[5][:j]) for j in xrange(len(r[5]))],sp.log10(z-ymin),color=c[i])
+    
 #a[2].set_xscale('log')   
 plt.savefig('../figs/expIPS.png')
 plt.show()
