@@ -24,7 +24,7 @@ plt.axis([-5,5,-5,5])
 nt=34
 X = ESutils.draw_support(2, sp.array([-1.,-1.]),sp.array([1.,1.]),nt,ESutils.SUPPORT_UNIFORM)
 D = [[sp.NaN]]*(nt)
-hyp = sp.array([1.5,0.15,0.15])
+hyp = sp.array([1.5,0.25,0.25])
 kf = GPdc.gen_sqexp_k_d(hyp)
 Kxx = GPdc.buildKsym_d(kf,X,D)
 Y = spl.cholesky(Kxx,lower=True)*sp.matrix(sps.norm.rvs(0,1.,nt)).T+sp.matrix(sps.norm.rvs(0,1e-3,nt)).T
@@ -43,12 +43,16 @@ G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,2,sp.array([1.5,0.15,0.15])))
 #sq = sp.sqrt(v)
 #a0.fill_between(sup, sp.array(m-2.*sq).flatten(), sp.array(m+2.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
 
-Z = ESutils.draw_support(G, sp.array([-1.,-1.]),sp.array([1.,1.]),1000,ESutils.SUPPORT_SLICEEI)
+Z = ESutils.draw_support(G, sp.array([-1.,-1.]),sp.array([1.,1.]),500,ESutils.SUPPORT_SLICEEI)
+np=30
+Z2 = ESutils.draw_support(G, sp.array([-1.,-1.]),sp.array([1.,1.]),500,ESutils.SUPPORT_LAPAPR,para=np)
 R = ESutils.draw_min(G,Z,500)
 
 plt.figure()
 for i in xrange(Z.shape[0]):
     plt.plot(Z[i,0],Z[i,1],'r.')
+for i in xrange(Z2.shape[0]):
+    plt.plot(Z2[i,0],Z2[i,1],'b.')
 for i in xrange(R.shape[0]):
     plt.plot(R[i,0],R[i,1],'gx')
 plt.axis([-1,1,-1,1])

@@ -24,19 +24,19 @@ kindex = GPdc.MAT52
 prior = sp.array([0.]+[-1.]*d)
 sprior = sp.array([1.]*(d+1))
 kernel = [kindex,prior,sprior]
-nreps = 4
-bd = 35
+nreps = 1
+bd = 20
 slist = [1e-5,1e-7,1e-9]
 f,a = plt.subplots(3)
 
 for s in slist:
     
-    names = ["../cache/braninnoise/EIMLE_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
+    names = ["../cache/tmp/EIMLE_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
     results = search.multiMLEFS(ojf,lb,ub,kernel,s,bd,names)
     yr = [r[11].flatten() for r in results]
     C = results[0][5]
     
-    names = ["../cache/braninnoise/PESFS_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
+    names = ["../cache/tmp/PESFS_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
     results = search.multiPESFS(ojf,lb,ub,kernel,s,bd,names)
     zr = [r[11].flatten() for r in results]
     C = results[0][5]
@@ -71,7 +71,7 @@ s=1e-1
 #for i in xrange(nreps):
 #    fname = "../cache/rosennoise/PESVS_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p"
 #    [X,Y,S,D,R,C2,T,Tr,Ymin,Xmin,Yreg, Rreg] = search.PESVS(ojf,lb,ub,kernel,s,ba,lambda x,s:cfn(s),-9,-1,fname)
-names = ["../cache/braninnoise/PESVS_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
+names = ["../cache/tmp/PESVS_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
 results = search.multiPESVS(ojf,lb,ub,kernel,s,bd,lambda x,s:cfn(s),-9,-1,names)
 Rz = [sp.log10(sp.array(r[11])-braninmin).flatten() for r in results]
 Cz = [[sum(r[5][:j]) for j in xrange(len(r[5]))] for r in results]

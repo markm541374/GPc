@@ -11,6 +11,7 @@ import scipy as sp
 import ctypes as ct
 import os
 import sys
+from copy import deepcopy as dc
 from scipy.stats import norm as norms
 #print os.path.join(os.path.split(__file__)[0],'../../dist/Release/GNU-Linux/libGPshared.so')
 libGP = ct.cdll.LoadLibrary(os.path.join(os.path.split(__file__)[0],'../../dist/Release/GNU-Linux/libGPshared.so')) #path to c-shared library
@@ -129,8 +130,9 @@ class GPcore:
         V = sp.vstack([R[i*2+1,:] for i in xrange(self.size)])
         return [m,V]
     
-    def infer_diag_post(self,X_i,D_i):
+    def infer_diag_post(self,X_ii,D_i):
         
+        X_i = dc(X_ii)
         ns = len(D_i)
         
         X_i.resize([ns,self.D])

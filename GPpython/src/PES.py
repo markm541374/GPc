@@ -270,6 +270,7 @@ class PES_inplane:
         self.lb=lb
         self.ub=ub
         self.noS=noS
+        self.X=X
         if noS:
             S=sp.zeros(S.shape)
         self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)

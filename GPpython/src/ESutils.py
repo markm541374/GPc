@@ -8,11 +8,15 @@ import scipy as sp
 from scipy import linalg as spl
 from scipy import stats as sps
 from matplotlib import pyplot as plt
+from scipy.optimize import minimize as spomin
+from scipy.stats import multivariate_normal as mnv
+
 
 SUPPORT_UNIFORM = 0
 SUPPORT_SLICELCB = 1
 SUPPORT_SLICEEI = 2
 SUPPORT_SLICEPM = 3
+SUPPORT_LAPAPR = 3
 #drawing points between lb and ub using specified method
 def draw_support(g, lb, ub, n, method, para=1.):
     #para is the std confidence bound
@@ -26,6 +30,79 @@ def draw_support(g, lb, ub, n, method, para=1.):
         for i in xrange(d):
             X[:,i] *= ub[i]-lb[i]
             X[:,i] += lb[i]
+    elif method==SUPPORT_LAPAPR:
+        #start with 4 times as many points as needed
+        para = int(para)
+        over = 4
+        Xsto=sp.random.uniform(size=[over*para,d])
+        for i in xrange(d):
+            Xsto[:,i] *= ub[i]-lb[i]
+            Xsto[:,i] += lb[i]
+        #eval mean at the points
+        fs = sp.empty(para*over)
+        for i in xrange(para*over):
+            fs[i] = g.infer_m_post(Xsto[i,:],[[sp.NaN]])[0,0]
+        Xst = sp.empty([2*para,d])
+        #keep the lowest
+        for i in xrange(para):
+            j = fs.argmin()
+            Xst[i,:] = Xsto[j,:]
+            fs[j]=1e99
+        #minimize the posterior mean from each start
+        def f(x):
+            return g.infer_m_post(sp.array(x),[[sp.NaN]])[0,0]
+        for i in xrange(para):
+            res = spomin(f,Xst[i,:],method='Powell',options={'xtol':0.0001})
+            if not res.success:
+                class MJMError(Exception):
+                    pass
+                print res.message
+                raise MJMError('failed in opt in support lapapr')
+            Xst[i+int(para),:] = res.x
+            
+        
+        
+        #find endpoints that are unique
+        Xst
+        unq = [Xst[0+para,:]]
+        for i in xrange(para):
+            tmp=[]
+            for xm in unq:
+                tmp.append(abs((xm-Xst[i+para,:])).max())
+            
+            if min(tmp)>0.0002:
+                unq.append(Xst[i+para,:])
+        #get the alligned gaussian approx of pmin
+        print unq
+        cls = []
+        for xm in unq:
+            ls = []
+            for i in xrange(d):
+                
+                vg = g.infer_diag_post(xm,[[i]])[1][0,0]
+                gg = g.infer_diag_post(xm,[[i,i]])[0][0,0]
+                ls.append(sp.sqrt(vg)/gg)
+                
+            cls.append(ls)
+        X=mnv.rvs(size=n,mean=[0.]*d)
+        neach = int(n/len(unq))
+        for i in xrange(len(unq)):
+            for j in xrange(d):
+                X[i*neach:(i+1)*neach,j]*=cls[i][j]
+                X[i*neach:(i+1)*neach,j]+=unq[i][j]
+            
+        
+        if True:
+            plt.figure()
+            np = para
+            for i in xrange(np):
+                plt.plot([Xst[i,0],Xst[i+np,0]],[Xst[i,1],Xst[i+np,1]],'b.-')
+            for j in xrange(len(unq)):
+                x = unq[j]
+                plt.plot(x[0],x[1],'ro')
+                xp = [x[0]+cls[j][0],x[0],x[0]-cls[j][0],x[0],x[0]+cls[j][0]]
+                yp = [x[1],x[1]+cls[j][1],x[1],x[1]-cls[j][1],x[1]]
+                plt.plot(xp,yp,'r-')
     elif method==SUPPORT_SLICELCB:
         def f(x):
             if all(x>lb) and all(x<ub):
@@ -37,6 +114,21 @@ def draw_support(g, lb, ub, n, method, para=1.):
             else:
                 return -1e99
         print "Drawing support using slice sample over LCB:"
+        X = slice.slice_sample(f,0.5*(ub+lb),n,0.1*(ub-lb))
+    
+    elif method==SUPPORT_SLICEEI:
+        def f(x):
+            if all(x>lb) and all(x<ub):
+                try:
+                    ei=g.infer_EI(sp.array(x),[[sp.NaN]])[0,0]
+                    #print ei
+                    return sp.log(ei)
+                except:
+                    g.printc()
+                    raise
+            else:
+                return -1e99
+        print "Drawing support using slice sample over EI:"
         X = slice.slice_sample(f,0.5*(ub+lb),n,0.1*(ub-lb))
     
     elif method==SUPPORT_SLICEPM:
