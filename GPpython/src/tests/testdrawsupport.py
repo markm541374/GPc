@@ -21,7 +21,7 @@ plt.axis([-5,5,-5,5])
 
 
 
-nt=54
+nt=34
 X = ESutils.draw_support(2, sp.array([-1.,-1.]),sp.array([1.,1.]),nt,ESutils.SUPPORT_UNIFORM)
 D = [[sp.NaN]]*(nt)
 hyp = sp.array([1.5,0.25,0.25])
@@ -51,8 +51,8 @@ R = ESutils.draw_min(G,Z,500)
 plt.figure()
 for i in xrange(Z.shape[0]):
     plt.plot(Z[i,0],Z[i,1],'r.')
-for i in xrange(np):
-    plt.plot([Z2[i,0],Z2[i+np,0]],[Z2[i,1],Z2[i+np,1]],'bo-')
+for i in xrange(Z2.shape[0]):
+    plt.plot(Z2[i,0],Z2[i,1],'b.')
 for i in xrange(R.shape[0]):
     plt.plot(R[i,0],R[i,1],'gx')
 plt.axis([-1,1,-1,1])

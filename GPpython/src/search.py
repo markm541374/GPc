@@ -65,7 +65,7 @@ def PESFS(ojf,lb,ub,ki,s,b,fname):
     para['DM_SAMPLES'] = 16
     para['DM_SUPPORT'] = 4000
     para['DM_SLICELCBPARA'] = 1.
-    para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
+    para['SUPPORT_MODE'] = [ESutils.SUPPORT_LAPAPR]#[ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
     if os.path.exists(fname):
         print "starting from "+str(fname)
         OE = OPTutils.PESFS(ojf,lb,ub,para,initstate=pickle.load(open(fname,'rb')))
@@ -181,7 +181,7 @@ def multiPESIPS(ojf,lb,ub,ki,b,fnames):
     def f(fn):
         return PESIPS(ojf,lb,ub,ki,b,fn)
     p = Pool(nproc)
-    return p.map(f,fnames)
+    return map(f,fnames)
 
 def PESIPS(ojf,lb,ub,ki,b,fname):
     sp.random.seed(int(os.urandom(4).encode('hex'), 16))
