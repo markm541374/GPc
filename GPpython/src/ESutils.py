@@ -16,7 +16,7 @@ SUPPORT_UNIFORM = 0
 SUPPORT_SLICELCB = 1
 SUPPORT_SLICEEI = 2
 SUPPORT_SLICEPM = 3
-SUPPORT_LAPAPR = 3
+SUPPORT_LAPAPR = 4
 #drawing points between lb and ub using specified method
 def draw_support(g, lb, ub, n, method, para=1.):
     #para is the std confidence bound
@@ -50,9 +50,14 @@ def draw_support(g, lb, ub, n, method, para=1.):
             fs[j]=1e99
         #minimize the posterior mean from each start
         def f(x):
-            return g.infer_m_post(sp.array(x),[[sp.NaN]])[0,0]
+            y= g.infer_m_post(sp.array(x),[[sp.NaN]])[0,0]
+            bound=0
+            r = max(abs(x))
+            if r>1:
+                bound=1e3*(r-1)
+            return y+bound
         for i in xrange(para):
-            res = spomin(f,Xst[i,:],method='Powell',options={'xtol':0.0001})
+            res = spomin(f,Xst[i,:],method='Nelder-Mead',options={'xtol':0.0001})
             if not res.success:
                 class MJMError(Exception):
                     pass
@@ -92,7 +97,12 @@ def draw_support(g, lb, ub, n, method, para=1.):
                 X[i*neach:(i+1)*neach,j]+=unq[i][j]
             
         
-        if True:
+        if False:
+            print 'inits'
+            print Xst
+            
+            print 'cls'
+            print cls
             plt.figure()
             np = para
             for i in xrange(np):
@@ -103,6 +113,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
                 xp = [x[0]+cls[j][0],x[0],x[0]-cls[j][0],x[0],x[0]+cls[j][0]]
                 yp = [x[1],x[1]+cls[j][1],x[1],x[1]-cls[j][1],x[1]]
                 plt.plot(xp,yp,'r-')
+            plt.show()
     elif method==SUPPORT_SLICELCB:
         def f(x):
             if all(x>lb) and all(x<ub):
