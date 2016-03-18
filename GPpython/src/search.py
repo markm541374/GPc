@@ -47,12 +47,14 @@ def MLEFS(ojf,lb,ub,ki,s,b,fname):
     return state
 
 def multiPESFS(ojf,lb,ub,ki,s,b,fnames):
+    
     def f(fn):
         return PESFS(ojf,lb,ub,ki,s,b,fn)
     p = Pool(nproc)
     return p.map(f,fnames)
         
 def PESFS(ojf,lb,ub,ki,s,b,fname):
+    
     sp.random.seed(int(os.urandom(4).encode('hex'), 16))
     para = dict()
     para['kindex'] = ki[0]
@@ -61,11 +63,11 @@ def PESFS(ojf,lb,ub,ki,s,b,fname):
     para['s'] = s
     para['ninit'] = 10
     para['volper'] = 1e-6
-    para['DH_SAMPLES'] = 16
-    para['DM_SAMPLES'] = 16
+    para['DH_SAMPLES'] = 12
+    para['DM_SAMPLES'] = 12
     para['DM_SUPPORT'] = 4000
-    para['DM_SLICELCBPARA'] = 1.
-    para['SUPPORT_MODE'] = [ESutils.SUPPORT_LAPAPR]#[ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
+    para['DM_SLICELCBPARA'] = 20.
+    para['SUPPORT_MODE'] = [ESutils.SUPPORT_UNIFORM,ESutils.SUPPORT_LAPAPR]
     if os.path.exists(fname):
         print "starting from "+str(fname)
         OE = OPTutils.PESFS(ojf,lb,ub,para,initstate=pickle.load(open(fname,'rb')))
@@ -76,11 +78,13 @@ def PESFS(ojf,lb,ub,ki,s,b,fname):
         print "no further steps needed"
         k=0
         while sum(OE.C[:k])<b:
-            print "used {0} of {1} eval budget".format(sum(OE.C),b)
+            
             k+=1
+        print "used {0} of {1} eval budget".format(sum(OE.C),b)
         state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
         while sum(OE.C)<b:
+            print "used {0} of {1} eval budget".format(sum(OE.C),b)
             OE.step()
         state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
         pickle.dump(state,open(fname,'wb'))
@@ -194,9 +198,9 @@ def PESIPS(ojf,lb,ub,ki,b,fname):
     para['volper'] = 1e-7
     para['DH_SAMPLES'] = 12
     para['DM_SAMPLES'] = 12
-    para['DM_SUPPORT'] = 1600
+    para['DM_SUPPORT'] = 1200
     para['DM_SLICELCBPARA'] = 1.
-    para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB]
+    para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
     para['sl'] = 0.
     para['su'] = 1.
     para['s'] = 0.
