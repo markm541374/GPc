@@ -65,7 +65,7 @@ def PESFS(ojf,lb,ub,ki,s,b,fname):
     para['volper'] = 1e-6
     para['DH_SAMPLES'] = 12
     para['DM_SAMPLES'] = 12
-    para['DM_SUPPORT'] = 4000
+    para['DM_SUPPORT'] = 2000
     para['DM_SLICELCBPARA'] = 20.
     para['SUPPORT_MODE'] = [ESutils.SUPPORT_UNIFORM,ESutils.SUPPORT_LAPAPR]
     if os.path.exists(fname):

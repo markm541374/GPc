@@ -32,6 +32,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
             X[:,i] += lb[i]
     elif method==SUPPORT_LAPAPR:
         #start with 4 times as many points as needed
+        #print 'a'
         para = int(para)
         over = 4
         Xsto=sp.random.uniform(size=[over*para,d])
@@ -39,16 +40,19 @@ def draw_support(g, lb, ub, n, method, para=1.):
             Xsto[:,i] *= ub[i]-lb[i]
             Xsto[:,i] += lb[i]
         #eval mean at the points
+        #print 'b'
         fs = sp.empty(para*over)
         for i in xrange(para*over):
             fs[i] = g.infer_m_post(Xsto[i,:],[[sp.NaN]])[0,0]
         Xst = sp.empty([2*para,d])
         #keep the lowest
+        #print 'c'
         for i in xrange(para):
             j = fs.argmin()
             Xst[i,:] = Xsto[j,:]
             fs[j]=1e99
         #minimize the posterior mean from each start
+        #print 'd'
         def f(x):
             y= g.infer_m_post(sp.array(x),[[sp.NaN]])[0,0]
             bound=0
@@ -68,6 +72,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
         
         
         #find endpoints that are unique
+        #print 'e'
         Xst
         unq = [Xst[0+para,:]]
         for i in xrange(para):
@@ -78,6 +83,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
             if min(tmp)>0.0002:
                 unq.append(Xst[i+para,:])
         #get the alligned gaussian approx of pmin
+        #print 'f'
         print unq
         cls = []
         for xm in unq:
@@ -89,6 +95,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
                 ls.append(sp.sqrt(vg)/gg)
                 
             cls.append(ls)
+        #print 'g'
         X=mnv.rvs(size=n,mean=[0.]*d)
         neach = int(n/len(unq))
         for i in xrange(len(unq)):

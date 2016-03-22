@@ -1,9 +1,8 @@
 #!/usr/bin/env python2
 #encoding: UTF-8
 
-# To change this license header, choose License Headers in Project Properties.
-# To change this template file, choose Tools | Templates
-# and open the template in the editor.
+#Run the env variable PES on synthetic functions, compare regular PES fixed at s=0, 0.25, 1. The !=0 should converge to a high regret according to the min in the plane they are in, the =0 and env var should kee[p improving
+
 
 import OPTutils
 import scipy as sp
@@ -44,7 +43,7 @@ plane025 = planemin(0.25)
 plane05 = planemin(0.5)
 plane001 = planemin(0.01)
 plane10 = planemin(1.)
-nreps=12
+nreps=2
 bd=40
 
 kindex = GPdc.MAT52CS

@@ -165,6 +165,7 @@ int GP::infer_m(int Ns, double* Xs, int* Ds, double* R){
 	return 0;
 }
 int GP::infer_m_partial(int kp, double* hp, int Ns, double* Xs, int* Ds, double* R){
+    // infers the mean for each component of a kernel which is hte sum of input kernels.
     int tmpk = K;
     std::vector<double>tmpih = std::vector<double>(nhyp);
     for (int i=0; i<nhyp;i++){tmpih[i]=ih[i];}

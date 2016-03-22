@@ -28,6 +28,7 @@ def drawmins(G,n,lb,ub,SUPPORT=300,mode = [ESutils.SUPPORT_SLICELCB],SLICELCB_PA
         plt.plot(W[:,0],W[:,1],'g.')
         plt.draw()
     #draw in samples on the support
+    print "drawing mins from support"
     R = ESutils.draw_min(G,W,n)
     #plt.show()
     return R
@@ -161,7 +162,7 @@ def PESgain(g0,G1,Z,X,D,s):
     H = sp.zeros(len(D))
     [m0,v0] = g0.infer_diag_post(X,D)
     
-    
+    print X.shape
     for j in xrange(X.shape[0]):
         H[j]-= len(G1)*0.5*sp.log(2*sp.pi*sp.e*(v0[0,j]+s[j]))
         for i,g1 in enumerate(G1):
@@ -318,7 +319,7 @@ class PES_inplane:
         [xmin, ymin, ierror] = DIRECT.solve(directwrap,self.lb,self.ub,user_data=[], algmethod=1, volper=volper, logfilename='/dev/null')
         
         
-        if True:
+        if False:
             from matplotlib import pyplot as plt
             import time
             D = self.lb.size

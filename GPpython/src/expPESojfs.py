@@ -1,9 +1,8 @@
 #!/usr/bin/env python2
 #encoding: UTF-8
 
-# To change this license header, choose License Headers in Project Properties.
-# To change this template file, choose Tools | Templates
-# and open the template in the editor.
+# Looking at how the min in a plane moves as I move the plane along hte 3rd axis
+
 import scipy as sp
 from scipy import linalg as spl
 from matplotlib import pyplot as plt

@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 #encoding: UTF-8
 
-# Having a look at how noise affects convergence when using rosenbock
+# for EI looking at the difference between the posterior min point and the
 
 
 import scipy as sp

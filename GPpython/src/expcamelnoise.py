@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 #encoding: UTF-8
 
-# Having a look at how noise affects convergence when using rosenbock
+# Comparing var fid PES to fixed PES and EI on branin for various fixed step sizes. cost/noise fixed at (1e-6)/s)**0.2
 
 
 import scipy as sp
@@ -25,7 +25,7 @@ prior = sp.array([0.]+[-1.]*d)
 sprior = sp.array([1.]*(d+1))
 kernel = [kindex,prior,sprior]
 nreps = 8
-bd = 40
+bd = 15
 slist = [1e-4,1e-6,1e-8]
 f,a = plt.subplots(3)
 
