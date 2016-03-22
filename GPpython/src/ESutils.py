@@ -187,8 +187,14 @@ def draw_min(g,support,n):
     Z = g.draw_post(support, [[sp.NaN]]*support.shape[0],n)
     
     R = sp.empty([Z.shape[0],support.shape[1]])
+    args = []
     for i in xrange(Z.shape[0]):
-        R[i,:] = support[sp.argmin(Z[i,:]),:]
+        a = sp.argmin(Z[i,:])
+        args.append(a)
+        R[i,:] = support[a,:]
+    from itertools import groupby
+    amins = [len(list(group)) for key, group in groupby(sorted(args))]
+    print "In drawmin with {} support drew {} unique mins. Most freqent min chosen {}%".format(support.shape[0],len(amins),100.*max(amins)/float(n))
     return R
 
 #ub and lb are still for the full space but the values in the chosen axis do not determine the outcome
