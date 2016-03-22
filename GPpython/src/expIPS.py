@@ -51,7 +51,7 @@ prior = sp.array([0.]+[-1.]*(d+1)+[-2.])
 sprior = sp.array([1.]*(d+2)+[2.])
 kernel = [kindex,prior,sprior]
 
-names = ["../cache/IPS/PESIPS_"+str(dcc)+"_"+str(fls)+"_"+str(seed)+"_"+str(i)+".p" for i in xrange(nreps)]
+names = ["../cache/IPS_/PESIPS_"+str(dcc)+"_"+str(fls)+"_"+str(seed)+"_"+str(i)+".p" for i in xrange(nreps)]
 results = search.multiPESIPS(ojf,lb,ub,kernel,bd,names)
 
 f,a = plt.subplots(2)
@@ -102,7 +102,7 @@ kernela = [kindex,priora,spriora]
 for i,xs in enumerate(subset):
     def ojfa(x,s,d,override=False):
         return ojf(sp.hstack([[xs],x.flatten()]),s,d,override=override)
-    names = ["../cache/IPS/PESIS_"+str(xs)+"_"+str(dcc)+"_"+str(fls)+"_"+str(seed)+"_"+str(k)+".p" for k in xrange(nreps)]
+    names = ["../cache/IPS_/PESIS_"+str(xs)+"_"+str(dcc)+"_"+str(fls)+"_"+str(seed)+"_"+str(k)+".p" for k in xrange(nreps)]
     results = search.multiPESIS(ojfa,lb,ub,kernela,bd,names)
     Rg = sp.vstack([sp.log10(sp.array([ojf(sp.hstack([0.,r[4][j,:]]) ,0.,[sp.NaN],override=True)[0] for j in xrange(r[4].shape[0])])-ymin) for r in results])
     mr = sp.mean(Rg,axis=0)

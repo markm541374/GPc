@@ -11,8 +11,8 @@ import OPTutils
 import search
 import os
 import pickle
-
-
+print 'start'
+print 'start'
 d=2
 lb = sp.array([[-1.]*d])
 ub = sp.array([[1.]*d])
@@ -30,7 +30,9 @@ kernel = [kindex,prior,sprior]
 nreps = 4
 bd = 15
 slist = [1e-5,1e-7]
+print 'start'
 f,a = plt.subplots(3)
+import os
 
 for s in slist:
     
@@ -38,7 +40,7 @@ for s in slist:
     results = search.multiMLEFS(ojf,lb,ub,kernel,s,bd,names)
     yr = [r[11].flatten() for r in results]
     C = results[0][5]
-    
+    print 'start'
     names = ["../cache/braninnoise/PESFS_"+str(int(100*sp.log10(s)))+"_"+str(pwr)+"_"+str(i)+".p" for i in xrange(nreps)]
     results = search.multiPESFS(ojf,lb,ub,kernel,s,bd,names)
     zr = [r[11].flatten() for r in results]
@@ -65,7 +67,7 @@ for s in slist:
     
     
     
-    
+    print 'start'
     f.savefig("tmp.png")
     
 
