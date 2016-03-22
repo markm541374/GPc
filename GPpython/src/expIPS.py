@@ -44,7 +44,7 @@ plane05 = planemin(0.5)
 plane001 = planemin(0.01)
 plane10 = planemin(1.)
 nreps=2
-bd=40
+bd=25
 
 kindex = GPdc.MAT52CS
 prior = sp.array([0.]+[-1.]*(d+1)+[-2.])

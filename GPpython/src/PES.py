@@ -162,7 +162,7 @@ def PESgain(g0,G1,Z,X,D,s):
     H = sp.zeros(len(D))
     [m0,v0] = g0.infer_diag_post(X,D)
     
-    print X.shape
+    #print X.shape
     for j in xrange(X.shape[0]):
         H[j]-= len(G1)*0.5*sp.log(2*sp.pi*sp.e*(v0[0,j]+s[j]))
         for i,g1 in enumerate(G1):

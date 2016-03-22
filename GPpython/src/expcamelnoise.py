@@ -79,15 +79,13 @@ Cz = [[sum(r[5][:j]) for j in xrange(len(r[5]))] for r in results]
 [a[1].plot(r[5],'r') for r in results]
     #a[2].plot(sp.array([sum(C2[:j]) for j in xrange(len(C2))]).flatten(),(sp.log(Yreg)).flatten(),'ro-')
 
-[sup,m,sd]=OPTutils.bounds(Cz,Rz)
-a[2].fill_between(sup.flatten(),(m-sd).flatten(),(m+sd).flatten(),facecolor='salmon',edgecolor='salmon',alpha=0.5)
-a[2].plot(sup,m.flatten(),'darkred')
-
+for i in xrange(nreps):
+    a[2].plot(Cz[i],Rz[i],'r')
 
 
 
 sx = sp.logspace(0,-8,100)
 cx = map(cfn,sx)
 a[0].loglog(sx,cx)
-f.savefig("tmp.png")
+f.savefig("../figs/braninnoise.png")
 plt.show()
