@@ -1,1 +1,7 @@
 *.pyc
+/nbproject/
+/build/
+/GPpython/figcache_/
+/GPpython/figcache/
+/GPpython/nbproject/
+*dropbox*
