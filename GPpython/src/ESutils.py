@@ -31,6 +31,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
             X[:,i] *= ub[i]-lb[i]
             X[:,i] += lb[i]
     elif method==SUPPORT_LAPAPR:
+        print "Drawing support using lapapr:"
         #start with 4 times as many points as needed
         #print 'a'
         para = int(para)
@@ -97,8 +98,11 @@ def draw_support(g, lb, ub, n, method, para=1.):
             cls.append(ls)
         #print 'g'
         X=mnv.rvs(size=n,mean=[0.]*d)
+        if d==1:
+            X.resize([n,1])
         neach = int(n/len(unq))
         for i in xrange(len(unq)):
+            
             for j in xrange(d):
                 X[i*neach:(i+1)*neach,j]*=cls[i][j]
                 X[i*neach:(i+1)*neach,j]+=unq[i][j]
@@ -127,6 +131,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
                 try:
                     return -g.infer_LCB_post(sp.array(x),[[sp.NaN]],para)[0,0]
                 except:
+                    g.infer_LCB_post(sp.array(x),[[sp.NaN]],para)[0,0]
                     g.printc()
                     raise
             else:
@@ -142,6 +147,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
                     #print ei
                     return sp.log(ei)
                 except:
+                    #ei=g.infer_EI(sp.array(x),[[sp.NaN]])[0,0]
                     g.printc()
                     raise
             else:
@@ -197,78 +203,41 @@ def draw_min(g,support,n):
     print "In drawmin with {} support drew {} unique mins. Most freqent min chosen {}%".format(support.shape[0],len(amins),100.*max(amins)/float(n))
     return R
 
+#fake gp class that 9looks like a d-1 gp becuase an extra vaue is added before callind
+class gpfake():
+    def __init__(self,g,axis,value):
+        self.g=g
+        self.D = g.D-1
+        self.axis=axis
+        self.value=value
+        return
+    
+    def augx(self,x):
+        return sp.hstack([x[:self.axis],sp.array([self.value]*x.shape[0]).T,x[self.axis:]])
+    
+    def infer_m_post(self,x,d):
+        return self.g.infer_m_post(self.augx(x),d)
+    
+    def infer_diag_post(self,x,d):
+        return self.g.infer_diag_post(self.augx(x),d)
+    
+    def infer_EI(self,x,d):
+        return self.g.infer_EI(self.augx(x),d)
+    
+    def infer_LCB_post(self,x,d,p):
+        return self.g.infer_LCB_post(self.augx(x),d,p)
+    
 #ub and lb are still for the full space but the values in the chosen axis do not determine the outcome
 def draw_support_inplane(g,lb,ub,n,method,axis,value,para=1.):
-    lb = lb.copy()
-    ub = ub.copy()
-    lb[axis]=value-1.
-    ub[axis]=value+1.
-    d = g.D
-    if method==SUPPORT_UNIFORM:
-        #still draws in the full space then overwrites in the fixed axis
-        print "Drawing support using uniform:"
-        X=sp.random.uniform(size=[n,g.D])
-        for i in xrange(g.D):
-            X[:,i] *= ub[i]-lb[i]
-            X[:,i] += lb[i]
-        X[:,axis] *= 0.
-        X[:,axis] += value
-        
-        return X
-    elif method==SUPPORT_SLICEEI:
-        def f(x):
-            y = sp.hstack([x[:axis],value,x[axis:]])
-            if all(y>lb) and all(y<ub):
-                return g.infer_EI_post(sp.array(y),[[sp.NaN]])[0,0]
-            else:
-                return -1e99
-        print "Drawing support using slice sample over LCB:"
-        lb_red = sp.hstack([lb[:axis],lb[axis+1:]])
-        ub_red = sp.hstack([ub[:axis],ub[axis+1:]])
-        X = slice.slice_sample(f,0.5*(ub_red+lb_red),n,0.1*(ub_red-lb_red))
-        return sp.hstack([X[:,:axis],sp.ones([n,1])*value,X[:,axis:]])
-    elif method==SUPPORT_SLICELCB:
-        def f(x):
-            y = sp.hstack([x[:axis],value,x[axis:]])
-            
-            #print y.shape
-            if all(y.flatten()>lb) and all(y.flatten()<ub):
-                y.reshape([1,d])
-                r=-g.infer_LCB_post(y,[[sp.NaN]],para)[0,0]
-                #print r
-                return r
-            else:
-                return -1e99
-        print "Drawing support using slice sample over LCB:"
-        lb_red = sp.hstack([lb[:axis],lb[axis+1:]])
-        ub_red = sp.hstack([ub[:axis],ub[axis+1:]])
-        X = slice.slice_sample(f,0.5*(ub_red+lb_red),n,0.1*(ub_red-lb_red))
-        return sp.hstack([X[:,:axis],sp.ones([n,1])*value,X[:,axis:]])
-    
-    elif method==SUPPORT_SLICEPM:
-        def f(x):
-            y = sp.hstack([x[:axis],value,x[axis:]])
-            if all(y.flatten()>lb) and all(y.flatten()<ub):
-                y.reshape([1,d])
-                [m,v] = g.infer_diag_post(sp.vstack([y]*d),[[i] for i in xrange(d)])
-                p = 0.
-                for i in xrange(d):
-                    p+= -0.5*(m[0,i]**2)/v[0,i]
-                ym = g.infer_m_post(sp.array(x),[[sp.NaN]])[0,0]
-                if not sp.isfinite(p):
-                    print [m,V,p]
-                    #raise ValueError
-                return -10*ym+0.01*p
-            else:
-                return -1e99
-        print "Drawing support using slice sample over PM:"
-        lb_red = sp.hstack([lb[:axis],lb[axis+1:]])
-        ub_red = sp.hstack([ub[:axis],ub[axis+1:]])
-        X = slice.slice_sample(f,0.5*(ub_red+lb_red),n,0.1*(ub_red-lb_red))
-        return sp.hstack([X[:,:axis],sp.ones([n,1])*value,X[:,axis:]])
+    if (type(g) is int):
+        gf = g-1
     else:
-        raise RuntimeError("draw_support method invalid")
-    return -1
+        gf = gpfake(g,axis,value)
+    lb_red = sp.hstack([lb[:axis],lb[axis+1:]])
+    ub_red = sp.hstack([ub[:axis],ub[axis+1:]])
+    X = draw_support(gf,lb_red,ub_red,n,method,para=para)
+    return sp.hstack([X[:,:axis],sp.ones([n,1])*value,X[:,axis:]])
+    
 
 def plot_gp(g,axis,x,d):
     [m,v] = g.infer_diag(x,d)
