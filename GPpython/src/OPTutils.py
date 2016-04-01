@@ -149,8 +149,8 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls,cfn):
     #axis = 0 value = sl
     #d dimensional objective +1 for s
     nt=25
-    print sp.hstack([sp.array([[sl]]),lb])
-    print sp.hstack([sp.array([[su]]),ub])
+    #print sp.hstack([sp.array([[sl]]),lb])
+    #print sp.hstack([sp.array([[su]]),ub])
     [X,Y,S,D] = ESutils.gen_dataset(nt,d+1,sp.hstack([sp.array([[sl]]),lb]).flatten(),sp.hstack([sp.array([[su]]),ub]).flatten(),GPdc.SQUEXP,sp.array([1.5]+[sls]+[0.30]*d))
     G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,d+1,sp.array([1.5]+[sls]+[0.30]*d)))
     def obj(x,s,d,override=False):
@@ -168,7 +168,7 @@ def gensquexpIPdraw(d,lb,ub,sl,su,sfn,sls,cfn):
     lb2 = xmin0-sp.ones(d)*1e-4
     ub2 = xmin0+sp.ones(d)*1e-4
     [xmin,ymin,ierror] = DIRECT.solve(dirwrap,lb2,ub2,user_data=[], algmethod=1, maxf=89000, logfilename='/dev/null')
-    print "RRRRR"+str([xmin0,xmin,ymin0,ymin,xmin0-xmin,ymin0-ymin])
+    #print "RRRRR"+str([xmin0,xmin,ymin0,ymin,xmin0-xmin,ymin0-ymin])
     return [obj,xmin,ymin]
 
 
@@ -229,10 +229,10 @@ class opt(object):
         return self.run_search_random()
     
     def run_search_random(self):
-        print self.d
+        #print self.d
         
-        print self.ub
-        print self.lb
+        #print self.ub
+        #print self.lb
         
         xnext = sp.random.uniform(size=self.d)*(self.ub-self.lb)+self.lb
         snext = self.sdefault

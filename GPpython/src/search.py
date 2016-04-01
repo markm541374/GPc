@@ -54,7 +54,7 @@ def multiPESFS(ojf,lb,ub,ki,s,b,fnames):
     return p.map(f,fnames)
         
 def PESFS(ojf,lb,ub,ki,s,b,fname):
-    
+    overridemaxsteps = 200
     sp.random.seed(int(os.urandom(4).encode('hex'), 16))
     para = dict()
     para['kindex'] = ki[0]
@@ -83,7 +83,7 @@ def PESFS(ojf,lb,ub,ki,s,b,fname):
         print "used {0} of {1} eval budget".format(sum(OE.C),b)
         state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
-        while sum(OE.C)<b:
+        while sum(OE.C)<b and len(OE.C)<overridemaxsteps:
             print "used {0} of {1} eval budget".format(sum(OE.C),b)
             OE.step()
         state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
@@ -105,11 +105,11 @@ def PESIS(ojf,lb,ub,ki,b,fname):
     para['s'] = -1.
     para['ninit'] = 10
     para['volper'] = 1e-6
-    para['DH_SAMPLES'] = 16
-    para['DM_SAMPLES'] = 16
-    para['DM_SUPPORT'] = 4000
+    para['DH_SAMPLES'] = 12
+    para['DM_SAMPLES'] = 12
+    para['DM_SUPPORT'] = 1200
     para['DM_SLICELCBPARA'] = 1.
-    para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
+    para['SUPPORT_MODE'] = [ESutils.SUPPORT_LAPAPR]
     if os.path.exists(fname):
         print "starting from "+str(fname)
         OE = OPTutils.PESIS(ojf,lb,ub,para,initstate=pickle.load(open(fname,'rb')))
@@ -125,6 +125,7 @@ def PESIS(ojf,lb,ub,ki,b,fname):
         state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
         while sum(OE.C)<b:
+            print "used {0} of {1} eval budget".format(sum(OE.C),b)
             OE.step()
         state = [OE.X,OE.Y,OE.S,OE.D,OE.R,OE.C,OE.T,OE.Tr,OE.Ymin,OE.Xmin,OE.Yreg, OE.Rreg]
         pickle.dump(state,open(fname,'wb'))
@@ -139,6 +140,7 @@ def multiPESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fnames):
     return p.map(f,fnames)
         
 def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fname):
+    overridemaxsteps = 200
     sp.random.seed(int(os.urandom(4).encode('hex'), 16))
     para = dict()
     para['kindex'] = ki[0]
@@ -147,11 +149,11 @@ def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fname):
     para['s'] = s
     para['ninit'] = 10
     para['volper'] = 1e-6
-    para['DH_SAMPLES'] = 16
-    para['DM_SAMPLES'] = 16
-    para['DM_SUPPORT'] = 4000
+    para['DH_SAMPLES'] = 12
+    para['DM_SAMPLES'] = 12
+    para['DM_SUPPORT'] = 1200
     para['DM_SLICELCBPARA'] = 1.
-    para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
+    para['SUPPORT_MODE'] = [ESutils.SUPPORT_LAPAPR]
     para['cfn'] = cfn
     para['logsl'] = lsl
     para['logsu'] = lsu
@@ -173,7 +175,7 @@ def PESVS(ojf,lb,ub,ki,s,b,cfn,lsl,lsu,fname):
         state = [OE.X[:k,:],OE.Y[:k,:],OE.S[:k,:],OE.D[:k],OE.R[:k,:],OE.C[:k],OE.T[:k],OE.Tr[:k],OE.Ymin[:k],OE.Xmin[:k,:],OE.Yreg[:k,:], OE.Rreg[:k,:]]
     else:
         pbar = tqdm(total=(b-sum(OE.C)))
-        while sum(OE.C)<b:
+        while sum(OE.C)<b and len(OE.C)<overridemaxsteps:
             print "used {0} of {1} eval budget".format(sum(OE.C),b)
             pbar.update(OE.C[-1])
             OE.step()
@@ -185,7 +187,7 @@ def multiPESIPS(ojf,lb,ub,ki,b,fnames):
     def f(fn):
         return PESIPS(ojf,lb,ub,ki,b,fn)
     p = Pool(nproc)
-    return map(f,fnames)
+    return p.map(f,fnames)
 
 def PESIPS(ojf,lb,ub,ki,b,fname):
     sp.random.seed(int(os.urandom(4).encode('hex'), 16))
@@ -200,7 +202,7 @@ def PESIPS(ojf,lb,ub,ki,b,fname):
     para['DM_SAMPLES'] = 12
     para['DM_SUPPORT'] = 1200
     para['DM_SLICELCBPARA'] = 1.
-    para['SUPPORT_MODE'] = [ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEPM]
+    para['SUPPORT_MODE'] = [ESutils.SUPPORT_LAPAPR]#[ESutils.SUPPORT_SLICELCB,ESutils.SUPPORT_SLICEEI]
     para['sl'] = 0.
     para['su'] = 1.
     para['s'] = 0.

@@ -43,8 +43,8 @@ plane025 = planemin(0.25)
 plane05 = planemin(0.5)
 plane001 = planemin(0.01)
 plane10 = planemin(1.)
-nreps=2
-bd=25
+nreps=6
+bd=35
 
 kindex = GPdc.MAT52CS
 prior = sp.array([0.]+[-1.]*(d+1)+[-2.])
@@ -69,16 +69,16 @@ for r in results:
     #a[0].plot(r[0][:,0].flatten(),'b')
     
     #a[0].plot(r[5],'r')
-    a[1].plot(sp.log10(r[11].flatten()-ymin),'b')
+    a[1].plot((r[11].flatten()-ymin),'b')
     
-    a[0].plot([sum(r[5][:j]) for j in xrange(len(r[5]))],sp.log10(r[11].flatten()-ymin),'b')
+    a[0].plot([sum(r[5][:j]) for j in xrange(len(r[5]))],(r[11].flatten()-ymin),'b')
    
-a[1].set_ylabel("log10 regret")
-a[0].set_ylabel("log10 regret")
+a[1].set_ylabel(" regret")
+a[0].set_ylabel(" regret")
 a[0].set_xlabel("cost")
 a[1].set_xlabel("steps")
-a[1].set_xscale("log")
-a[0].set_xscale("log")
+#a[1].set_xscale("log")
+#a[0].set_xscale("log")
 subset = [0.,0.25,1.]
 c = ['g','r','c']
 
@@ -104,7 +104,7 @@ for i,xs in enumerate(subset):
         return ojf(sp.hstack([[xs],x.flatten()]),s,d,override=override)
     names = ["../cache/IPS_/PESIS_"+str(xs)+"_"+str(dcc)+"_"+str(fls)+"_"+str(seed)+"_"+str(k)+".p" for k in xrange(nreps)]
     results = search.multiPESIS(ojfa,lb,ub,kernela,bd,names)
-    Rg = sp.vstack([sp.log10(sp.array([ojf(sp.hstack([0.,r[4][j,:]]) ,0.,[sp.NaN],override=True)[0] for j in xrange(r[4].shape[0])])-ymin) for r in results])
+    Rg = sp.vstack([(sp.array([ojf(sp.hstack([0.,r[4][j,:]]) ,0.,[sp.NaN],override=True)[0] for j in xrange(r[4].shape[0])])-ymin) for r in results])
     mr = sp.mean(Rg,axis=0)
     sr = sp.sqrt(sp.var(Rg,axis=0))
     cacc = [sum(r[5][:j]) for j in xrange(len(r[5]))]
@@ -113,7 +113,7 @@ for i,xs in enumerate(subset):
     for r in results:
         #a[0].plot(r[5],color=c[i])
         z=sp.array([ojf(sp.hstack([0.,r[4][j,:]]) ,0.,[sp.NaN],override=True)[0] for j in xrange(r[4].shape[0])])
-        a[1].plot(sp.log10(z-ymin),color=c[i])
+        a[1].plot((z-ymin),color=c[i])
         
         #a[2].plot([sum(r[5][:j]) for j in xrange(len(r[5]))],sp.log10(z-ymin),color=c[i])
     

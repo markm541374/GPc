@@ -19,11 +19,13 @@ SUPPORT_SLICEPM = 3
 SUPPORT_LAPAPR = 4
 #drawing points between lb and ub using specified method
 def draw_support(g, lb, ub, n, method, para=1.):
+    
     #para is the std confidence bound
     if (type(g) is int):
         d=g
     else:
         d=g.D
+    #print 'Draw support input GP with d={} lb {} ub {}'.format(d,lb,ub) 
     if method==SUPPORT_UNIFORM:
         print "Drawing support using uniform:"
         X=sp.random.uniform(size=[n,d])
@@ -62,12 +64,15 @@ def draw_support(g, lb, ub, n, method, para=1.):
                 bound=1e3*(r-1)
             return y+bound
         for i in xrange(para):
-            res = spomin(f,Xst[i,:],method='Nelder-Mead',options={'xtol':0.0001})
+            res = spomin(f,Xst[i,:],method='Nelder-Mead',options={'xtol':0.0001,'maxfev':2000})
             if not res.success:
                 class MJMError(Exception):
                     pass
-                print res.message
-                raise MJMError('failed in opt in support lapapr')
+                print res
+                if not res.status==2:
+                    raise MJMError('failed in opt in support lapapr')
+                else:
+                    print "warn, lapapr opt did not fully vconverge "
             Xst[i+int(para),:] = res.x
             
         

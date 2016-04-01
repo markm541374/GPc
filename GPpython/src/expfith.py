@@ -63,6 +63,8 @@ def ojfa(x,s,d,override=False):
     t0=time.clock()
     sub = x.flatten()[0]
     npts = int((1.-0.8*sub)*n)
+    if override:
+        npts=n
     print "subsampling {0} of {1} at x[0]={2}".format(npts,n,x.flatten()[0])
     ps = npr.choice(range(n),size=npts, replace=False)
     Xd = sp.vstack([X[i] for i in ps])
@@ -98,29 +100,35 @@ kernel = [kindex,prior,sprior]
 
 lb = sp.array([[0.,-2.]])
 ub = sp.array([[2.,0.]])
-budget = 3.
+budget = 7
 fname = '../cache/ippesfith2.p'
 state = search.PESIPS(ojfa,lb,ub,kernel,budget,fname)
 
 
-a[2].plot(state[1],'b')
-a[2].plot(state[10],'r')
+#a[2].plot(state[1],'b')
+#a[2].plot(state[10],'r')
 a[2].plot(state[11],'g')
 
+Cacc = [sum(state[5][:i]) for i in xrange(len(state[5]))]
+#a[1].plot(Cacc,state[1],'b')
+#a[1].plot(Cacc,state[10],'r')
+a[1].plot(Cacc,state[11],'g')
+
+
 a[3].plot(state[5])
-print state[0]
-print state[1]
-print state[4]
+
 hr = state[9][-1,:].flatten()[1:]
 hyp = [10**i for i in hr.flatten()]
+
+
 
 print "found: {0}".format(hyp)
 t0=time.clock()
 g = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.MAT52,1,sp.array(hyp)))
 t1=time.clock()
 print 'training time {0:e}'.format(t1-t0)
-print sp.log(-g.llk())+1.
-print sp.log(-GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.MAT52,1,sp.array([10.,0.1]))).llk())+1
+print g.llk()
+print GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.MAT52,1,sp.array([10.,0.1]))).llk()
 ns = 4000
 sup = sp.linspace(dlb,dub+8.,ns)
 
@@ -143,5 +151,15 @@ a[0].plot(sup,m.flatten(),'b')
 
 
 
+d=2
+kindex = GPdc.MAT52
+prior = sp.array([0.]+[-1.]*d)
+sprior = sp.array([1.]+[1.]*d)
+kernel = [kindex,prior,sprior]
+state2 = search.PESIS(ojf,lb,ub,kernel,12,fname = '../cache/pesfith.p') 
+a[2].plot(state2[11],'r')
 
+Cacc2 = [sum(state2[5][:i]) for i in xrange(len(state2[5]))]
+
+a[1].plot(Cacc2,state2[11],'r')
 plt.show()
