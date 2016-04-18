@@ -23,13 +23,18 @@ def drawmins(G,n,lb,ub,SUPPORT=300,mode = [ESutils.SUPPORT_SLICELCB],SLICELCB_PA
     
     W = sp.vstack([ESutils.draw_support(G, lb,ub,SUPPORT/len(mode),m, para = SLICELCB_PARA) for m in mode])
     if False:
-        
+        print 'how did I get here'
         plt.figure()
         plt.plot(W[:,0],W[:,1],'g.')
-        plt.draw()
+        plt.show()
     #draw in samples on the support
     print "drawing mins from support"
     R = ESutils.draw_min(G,W,n)
+    if False:
+        
+        plt.figure()
+        plt.plot(R[:,0],R[:,1],'r.')
+        plt.show()
     #plt.show()
     return R
 

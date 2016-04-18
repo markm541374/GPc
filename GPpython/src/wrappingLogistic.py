@@ -290,9 +290,9 @@ def logistic(params, **kwargs):
 #                        (epoch, minibatch_index+1, n_train_batches,test_score*100.))
                     print ('     epoch %i, minibatch %i/%i') % \
                           (epoch, minibatch_index+1, n_train_batches)
-            if patience <= iter :
-                done_looping = True
-                break
+            #if patience <= iter :
+            #    done_looping = True
+            #    break
 
     end_time = time.clock()
 #    print(('Optimization complete with best validation score of %f %%,'
@@ -322,16 +322,16 @@ def main(params_, **kwargs):
 
     fold = kwargs['fold']
     folds = kwargs['folds']
-
+    downsize=kwargs['downsize']
     if folds == 1:
-        train = convex_inputs[:50000]
+        train = convex_inputs[:int(50000*downsize)]
         valid = convex_inputs[50000:60000]
         test = convex_test
-        train_targets = convex_labels[:50000]
+        train_targets = convex_labels[:int(50000*downsize)]
         valid_targets = convex_labels[50000:60000]
         test_targets = convex_test_labels
     elif folds > 1:
-        cv_data = numpy.copy(convex_inputs[:60000])
+        cv_data = numpy.copy(convex_inputs[60000])
         train, valid = data_util.prepare_cv_for_fold(cv_data, fold, folds)
         cv_labels = numpy.copy(convex_labels[:60000])
         train_targets, valid_targets = data_util.prepare_cv_for_fold(cv_labels,

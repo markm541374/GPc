@@ -59,23 +59,31 @@ aot = a[0].twinx()
 Xa = [sp.array(r[0][:,0]) for r in results]
 #Ca = [[sum(r[5][:j]) for j in xrange(len(r[5]))] for r in results]
 
-#Rg = [(r[11].flatten()-ymin) for r in results]
+x=[]
+y=[]
+w=[]
 
-#[sup,mxa,mxs]=OPTutils.bounds(Ca,Xa)
-#a[2].fill_between(sup.flatten(),(mxa-mxs).flatten(),(mxa+mxs).flatten(),facecolor='b',edgecolor='b')
-#a[2].plot(sup.flatten(),mxa.flatten(),'b')
-#a[0].set_ylabel("cost")
 for r in results:
     #a[0].plot(r[0][:,0].flatten(),'b')
     
     #a[0].plot(r[5],'r')
-    a[1].plot((r[11].flatten()-ymin),'b')
-    
-    a[0].plot([sum(r[5][:j]) for j in xrange(len(r[5]))],(r[11].flatten()-ymin),'b')
-   
-a[1].set_ylabel(" regret")
-a[0].set_ylabel(" regret")
-a[0].set_xlabel("cost")
+    #a[1].plot((r[11].flatten()-ymin),'b')
+    y.append(sp.array(sp.log(r[11].flatten()-ymin)))
+    x.append(range(len(y[-1])))
+    #a[0].plot([sum(r[5][:j]) for j in xrange(len(r[5]))],(r[11].flatten()-ymin),'b')
+    w.append([sum(r[5][:j]) for j in xrange(len(r[5]))])
+
+X_,Y_,lb_,ub_ = OPTutils.mergelines(w,y)
+a[0].fill_between(X_,lb_,ub_,facecolor='lightblue',edgecolor='lightblue',alpha=0.5)
+a[0].plot(X_,Y_,'b')
+
+X_,Y_,lb_,ub_ = OPTutils.mergelines(x,y)
+a[1].fill_between(X_,lb_,ub_,facecolor='lightblue',edgecolor='lightblue',alpha=0.5)
+a[1].plot(X_,Y_,'b')
+
+a[1].set_ylabel("log10 regret")
+a[0].set_ylabel("log10 regret")
+a[0].set_xlabel("accumulated cost")
 a[1].set_xlabel("steps")
 #a[1].set_xscale("log")
 #a[0].set_xscale("log")
@@ -104,19 +112,27 @@ for i,xs in enumerate(subset):
         return ojf(sp.hstack([[xs],x.flatten()]),s,d,override=override)
     names = ["../cache/IPS_/PESIS_"+str(xs)+"_"+str(dcc)+"_"+str(fls)+"_"+str(seed)+"_"+str(k)+".p" for k in xrange(nreps)]
     results = search.multiPESIS(ojfa,lb,ub,kernela,bd,names)
-    Rg = sp.vstack([(sp.array([ojf(sp.hstack([0.,r[4][j,:]]) ,0.,[sp.NaN],override=True)[0] for j in xrange(r[4].shape[0])])-ymin) for r in results])
+    Rg = sp.log10(sp.vstack([(sp.array([ojf(sp.hstack([0.,r[4][j,:]]) ,0.,[sp.NaN],override=True)[0] for j in xrange(r[4].shape[0])])-ymin) for r in results]))
     mr = sp.mean(Rg,axis=0)
     sr = sp.sqrt(sp.var(Rg,axis=0))
     cacc = [sum(r[5][:j]) for j in xrange(len(r[5]))]
     a[0].fill_between(cacc,(mr-sr).flatten(),(mr+sr).flatten(),facecolor=c[i],edgecolor=c[i],alpha=0.5)
     a[0].plot(cacc,mr.flatten(),color=c[i])
+    x=[]
+    y=[]
     for r in results:
         #a[0].plot(r[5],color=c[i])
         z=sp.array([ojf(sp.hstack([0.,r[4][j,:]]) ,0.,[sp.NaN],override=True)[0] for j in xrange(r[4].shape[0])])
-        a[1].plot((z-ymin),color=c[i])
+        #a[1].plot(sp.log10((z-ymin)),color=c[i])
+        y.append(sp.log10((z-ymin)))
+        x.append(range(len(y[-1])))
+    X_,Y_,lb_,ub_ = OPTutils.mergelines(x,y)
+    a[1].fill_between(X_,lb_,ub_,facecolor=c[i],edgecolor=c[i],alpha=0.5)
+    a[1].plot(X_,Y_,c[i])
         
         #a[2].plot([sum(r[5][:j]) for j in xrange(len(r[5]))],sp.log10(z-ymin),color=c[i])
-    
-#a[2].set_xscale('log')   
+a[1].set_xscale('log')
+a[0].set_xscale('log')  
+
 plt.savefig('../figs/expIPS.png')
 plt.show()

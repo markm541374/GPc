@@ -35,11 +35,11 @@ trueub = [10,1,2000,2000]
 def ojf(x,s,d,override=False):
     x.resize([1,x.size])
     xscale = [0.,0.,0.,0.]
-    for i in xrange(2):
+    for i in xrange(4):
         xscale[i] = truelb[i]+(x[0,i]+1.)*0.5*(trueub[i]-truelb[i])
-    t0 = time.time()
-    f = wrappingLogistic.main({'lrate':xscale[0],'l2_reg':xscale[1],'batchsize':20,'n_epochs':5},fold=1,folds=1)
-    t1 = time.time()
+    t0 = time.clock()
+    f = wrappingLogistic.main({'lrate':xscale[0],'l2_reg':xscale[1],'batchsize':xscale[2],'n_epochs':20},fold=1,folds=1)
+    t1 = time.clock()
     return [f,t1-t0]
 
 
@@ -49,7 +49,7 @@ prior = sp.array([0.]+[-1.]*d)
 sprior = sp.array([1.]*(d+1))
 kernel = [kindex,prior,sprior]
 nreps = 2
-bd = 10*60
+bd = 4*60
 slist = [1e-9]
 print 'start'
 f,a = plt.subplots(3)
@@ -57,26 +57,18 @@ import os
 
 for s in slist:
     
-    names = ["../cache/mnist/EIMLE_2mnist"+str(int(100*sp.log10(s)))+"_"+"_"+str(i)+".p" for i in xrange(nreps)]
+    names = ["../cache/mnist/EIMLE_4mnist"+str(int(100*sp.log10(s)))+"_"+"_"+str(i)+".p" for i in xrange(nreps)]
     results = search.multiMLEFS(ojf,lb,ub,kernel,s,bd,names)
-    yr = [r[10].flatten() for r in results]
+    yr = [r[11].flatten() for r in results]
     C = [r[5] for r in results]
     
 for i in xrange(nreps):
-    
     m = yr[i]
-    
-    
-    
-    
     a[2].plot([sum(C[i][:j]) for j in xrange(len(C[i]))],m.flatten(),'x-')
-    
     a[1].plot(C[i],'r')
 
 
-print r[10]
-print r[9]
-print r[8]
+print "reccomend: "+str([r[4][-1,:] for r in results])
 
 f.savefig("../figs/braninnoise.png")
 plt.show()

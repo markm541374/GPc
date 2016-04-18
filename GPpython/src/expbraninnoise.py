@@ -16,7 +16,7 @@ print 'start'
 d=2
 lb = sp.array([[-1.]*d])
 ub = sp.array([[1.]*d])
-pwr = 0.4
+pwr = 0.1
 def cfn(s):
     ##print s
     #print 'cfn'+str(((1e-6)/s)**pwr)
@@ -28,10 +28,12 @@ prior = sp.array([0.]+[-1.]*d)
 sprior = sp.array([1.]*(d+1))
 kernel = [kindex,prior,sprior]
 nreps = 4
-bd = 10.
+bd = 15.
 slist = [1e3,1e-3]
 print 'start'
-f,a = plt.subplots(3)
+f,a_ = plt.subplots(2)
+fnull,anull=plt.subplots(1)
+a = sp.hstack([anull,a_])
 import os
 tmp=[]
 fc = ['lightblue','lightgreen']
@@ -87,7 +89,16 @@ Rz = [sp.log10(sp.array(r[11])-braninmin).flatten() for r in results]
 Cz = [[sum(r[5][:j]) for j in xrange(len(r[5]))] for r in results]
 #for i in xrange(nreps):
 #    a[2].plot(Cz[i],Rz[i].flatten(),'rx-')
-[a[1].semilogy([1e-6/(c**(1./pwr)) for c in r[5]],'r') for r in results]
+#[a[1].semilogy([1e-6/(c**(1./pwr)) for c in r[5]],'cyan') for r in results]
+x=[]
+y=[]
+for r in results:
+    y.append(sp.array(sp.log10([1e-6/(c**(1./pwr)) for c in r[5]])))
+    print y
+    x.append(range(len(r[5])))
+X_,Y_,lb_,ub_ = OPTutils.mergelines(x,y)
+a[1].fill_between(X_,lb_,ub_,facecolor='lightcoral',edgecolor='lightcoral',alpha=0.5)
+a[1].plot(X_,Y_,'r')
     #a[2].plot(sp.array([sum(C2[:j]) for j in xrange(len(C2))]).flatten(),(sp.log(Yreg)).flatten(),'ro-')
 
 
@@ -131,5 +142,11 @@ print tmp
 sx = sp.logspace(0,-8,100)
 cx = map(cfn,sx)
 a[0].loglog(sx,cx)
+if pwr==0.4:
+    a[2].axis([0,0.5,-4,2])
+a[2].set_xlabel('accumulated evaluation cost')
+a[1].set_xlabel('steps')
+a[2].set_ylabel('log10 regret')
+a[1].set_ylabel('log10 observation variance')
 f.savefig("../figs/braninnoise.png")
 plt.show()

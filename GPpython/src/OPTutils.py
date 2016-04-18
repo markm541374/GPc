@@ -668,3 +668,28 @@ def bounds(Xs,Ys,ns=100):
     #plt.fill_between(sup.flatten(),(m-std).flatten(),(m+std).flatten(),facecolor='lightblue',edgecolor='lightblue',alpha=0.5)
     #a[1].plot(sup,m.flatten(),'b')
     return [sup,m,std]
+
+from scipy.interpolate import interp1d
+    
+def mergelines(x,y):
+    minx = max([min(i) for i in x])
+    maxx = min([max(i) for i in x])
+    fs = []
+    for i in xrange(len(x)):
+        #print [x[i].shape,y[i].shape]
+        
+        fs.append(interp1d(x[i],y[i]))
+    X = [i for i in sorted(sp.hstack([sp.array(j) for j in x])) if i<=maxx and i>=minx]
+    np = len(X)
+    X=sp.array(X)
+    Y=sp.empty(np)
+    ub=sp.empty(np)
+    lb=sp.empty(np)
+    for i in xrange(np):
+        q = [j(X[i]) for j in fs]
+        Y[i] = sp.mean(q)
+        v = sp.var(q)
+        ub[i] = Y[i]+2.*sp.sqrt(v)
+        lb[i] = Y[i]-2.*sp.sqrt(v)
+    
+    return X,Y,lb,ub

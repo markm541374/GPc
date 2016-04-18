@@ -47,6 +47,7 @@ def draw_support(g, lb, ub, n, method, para=1.):
         fs = sp.empty(para*over)
         for i in xrange(para*over):
             fs[i] = g.infer_m_post(Xsto[i,:],[[sp.NaN]])[0,0]
+        #print 'mean at random draws {}'.format(fs)
         Xst = sp.empty([2*para,d])
         #keep the lowest
         #print 'c'
@@ -61,7 +62,8 @@ def draw_support(g, lb, ub, n, method, para=1.):
             bound=0
             r = max(abs(x))
             if r>1:
-                bound=1e3*(r-1)
+                #print 'offedge {}'.format(x)
+                bound=(1e3*(r-1))**6
             return y+bound
         for i in xrange(para):
             res = spomin(f,Xst[i,:],method='Nelder-Mead',options={'xtol':0.0001,'maxfev':2000})
@@ -109,10 +111,10 @@ def draw_support(g, lb, ub, n, method, para=1.):
         for i in xrange(len(unq)):
             
             for j in xrange(d):
-                X[i*neach:(i+1)*neach,j]*=cls[i][j]
+                X[i*neach:(i+1)*neach,j]*=min(2.,cls[i][j])
                 X[i*neach:(i+1)*neach,j]+=unq[i][j]
             
-        
+        sp.clip(X,-1,1,out=X)
         if False:
             print 'inits'
             print Xst
