@@ -4,6 +4,7 @@
 # demo the derivatives for the GP lib
 
 import scipy as sp
+from scipy import linalg as spl
 from matplotlib import pyplot as plt
 import GPdc
 
@@ -23,9 +24,20 @@ a[0].plot([-0.25],[-0.2],'ro')
 a[1].plot([0.25],[2.5],'ro')
 a[2].plot([0.8],[50],'ro')
 
+k= GPdc.kernel(GPdc.SQUEXP,1,sp.array([0.5,0.2]))
+K = sp.empty([4,4])
+for i in xrange(4):
+    for j in xrange(i,4):
+        K[i,j] =K[j,i] = k(X[i,:],X[j,:],D[i],D[j])
+    K[i,i]+=1e-6
 
+    
 g = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,1,sp.array([0.5,0.2])))
+#g.printc()
+C= g.get_cho()
+print C
 
+print spl.cho_solve((C,True),sp.eye(4)).dot(K)
 for i,d in enumerate([[sp.NaN],[0],[0,0]]):
     m,v = g.infer_diag(sup,[d]*ns)
     vl = (m-sp.sqrt(v)).flatten()

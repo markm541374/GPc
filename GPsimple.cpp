@@ -107,8 +107,10 @@ public:
     int draw(int N, double* X, int* D, double*R, int m);
     int llk(double* R);
     int infer_m_partial(int kp, double* ihp, int Ns, double* Xs, int* Ds, double* R);
+    int get_cho(double* C);
     
 };
+
 
 GP::GP(int d, int n, int kindex){
 		D = d;
@@ -133,7 +135,14 @@ GP::GP(int d, int n, int kindex){
                 
                 
 	}
-
+int GP::get_cho(double* C){
+    for (int i=0; i<N; i++){
+        for (int j=0; j<N; j++){
+            C[i+N*j] = Kxx[i+N*j];
+        }
+    }
+    return 0;
+}
 int GP::llk(double* R){
 	R[0] = - 0.5*N*L2PI;
 	for (int i=0; i<N; i++){

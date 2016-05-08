@@ -158,6 +158,19 @@ int llk(int k, int s, double* R){
         }
 	return 0;
 }
+
+int get_cho(int k,int s,double* C){
+    if (SS[k]==0){
+		printf("trying to use deleted GP\n");
+		return -1;
+	};
+        //#pragma omp parallel for
+        for (int i=0; i<s; i++){
+            int n = SS[k+i]->N;
+            SS[k+i]->get_cho(&C[n*n*i]);
+        }
+    return 0;
+}
 int infer_full(int k, int s, int Ns,double* Xs, int* Ds, double* R){
 
 	if (SS[k]==0){

@@ -16,7 +16,7 @@ def multiMLEFS(ojf,lb,ub,ki,s,b,fnames):
     def f(fn):
         return MLEFS(ojf,lb,ub,ki,s,b,fn)
     p = Pool(nproc)
-    return p.map(f,fnames)
+    return map(f,fnames)
         
 def MLEFS(ojf,lb,ub,ki,s,b,fname):
     #use kernel ki and evaluate ojf with variance s at step for a budget b

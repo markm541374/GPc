@@ -38,7 +38,7 @@ def ojf(x,s,d,override=False):
     for i in xrange(4):
         xscale[i] = truelb[i]+(x[0,i]+1.)*0.5*(trueub[i]-truelb[i])
     t0 = time.clock()
-    f = wrappingLogistic.main({'lrate':xscale[0],'l2_reg':xscale[1],'batchsize':xscale[2],'n_epochs':20},fold=1,folds=1)
+    f = wrappingLogistic.main({'lrate':xscale[0],'l2_reg':xscale[1],'batchsize':xscale[2],'n_epochs':80},fold=1,folds=1,downsize=1)
     t1 = time.clock()
     return [f,t1-t0]
 
@@ -57,7 +57,7 @@ import os
 
 for s in slist:
     
-    names = ["../cache/mnist/EIMLE_4mnist"+str(int(100*sp.log10(s)))+"_"+"_"+str(i)+".p" for i in xrange(nreps)]
+    names = ["../cache/mnist/EIMLE_5mnist"+str(int(100*sp.log10(s)))+"_"+"_"+str(i)+".p" for i in xrange(nreps)]
     results = search.multiMLEFS(ojf,lb,ub,kernel,s,bd,names)
     yr = [r[11].flatten() for r in results]
     C = [r[5] for r in results]

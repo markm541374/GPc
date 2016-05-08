@@ -55,7 +55,7 @@ int mat52pptconv(double *h, int D, double* ih){
 //all are searched in log space
 int mat52pptsearchconv(double *h, int D, double* ih){
     
-    ih[0] = pow(10.,h[0]);mat52( sin2(2pix/p) )
+    ih[0] = pow(10.,h[0]);//mat52( sin2(2pix/p) )
     ih[1] = pow(10.,h[1]);
     ih[2] = pow(10.,h[2]);
     ih[3] = pow(10.,h[3]); 

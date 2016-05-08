@@ -59,7 +59,7 @@ class GPcore:
         self.Y_s=Y_s
         
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_s]
-        
+        #print self.get_cho()
         libGP.presolv(self.s,cint(self.size))
         
         return
@@ -74,7 +74,10 @@ class GPcore:
         print self.size
         libGP.ping(self.s, cint(self.size))
         return
-    
+    def get_cho(self):
+        C=sp.empty([self.n,self.n*self.size])
+        libGP.get_cho(self.s,cint(self.size),C.ctypes.data_as(ctpd))
+        return C
     def infer_m(self,X_i,D_i):
         ns=X_i.shape[0]
         D = [0 if sp.isnan(x[0]) else int(sum([8**i for i in x])) for x in D_i]

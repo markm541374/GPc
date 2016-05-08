@@ -32,4 +32,5 @@ int infer_LCB(int k, int s, int n, double* X, int* D, double p, double* R);
 int infer_EI(int k, int s, int n, double* X, int* D, double* R);
 int infer_lEI(int k, int s, int n, double* X, int* D, double* R);
 int infer_m_partial(int k, int kp, double* h, int Ns,double* Xs, int* Ds, double* R);
+int get_cho(int k,int s,double* C);
 #endif /* LIBGPD_H_ */

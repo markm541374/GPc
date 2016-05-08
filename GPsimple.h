@@ -58,6 +58,7 @@ public:
     int draw(int N, double* X, int* D, double*R, int m);
     int llk(double* R);
     int infer_m_partial(int kp, double* ihp, int Ns, double* Xs, int* Ds, double* R);
+    int get_cho(double* C);
 };
 #endif /* GPSIMPLE_H */
 
