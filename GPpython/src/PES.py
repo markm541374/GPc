@@ -8,6 +8,9 @@ import scipy as sp
 from scipy import stats as sps
 import DIRECT
 from matplotlib import pyplot as plt
+import logging
+
+logger = logging.getLogger(__name__)
 
 def makeG(X,Y,S,D,kindex,mprior,sprior,nh):
     #draw hyps based on plk
@@ -188,7 +191,11 @@ def Vadj(m,V):
     s = V[0,0]+V[1,1]-2*V[0,1]
     mu = m[0,1]-m[0,0]
     alpha = -mu/sp.sqrt(s) #sign difference for minimizing
-    beta = sp.exp(sps.norm.logpdf(alpha) - sps.norm.logcdf(alpha))
+    try:
+        beta = sp.exp(sps.norm.logpdf(alpha) - sps.norm.logcdf(alpha))
+    except:
+        logger.warn('Vadj: complex in PESgain, using beta=0\n alpha: {}\nmu: {}\ns: {}\nm: {}\nV: {}\n'.format(alpha,mu,s,m,V))
+        beta=0.
     #print [s,mu,alpha,beta]
     vadj = V[0,0]-beta*(beta+alpha)*(1./s)*(V[0, 0]-V[0, 1])**2
     return vadj
@@ -197,6 +204,9 @@ def Vadj(m,V):
 #basic PES class if search_pes is used. variable noise if search_acq is used
 class PES:
     def __init__(self,X,Y,S,D,lb,ub,kindex,mprior,sprior,DH_SAMPLES=8,DM_SAMPLES=8, DM_SUPPORT=400,DM_SLICELCBPARA=1.,mode=ESutils.SUPPORT_SLICELCB,noS=False):
+        
+        
+        
         print "PES init:"
         self.lb=lb
         self.ub=ub
