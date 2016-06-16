@@ -273,7 +273,10 @@ class PES:
             x = sp.array([Q[:-1]])
             s = 10**Q[-1]
             acq = PESgain(self.G,self.Ga,self.Z,x,dv,[s])
-            R = -acq/cfn(x,s)
+            try:
+                R = -acq/cfn(x,**{'s':s})
+            except TypeError:
+                R = -acq/cfn(x,s)
             return (R,0)
         
         [xmin, ymin, ierror] = DIRECT.solve(directwrap,sp.hstack([self.lb,logsl]),sp.hstack([self.ub,logsu]),user_data=[], algmethod=1, volper=volper, logfilename='/dev/null')
@@ -327,7 +330,11 @@ class PES_inplane:
             else:
                 s = sfn(x)
             acq = PESgain(self.G,self.Ga,self.Z,x,dv,[s])
-            R = -acq/cfn(x,s)
+            try:
+                #print x[0,1:],x[0,0]
+                R = -acq/cfn(x[0,1:],**{'xa':x[0,0]})
+            except TypeError:
+                R = -acq/cfn(x,s)
             return (R,0)
         #print self.lb
         #print self.ub

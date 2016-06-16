@@ -31,7 +31,8 @@ class optstate:
 
 
 class optimizer:
-    def __init__(self,dirpath,aqpara,aqfn,stoppara,stopfn,reccpara,reccfn,ojf,ojfchar):
+    def __init__(self,dirpath,aqpara,aqfn,stoppara,stopfn,reccpara,reccfn,ojf,ojfchar,checkrecc=False):
+        self.checkrecc=checkrecc
         self.dirpath = dirpath
         self.setaq(aqpara,aqfn)
         self.setstopcon(stoppara,stopfn)
@@ -65,8 +66,8 @@ class optimizer:
     
     def run(self):
         logger.info('startopt:')
-        lf = open(os.path.join(self.dirpath,'trace.csv'),'wb')
-        lf.write(''.join(['n, ']+['x'+str(i)+', ' for i in xrange(self.dx)]+['ev'+str(i)+', ' for i in xrange(self.dev)]+['y, c, ']+['rc'+str(i)+', ' for i in xrange(self.dx)]+['taq, tev, trc, realtime'])+'\n')
+        lf = open(os.path.join(self.dirpath,'trace.csv'),'wb',0)
+        lf.write(''.join(['n, ']+['x'+str(i)+', ' for i in xrange(self.dx)]+[i+', ' for i in self.aqpara['ev'].keys()]+['y, c, ']+['rx'+str(i)+', ' for i in xrange(self.dx)]+['truey at xrecc, taq, tev, trc, realtime'])+'\n')
         self.state = optstate()
         stepn=0
         while not self.stopfn(self.state,**self.stoppara):
@@ -78,16 +79,24 @@ class optimizer:
             t1 = time.time()
             logger.info("{} : {}    aqtime: {}\nevaluate:".format(x,ev,t1-t0))
             
-            y,c,ojaux  = self.ojf(x,ev)
+            y,c,ojaux  = self.ojf(x,**ev)
             t2 = time.time()
             self.state.update(x,ev,y,c)
             logger.info("{} : {}     evaltime: {}\nreccomend:".format(y,c,t2-t1))
             rx,reaux = self.reccfn(self.state,**self.reccpara)
             t3 = time.time()
+            
+            if self.checkrecc:
+                checky,checkc,checkojaux  = self.ojf(rx,**ev)
+            else:
+                checky=sp.NaN
+
+            
             logger.info("{}     recctime: {}\n".format(rx,t3-t2))
             
-            logstr = ''.join([str(stepn)+', ']+[str(xi)+', ' for xi in x]+[str(evi)+', ' for evi in ev]+[str(y)+', ']+[str(c)+', ']+[str(ri)+', ' for ri in rx]+[str(i)+', ' for i in [t1-t0,t2-t1,t3-t2]]+[time.strftime('%H:%M:%S  %d-%m-%y')])+'\n'
+            logstr = ''.join([str(stepn)+', ']+[str(xi)+', ' for xi in x]+[str(evi[1])+', ' for evi in ev.items()]+[str(y)+', ']+[str(c)+', ']+[str(ri)+', ' for ri in rx]+[str(checky)+',']+[str(i)+', ' for i in [t1-t0,t2-t1,t3-t2]]+[time.strftime('%H:%M:%S  %d-%m-%y')])+'\n'
             lf.write(logstr)
+            
             pobj = [x,ev,self.aqpersist,aqaux,y,c,ojaux,rx,reaux,t1-t0,t2-t1,t3-t2,time.strftime('%H:%M:%S  %d-%m-%y')]
             
             pickle.dump(pobj,open(os.path.join(self.dirpath,'step{}.p'.format(stepn)),'wb'))
@@ -105,8 +114,7 @@ def cstopfn(optstate,cmax = 1):
 
 
 
-def trivialojf(x,ev=None):
-    return sum([(xi-0.1*i)**2 for i,xi in enumerate(x)]),1.,dict()
+
 
 
     

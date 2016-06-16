@@ -12,7 +12,10 @@ logger = logging.getLogger(__name__)
 
 import GPdc
 
-def argminrecc(optstate,**kwargs):
+def argminrecc(optstate,**para):
+    if para['onlyafter']>len(optstate.y) or not len(optstate.y)%para['everyn']==0:
+        return [sp.NaN for i in para['lb']],{'didnotrun':True}
+    
     logger.info('argmin reccomender')
     xinc = optstate.x[0]
     yinc = 1e99
@@ -32,8 +35,8 @@ def gpmaprecc(optstate,**para):
     d=len(para['lb'])
     x=sp.vstack(optstate.x)
     y=sp.vstack(optstate.y)
-    s= sp.vstack([e[0] for e in optstate.ev])
-    dx=[e[1] for e in optstate.ev]
+    s= sp.vstack([e['s'] for e in optstate.ev])
+    dx=[e['d'] for e in optstate.ev]
     MAP = GPdc.searchMAPhyp(x,y,s,dx,para['mprior'],para['sprior'], para['kindex'])
     logger.info('MAPHYP {}'.format(MAP))
     G = GPdc.GPcore(x,y,s,dx,GPdc.kernel(para['kindex'],d,MAP))
@@ -41,11 +44,11 @@ def gpmaprecc(optstate,**para):
         xq.resize([1,d])
         a = G.infer_m(xq,[[sp.NaN]])
         return (a[0,0],0)
-    [xmin,ymin,ierror] = DIRECT.solve(directwrap,para['lb'],para['ub'],user_data=[], algmethod=0, volper=para['volper'], logfilename='/dev/null')
+    [xmin,ymin,ierror] = DIRECT.solve(directwrap,para['lb'],para['ub'],user_data=[], algmethod=1, volper=para['volper'], logfilename='/dev/null')
     return [i for i in xmin],{'MAPHYP':MAP,'ymin':ymin}
 
 gpmapprior = {
-                'ev':[1e-9,[sp.NaN]],
+                'ev':{'s':1e-9,'d':[sp.NaN]},
                 'lb':[-1.-1.],
                 'ub':[1.,1.],
                 'mprior':sp.array([1.,0.,0.]),
@@ -57,3 +60,43 @@ gpmapprior = {
                 }
 
 gpmap = gpmaprecc,gpmapprior
+
+def gpmapasrecc(optstate,**para):
+    if para['onlyafter']>len(optstate.y) or not len(optstate.y)%para['everyn']==0:
+        return [sp.NaN for i in para['lb']],{'didnotrun':True}
+    logger.info('gpmapas reccomender')
+    d=len(para['lb'])
+    
+    x=sp.hstack([sp.vstack(optstate.x),sp.vstack([e['xa'] for e in optstate.ev])])
+    
+    
+    y=sp.vstack(optstate.y)
+    s= sp.vstack([e['s'] for e in optstate.ev])
+    dx=[e['d'] for e in optstate.ev]
+    MAP = GPdc.searchMAPhyp(x,y,s,dx,para['mprior'],para['sprior'], para['kindex'])
+    logger.info('MAPHYP {}'.format(MAP))
+    G = GPdc.GPcore(x,y,s,dx,GPdc.kernel(para['kindex'],d+1,MAP))
+    def directwrap(xq,y):
+        xq.resize([1,d])
+        xe = sp.hstack([xq,sp.array([[0.]])])
+        #print xe
+        a = G.infer_m(xe,[[sp.NaN]])
+        return (a[0,0],0)
+    [xmin,ymin,ierror] = DIRECT.solve(directwrap,para['lb'],para['ub'],user_data=[], algmethod=1, volper=para['volper'], logfilename='/dev/null')
+    logger.info('reccsearchresult: {}'.format([xmin,ymin,ierror]))
+    return [i for i in xmin],{'MAPHYP':MAP,'ymin':ymin}
+
+gpmapasprior = {
+                'ev':{'s':1e-9,'d':[sp.NaN],'xa':0.},
+                #'ev':[1e-9,[sp.NaN]],
+                'lb':[-1.-1.],
+                'ub':[1.,1.],
+                'mprior':sp.array([1.,0.,0.,0.]),
+                'sprior':sp.array([1.,1.,1.,1.]),
+                'kindex':GPdc.MAT52,
+                'volper':1e-6,
+                'onlyafter':10,
+                'everyn':1,
+                }
+
+gpasmap = gpmapasrecc,gpmapasprior
