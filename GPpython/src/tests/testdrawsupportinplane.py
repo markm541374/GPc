@@ -48,15 +48,17 @@ G = GPdc.GPcore(X,Y,S,D,GPdc.kernel(GPdc.SQUEXP,2,sp.array([1.5,0.15,0.15])))
 #a0.fill_between(sup, sp.array(m-2.*sq).flatten(), sp.array(m+2.*sq).flatten(), facecolor='lightblue',edgecolor='lightblue')
 plt.figure()
 
-Z = ESutils.draw_support_inplane(G, sp.array([-1.,-1.]),sp.array([1.,1.]),400,ESutils.SUPPORT_LAPAPR,1.,0.5)
+Z = ESutils.draw_support_inplane(G, sp.array([-1.,-1.]),sp.array([1.,1.]),400,ESutils.SUPPORT_LAPAPR,1,0.5)
 R = ESutils.draw_min(G,Z,100)
 for i in xrange(Z.shape[0]):
     plt.plot(Z[i,0],Z[i,1],'r.')
 for i in xrange(R.shape[0]):
     plt.plot(R[i,0],R[i,1],'gx')
     
-Z = ESutils.draw_support_inplane(G, sp.array([-1.,-1.]),sp.array([1.,1.]),400,ESutils.SUPPORT_LAPAPR,0.,0.5)
+Z = ESutils.draw_support_inplane(G, sp.array([-1.,-1.]),sp.array([1.,1.]),400,ESutils.SUPPORT_LAPAPR,0,0.5)
 R = ESutils.draw_min(G,Z,100)
+print Z.shape
+print R.shape
 for i in xrange(Z.shape[0]):
     plt.plot(Z[i,0],Z[i,1],'r.')
 for i in xrange(R.shape[0]):

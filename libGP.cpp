@@ -27,12 +27,14 @@ extern "C"
 #include "GPsimple.h"
 
 #include "bayesutils.h"
+
     
 std::vector<GP*> SS;
 
 int newGP(int D, int N, int kindex, double* X, double* Y, double* Sx, int* Dx, double* h){
 	GP *p = new GP(D,N,kindex);
 	SS.push_back(p);
+        
         int k = SS.size()-1;
         SS[k]->set_X(X);
         SS[k]->set_Y(Y);
@@ -48,7 +50,12 @@ int newGP_LKonly(int D, int N, double* Xin, double* Yin, double* Sin, int* Din, 
 	return 0;
 }
 
-int newGP_hypset(int D, int N, int kindex, double* X, double* Y, double* Sx, int* Dx, double* h, int s){
+extern "C" int newGP_hypset(int D, int N, int kindex, double* X, double* Y, double* Sx, int* Dx, double* h, int s){
+    
+    
+    
+    
+    
     int base = SS.size();
 
     for (int i=0; i<s; i++){
@@ -57,17 +64,18 @@ int newGP_hypset(int D, int N, int kindex, double* X, double* Y, double* Sx, int
     return base;
 }
 
-void killGP(int k,int s){
+extern "C" void killGP(int k,int s){
         if (SS[k]==0){
 		printf("trying to use deleted GP\n");
 		return;
 	};
         for (int i=0; i<s; i++){
-            SS[k+i]->~GP();
+            delete(SS[k+i]);
+            //SS[k+i]->~GP();
             SS[k] = 0;
         }
 }
-int ping(int k, int s){
+extern "C" int ping(int k, int s){
 	if (SS[k]==0){
 		printf("trying to use deleted GP\n");
 		return -1;
@@ -101,7 +109,7 @@ int set_hyp(int k, double* h){
     return 0;
 }
 
-int presolv(int k, int s){
+extern "C" int presolv(int k, int s){
 	if (SS[k]==0){
 		printf("trying to use deleted GP\n");
 		return -1;
@@ -230,6 +238,8 @@ int infer_lEI(int k, int s, int n, double* X, int* D, double* R){
     }
     return 0;
 }
+
+
 #ifdef __cplusplus
 }
 #endif

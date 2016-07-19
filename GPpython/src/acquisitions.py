@@ -7,13 +7,14 @@ import os
 import time
 import DIRECT
 import logging
-
+import copy
 logger = logging.getLogger(__name__)
 
 import GPdc
 import PES
 import ESutils
 #start with random
+import objectives
 
 def randomaq(optstate,persist,**para):
     logger.info('randomaq')
@@ -28,6 +29,7 @@ random = randomaq,randomprior
 # and grid
 
 def bruteaq(optstate,persist,**para):
+    para = copy.deepcopy(para)
     if persist==None:
         persist = {'pwr':0,'idx':0,'d':len(para['ub'])}
 
@@ -58,6 +60,7 @@ brute = bruteaq, bruteprior
 
 #EIMAP
 def EIMAPaq(optstate,persist,ev=None, ub = None, lb=None, nrandinit=None, mprior=None,sprior=None,kindex = None,directmaxiter=None):
+    para = copy.deepcopy(para)
     if persist==None:
         persist = {'n':0,'d':len(ub)}
     n = persist['n']
@@ -102,6 +105,7 @@ EIMAP = EIMAPaq, EIMAPprior
 
 #PES with fixed s ev
 def PESfsaq(optstate,persist,**para):
+    para = copy.deepcopy(para)
     if persist==None:
         persist = {'n':0,'d':len(para['ub'])}
     n = persist['n']
@@ -148,6 +152,7 @@ PESfs = PESfsaq,PESfsprior
 
 #PES with variable s ev give costfunction
 def PESvsaq(optstate,persist,**para):
+    para = copy.deepcopy(para)
     if persist==None:
         persist = {'n':0,'d':len(para['ub'])}
     n = persist['n']
@@ -166,6 +171,8 @@ def PESvsaq(optstate,persist,**para):
     
     pesobj = PES.PES(x,y,s,dx,para['lb'],para['ub'],para['kindex'],para['mprior'],para['sprior'],DH_SAMPLES=para['DH_SAMPLES'],DM_SAMPLES=para['DM_SAMPLES'], DM_SUPPORT=para['DM_SUPPORT'],DM_SLICELCBPARA=para['DM_SLICELCBPARA'],mode=para['SUPPORT_MODE'],noS=para['noS'])
     
+    
+        
     [xmin,ymin,ierror] = pesobj.search_acq(para['cfn'],para['logsl'],para['logsu'],volper=para['volper'])
     
     logger.debug([xmin,ymin,ierror])
@@ -192,6 +199,7 @@ PESvsprior = {
             'noS':False,
             'nrandinit':10,
             'cfn':lambda x,ev:42.,
+            'traincfn':False,
             'logsu':-3,
             'logsl':-10
             }
@@ -199,6 +207,7 @@ PESvsprior = {
 PESvs = PESvsaq,PESvsprior
 
 def PESbsaq(optstate,persist,**para):
+    para = copy.deepcopy(para)
     if persist==None:
         persist = {'n':0,'d':len(para['ub'])}
     n = persist['n']
@@ -209,15 +218,39 @@ def PESbsaq(optstate,persist,**para):
         return randomaq(optstate,persist,**para)
     logger.info('PESssaq')
     
-    x=sp.hstack([sp.vstack(optstate.x),sp.vstack([e['xa'] for e in optstate.ev])])
+    x=sp.hstack([sp.vstack([e['xa'] for e in optstate.ev]),sp.vstack(optstate.x)])
     
     y=sp.vstack(optstate.y)
     s= sp.vstack([e['s'] for e in optstate.ev])
     dx=[e['d'] for e in optstate.ev]
-    
+    print "\n at pesinplane x {} axis 0".format(x)
     pesobj = PES.PES_inplane(x,y,s,dx,[para['xal']]+para['lb'],[para['xau']]+para['ub'],para['kindex'],para['mprior'],para['sprior'],0,0,DH_SAMPLES=para['DH_SAMPLES'], DM_SAMPLES=para['DM_SAMPLES'], DM_SUPPORT=para['DM_SUPPORT'],DM_SLICELCBPARA=para['DM_SLICELCBPARA'],mode=para['SUPPORT_MODE'])
-
-    [xmin,ymin,ierror] = pesobj.search_acq(para['cfn'],lambda s:para['ev']['s'],volper=para['volper'])
+    if para['traincfn']:#
+        #print "XXXXXXXXXXXXXXx"
+        cx=sp.vstack([e['xa'] for e in optstate.ev])
+        cc=sp.vstack([e for e in optstate.c])
+        #print cx
+        #print cc
+        #print optstate.ev
+        #print optstate.x
+        cfn = objectives.traincfn(cx,cc)
+        """
+        if len(cc)%5==0:
+            from matplotlib import pyplot as plt
+            f,a = plt.subplots(1)
+            xt = sp.linspace(0,1,100)
+            m = sp.empty(100)
+            for i in xrange(100):
+                m[i]=cfn(0.,**{'xa':xt[i]})
+            a.plot(xt,m,'b')
+            for i in xrange(len(optstate.c)):
+                a.plot(cx[i,0],cc[i,0],'ro')
+            plt.show()
+        """
+    else:
+        cfn = para['cfn']
+        
+    [xmin,ymin,ierror] = pesobj.search_acq(cfn,lambda s:para['ev']['s'],volper=para['volper'])
     logger.debug([xmin,ymin,ierror])
     para['ev']['xa']=xmin[0]
     xout = [i for i in xmin[1:]]
@@ -241,6 +274,7 @@ PESbsprior = {
             'noS':False,
             'nrandinit':10,
             'cfn':lambda x,ev:42.,
+            'traincfn':False,
             'xau':1.,
             'xal':0.
             }

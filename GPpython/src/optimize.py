@@ -7,6 +7,8 @@ import scipy as sp
 import os
 import time
 import logging
+import copy
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +23,9 @@ class optstate:
         return
     
     def update(self,x,ev,y,c):
+        #print 'updata {}'.format(self.ev)
         self.x.append(x)
-        self.ev.append(ev)
+        self.ev.append(copy.copy(ev))
         self.y.append(y)
         self.c.append(c)
         self.C +=c
@@ -32,6 +35,7 @@ class optstate:
 
 class optimizer:
     def __init__(self,dirpath,aqpara,aqfn,stoppara,stopfn,reccpara,reccfn,ojf,ojfchar,checkrecc=False):
+        print aqpara
         self.checkrecc=checkrecc
         self.dirpath = dirpath
         self.setaq(aqpara,aqfn)
@@ -66,6 +70,7 @@ class optimizer:
     
     def run(self):
         logger.info('startopt:')
+        
         lf = open(os.path.join(self.dirpath,'trace.csv'),'wb',0)
         lf.write(''.join(['n, ']+['x'+str(i)+', ' for i in xrange(self.dx)]+[i+', ' for i in self.aqpara['ev'].keys()]+['y, c, ']+['rx'+str(i)+', ' for i in xrange(self.dx)]+['truey at xrecc, taq, tev, trc, realtime'])+'\n')
         self.state = optstate()
@@ -87,7 +92,9 @@ class optimizer:
             t3 = time.time()
             
             if self.checkrecc:
-                checky,checkc,checkojaux  = self.ojf(rx,**ev)
+                logger.info("checkin {} : {}".format(rx,self.aqpara['ev']))
+                checky,checkc,checkojaux  = self.ojf(rx,**self.aqpara['ev'])
+                logger.info("checkout {} : {} : {}".format(checky,checkc,checkojaux))
             else:
                 checky=sp.NaN
 

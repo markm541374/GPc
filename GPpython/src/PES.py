@@ -292,6 +292,7 @@ class PES_inplane:
         self.X=X
         if noS:
             S=sp.zeros(S.shape)
+        print [X.shape,Y.shape,mprior,sprior]
         self.G = makeG(X,Y,S,D,kindex,mprior,sprior,DH_SAMPLES)
         HS = sp.vstack([k.hyp for k in self.G.kf])
         print "\nhyp mean: "+str(sp.mean(HS,axis=0))
@@ -315,7 +316,7 @@ class PES_inplane:
         a = PESgain(self.G,self.Ga,self.Z,Xq,Dq,Sq)
         return a
     
-    def query_acq(self,Xq,Sq,Dq,costfn):
+    def query_acq(self,Xq,Sq,Dq,costfn):                                                                                                            
         a = PESgain(self.G,self.Ga,self.Z,Xq,Dq,Sq)
         for i in xrange(Xq.shape[0]):
             a[i] = a[i]/costfn(Xq[i,:].flatten())
